@@ -349,11 +349,11 @@ public class CourseService
 
     public async Task<List<string>> GetCategoriesAsync()
     {
-        return await _db.Set<Course>().AsNoTracking()
-            .Where(c => c.Status == CourseStatus.Published && c.Category != string.Empty)
-            .Select(c => c.Category)
-            .Distinct()
-            .OrderBy(c => c)
+        return await _db.Set<Category>().AsNoTracking()
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.OrderIndex)
+            .ThenBy(c => c.Name)
+            .Select(c => c.Name)
             .ToListAsync();
     }
 }

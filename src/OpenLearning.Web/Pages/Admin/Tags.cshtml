@@ -1,0 +1,80 @@
+@page
+@model OpenLearning.Web.Pages.Admin.TagsModel
+@{
+    ViewData["Title"] = "Admin · Tags";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Admin — Tags</h1>
+        <p class="text-muted mb-0">Rename, merge, or retire tags in the course vocabulary.</p>
+    </div>
+    <a class="btn btn-outline-primary" asp-page="/Admin/Index">Back to dashboard</a>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-3">Tags (@Model.Tags.Count)</h2>
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Tag</th>
+                    <th>Slug</th>
+                    <th class="text-center">Courses</th>
+                    <th style="width: 40%">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var tag in Model.Tags)
+                {
+                    <tr>
+                        <td>
+                            <strong>@tag.Name</strong>
+                            @if (!tag.IsActive)
+                            {
+                                <span class="badge bg-secondary ms-1">Retired</span>
+                            }
+                        </td>
+                        <td><code>@tag.Slug</code></td>
+                        <td class="text-center">@Model.Counts.GetValueOrDefault(tag.Id)</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                <form method="post" asp-page-handler="Rename" asp-route-id="@tag.Id" class="d-flex gap-1">
+                                    <input name="name" value="@tag.Name" class="form-control form-control-sm" style="width: 120px" />
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Rename</button>
+                                </form>
+                                <form method="post" asp-page-handler="Merge" asp-route-id="@tag.Id" class="d-flex gap-1">
+                                    <select name="targetId" class="form-select form-select-sm" style="width: 130px">
+                                        @foreach (var other in Model.Tags.Where(t => t.Id != tag.Id))
+                                        {
+                                            <option value="@other.Id">→ @other.Name</option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Merge</button>
+                                </form>
+                                @if (tag.IsActive)
+                                {
+                                    <form method="post" asp-page-handler="Retire" asp-route-id="@tag.Id">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">Retire</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (Model.Tags.Count == 0)
+        {
+            <div class="alert alert-info mb-0">No tags yet. Tags are created automatically when instructors save a course.</div>
+        }
+    </div>
+</div>

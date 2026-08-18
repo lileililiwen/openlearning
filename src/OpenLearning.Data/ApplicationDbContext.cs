@@ -35,6 +35,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<CourseTag> CourseTags => Set<CourseTag>();
 
+    public DbSet<Category> Categories => Set<Category>();
+
     public DbSet<EnrollmentEntity> Enrollments => Set<EnrollmentEntity>();
 
     public DbSet<LessonCompletion> LessonCompletions => Set<LessonCompletion>();

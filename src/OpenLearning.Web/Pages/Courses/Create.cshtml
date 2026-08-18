@@ -19,7 +19,13 @@
                 </div>
                 <div class="mb-3">
                     <label asp-for="Input.Category" class="form-label"></label>
-                    <input asp-for="Input.Category" class="form-control" placeholder="e.g. Programming, Design, Data Science" />
+                    <select asp-for="Input.Category" class="form-select">
+                        <option value="">Uncategorized</option>
+                        @foreach (var categoryName in Model.Categories.Select(category => category.Name))
+                        {
+                            <option value="@categoryName">@categoryName</option>
+                        }
+                    </select>
                     <span asp-validation-for="Input.Category" class="text-danger small"></span>
                 </div>
                 <div class="mb-3" style="max-width: 220px">

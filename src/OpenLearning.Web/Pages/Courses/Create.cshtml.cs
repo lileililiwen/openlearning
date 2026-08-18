@@ -13,14 +13,18 @@ namespace OpenLearning.Web.Pages.Courses;
 public class CreateModel : PageModel
 {
     private readonly CourseService _courses;
+    private readonly CategoryService _categories;
 
-    public CreateModel(CourseService courses)
+    public CreateModel(CourseService courses, CategoryService categories)
     {
         _courses = courses;
+        _categories = categories;
     }
 
     [BindProperty]
     public InputModel Input { get; set; } = new();
+
+    public List<Category> Categories { get; set; } = new();
 
     public class InputModel
     {
@@ -66,15 +70,16 @@ public class CreateModel : PageModel
         public string Tags { get; set; } = string.Empty;
     }
 
-    public void OnGet()
+    public async Task OnGetAsync()
     {
-        // GET renders the empty course-creation form; the model is bound and validated on POST.
+        Categories = await _categories.GetActiveAsync();
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
         {
+            Categories = await _categories.GetActiveAsync();
             return Page();
         }
 

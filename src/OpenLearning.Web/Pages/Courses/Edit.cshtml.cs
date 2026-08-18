@@ -22,13 +22,15 @@ public class EditModel : PageModel
     private readonly QuizService _quizzes;
     private readonly AnnouncementService _announcements;
     private readonly LogService _logs;
+    private readonly CategoryService _categories;
 
-    public EditModel(CourseService courses, QuizService quizzes, AnnouncementService announcements, LogService logs)
+    public EditModel(CourseService courses, QuizService quizzes, AnnouncementService announcements, LogService logs, CategoryService categories)
     {
         _courses = courses;
         _quizzes = quizzes;
         _announcements = announcements;
         _logs = logs;
+        _categories = categories;
     }
 
     public Course? Course { get; set; }
@@ -36,6 +38,8 @@ public class EditModel : PageModel
     public List<Quiz> Quizzes { get; set; } = new();
 
     public List<CourseAnnouncement> Announcements { get; set; } = new();
+
+    public List<Category> Categories { get; set; } = new();
 
     [BindProperty]
     public InputModel Input { get; set; } = new();
@@ -104,6 +108,7 @@ public class EditModel : PageModel
         Course = course;
         Quizzes = await _quizzes.GetForCourseAsync(id);
         Announcements = await _announcements.ListForCourseAsync(id);
+        Categories = await _categories.GetActiveAsync();
         Input.Title = course.Title;
         Input.Description = course.Description;
         Input.Category = course.Category;
@@ -129,6 +134,7 @@ public class EditModel : PageModel
                 Course = course;
                 Quizzes = await _quizzes.GetForCourseAsync(id);
                 Announcements = await _announcements.ListForCourseAsync(id);
+                Categories = await _categories.GetActiveAsync();
             }
 
             return Page();
