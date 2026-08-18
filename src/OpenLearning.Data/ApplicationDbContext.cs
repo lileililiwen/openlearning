@@ -10,6 +10,7 @@ using OpenLearning.Notifications.Models;
 using OpenLearning.Progress.Models;
 using OpenLearning.Ratings.Models;
 using OpenLearning.Scorm.Models;
+using OpenLearning.Storage.Models;
 using OpenLearning.UserManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 
@@ -62,6 +63,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<CourseAnnouncement> CourseAnnouncements => Set<CourseAnnouncement>();
 
+    public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
+
+    public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -81,5 +86,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Review).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Certificate).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Notification).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(StoredFile).Assembly);
     }
 }

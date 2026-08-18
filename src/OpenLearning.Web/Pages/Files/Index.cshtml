@@ -1,0 +1,42 @@
+@page
+@model OpenLearning.Web.Pages.Files.IndexModel
+@{
+    ViewData["Title"] = "File storage";
+}
+
+<h1>File storage</h1>
+
+<p class="text-muted">Upload a file to exercise the storage layer. Keys are server-generated;
+private purposes (answers) are only readable by their owner or an admin.</p>
+
+@if (Model.Message is not null)
+{
+    <div class="alert alert-@Model.MessageType" role="alert">@Model.Message</div>
+}
+
+@if (Model.UploadedKey is not null)
+{
+    <div class="alert alert-success" role="alert">
+        Stored at <code>@Model.UploadedKey</code> — <a href="/files/@Model.UploadedKey">open</a>
+        @if (Model.UploadedPurpose == OpenLearning.Storage.Models.FilePurpose.Video)
+        {
+            <text> — <a href="/files/@Model.UploadedId/renditions">renditions</a></text>
+        }
+    </div>
+}
+
+<form method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Purpose" class="form-label">Purpose</label>
+        <select asp-for="Purpose" class="form-select" asp-items="Html.GetEnumSelectList<FilePurpose>()"></select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Upload" class="form-label">File</label>
+        <input asp-for="Upload" type="file" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>

@@ -17,6 +17,8 @@ using OpenLearning.Progress;
 using OpenLearning.Ratings;
 using OpenLearning.Scorm;
 using OpenLearning.Scorm.Services;
+using OpenLearning.Storage;
+using OpenLearning.Storage.Services;
 using OpenLearning.UserManagement;
 using OpenLearning.Web.Scorm;
 
@@ -50,6 +52,9 @@ builder.Services.AddUserManagementModule();
 builder.Services.AddRatingsModule();
 builder.Services.AddCertificatesModule();
 builder.Services.AddNotificationsModule();
+builder.Services.AddStorageModule(
+    builder.Configuration["Storage:Root"]
+    ?? Path.Combine(builder.Environment.ContentRootPath, "storage"));
 builder.Services.AddSignalR();
 
 // Optional email channel: only used when Email:Enabled is true.
@@ -127,6 +132,70 @@ app.MapPost("/scorm/runtime/commit", async (ScormCommitRequest request, HttpCont
         request.ScoreRaw ?? string.Empty,
         request.SessionTime ?? string.Empty));
     return Results.Json(new { ok = true });
+});
+
+// File storage serving. Private files (e.g. assignment answers) require the
+// owner or an admin; public purposes stream to anyone. Keys contain slashes
+// ({purpose}/{guid}{ext}) so the route is a catch-all.
+app.MapGet("/files/{**key}", async (string key, HttpContext http, StorageService storage) =>
+{
+    var (file, stream) = await storage.OpenAsync(key);
+    if (stream is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Renditions have no StoredFile record; the ACL applies to recorded files
+    // whose purpose is private.
+    if (file?.IsPrivate == true)
+    {
+        var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = http.User.IsInRole("Admin");
+        if (userId is null || (userId != file.OwnerId && !isAdmin))
+        {
+            await stream.DisposeAsync();
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        }
+    }
+
+    var contentType = file?.ContentType ?? ContentTypeFor(key);
+    return Results.File(stream, contentType, enableRangeProcessing: true);
+});
+
+static string ContentTypeFor(string key)
+{
+    var extension = Path.GetExtension(key).ToLowerInvariant();
+    return extension switch
+    {
+        ".mp4" => "video/mp4",
+        ".webm" => "video/webm",
+        ".mov" => "video/quicktime",
+        ".jpg" or ".jpeg" => "image/jpeg",
+        ".png" => "image/png",
+        ".gif" => "image/gif",
+        ".webp" => "image/webp",
+        ".pdf" => "application/pdf",
+        ".zip" => "application/zip",
+        _ => "application/octet-stream",
+    };
+}
+
+app.MapGet("/files/{id:int}/renditions", async (int id, StorageService storage) =>
+{
+    var asset = await storage.GetRenditionsByIdAsync(id);
+    if (asset is null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Json(new
+    {
+        status = asset.Status.ToString().ToLowerInvariant(),
+        low = asset.LowUrl,
+        mid = asset.MidUrl,
+        high = asset.HighUrl,
+        error = asset.Error,
+    });
 });
 
 // Apply migrations and seed demo data on first run (dev-friendly).

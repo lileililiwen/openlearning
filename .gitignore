@@ -40,3 +40,6 @@ docs/quality/history/
 
 ## Uploaded SCORM packages (runtime data)
 src/OpenLearning.Web/wwwroot/scorm/
+
+## Local blob storage root (runtime data; configurable via Storage:Root)
+src/OpenLearning.Web/storage/

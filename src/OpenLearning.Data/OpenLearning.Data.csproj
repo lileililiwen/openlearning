@@ -28,6 +28,7 @@
     <ProjectReference Include="..\OpenLearning.Ratings\OpenLearning.Ratings.csproj" />
     <ProjectReference Include="..\OpenLearning.Certificates\OpenLearning.Certificates.csproj" />
     <ProjectReference Include="..\OpenLearning.Notifications\OpenLearning.Notifications.csproj" />
+    <ProjectReference Include="..\OpenLearning.Storage\OpenLearning.Storage.csproj" />
   </ItemGroup>
 
 </Project>
