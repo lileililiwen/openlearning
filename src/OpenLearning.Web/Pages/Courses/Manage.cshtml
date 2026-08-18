@@ -12,6 +12,14 @@
     <a class="btn btn-primary" asp-page="/Courses/Create">New course</a>
 </div>
 
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 @if (Model.Courses.Count == 0)
 {
     <div class="alert alert-info">

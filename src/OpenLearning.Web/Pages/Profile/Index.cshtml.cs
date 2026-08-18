@@ -53,6 +53,27 @@ public class IndexModel : PageModel
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 
+    public class VerificationInputModel
+    {
+        [Required]
+        [StringLength(200)]
+        [Display(Name = "Real name")]
+        public string RealName { get; set; } = string.Empty;
+
+        [Display(Name = "Identity document type")]
+        public IdType IdType { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        [Display(Name = "Identity number")]
+        public string IdNumber { get; set; } = string.Empty;
+
+        [StringLength(500)]
+        [Url(ErrorMessage = "Document URL must be a valid URL.")]
+        [Display(Name = "Document URL (optional)")]
+        public string? DocumentUrl { get; set; }
+    }
+
     public ApplicationUser? CurrentUser { get; set; }
 
     [BindProperty]
@@ -60,6 +81,9 @@ public class IndexModel : PageModel
 
     [BindProperty]
     public PasswordInputModel PasswordInput { get; set; } = new();
+
+    [BindProperty]
+    public VerificationInputModel VerificationInput { get; set; } = new();
 
     public async Task OnGetAsync()
     {
@@ -102,6 +126,28 @@ public class IndexModel : PageModel
             userId, PasswordInput.CurrentPassword, PasswordInput.NewPassword);
         Flash(ok, error);
         return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostSubmitVerificationAsync()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var (ok, error) = await _profiles.SubmitVerificationAsync(
+            userId, VerificationInput.RealName, VerificationInput.IdType,
+            VerificationInput.IdNumber, VerificationInput.DocumentUrl);
+        Flash(ok, error);
+        return RedirectToPage();
+    }
+
+    /// <summary>Friendly label for the user's current verification status.</summary>
+    public static string StatusLabel(IdentityStatus status)
+    {
+        return status switch
+        {
+            IdentityStatus.Pending => "Pending review",
+            IdentityStatus.Verified => "Verified",
+            IdentityStatus.Rejected => "Rejected",
+            _ => "Not verified",
+        };
     }
 
     private void Flash(bool ok, string? error)

@@ -38,23 +38,28 @@ public class NotificationService
         IReadOnlyDictionary<string, string>? values = null)
     {
         var (finalTitle, finalBody) = await RenderAsync(type, title, body, values);
-        _db.Set<Notification>().Add(new Notification
+        var (inAppAllowed, emailAllowed, smsAllowed, pushAllowed) =
+            await GetChannelPreferencesAsync(userId, type);
+
+        if (inAppAllowed)
         {
-            UserId = userId,
-            Type = type,
-            Title = finalTitle,
-            Body = finalBody,
-            Link = link,
-        });
-        await _db.SaveChangesAsync();
+            _db.Set<Notification>().Add(new Notification
+            {
+                UserId = userId,
+                Type = type,
+                Title = finalTitle,
+                Body = finalBody,
+                Link = link,
+            });
+            await _db.SaveChangesAsync();
+        }
 
         var (emailAddress, phoneNumber) = await GetContactAsync(userId);
-        var (smsAllowed, pushAllowed) = await GetChannelPreferencesAsync(userId, type);
 
         // Fire-and-forget delivery on optional channels; failures never block in-app delivery.
         try
         {
-            if (!string.IsNullOrWhiteSpace(emailAddress))
+            if (emailAllowed && !string.IsNullOrWhiteSpace(emailAddress))
             {
                 await _email.SendAsync(emailAddress, $"[OpenLearning] {finalTitle}", $"{finalBody}\n\n{link ?? string.Empty}");
             }
@@ -101,7 +106,17 @@ public class NotificationService
         }
 
         var (finalTitle, finalBody) = await RenderAsync(type, title, body, values);
-        foreach (var userId in ids)
+        var users = await _db.Set<ApplicationUser>().AsNoTracking()
+            .Where(u => ids.Contains(u.Id))
+            .Select(u => new { u.Id, u.Email, u.PhoneNumber })
+            .ToListAsync();
+        var preferences = await _db.Set<NotificationPreference>().AsNoTracking()
+            .Where(p => ids.Contains(p.UserId) && p.Type == type)
+            .ToDictionaryAsync(p => p.UserId);
+
+        var inAppRecipients = ids.Where(id =>
+            preferences.GetValueOrDefault(id)?.InAppEnabled ?? true).ToList();
+        foreach (var userId in inAppRecipients)
         {
             _db.Set<Notification>().Add(new Notification
             {
@@ -114,20 +129,13 @@ public class NotificationService
         }
         await _db.SaveChangesAsync();
 
-        var users = await _db.Set<ApplicationUser>().AsNoTracking()
-            .Where(u => ids.Contains(u.Id))
-            .Select(u => new { u.Id, u.Email, u.PhoneNumber })
-            .ToListAsync();
-        var preferences = await _db.Set<NotificationPreference>().AsNoTracking()
-            .Where(p => ids.Contains(p.UserId) && p.Type == type)
-            .ToDictionaryAsync(p => p.UserId);
-
         try
         {
             foreach (var userId in ids)
             {
                 var emailAddress = users.FirstOrDefault(e => e.Id == userId)?.Email;
-                if (!string.IsNullOrWhiteSpace(emailAddress))
+                var emailAllowed = preferences.GetValueOrDefault(userId)?.EmailEnabled ?? true;
+                if (emailAllowed && !string.IsNullOrWhiteSpace(emailAddress))
                 {
                     await _email.SendAsync(emailAddress, $"[OpenLearning] {finalTitle}", $"{finalBody}\n\n{link ?? string.Empty}");
                 }
@@ -178,11 +186,15 @@ public class NotificationService
         return (contact?.Email, contact?.PhoneNumber);
     }
 
-    private async Task<(bool Sms, bool Push)> GetChannelPreferencesAsync(string userId, NotificationType type)
+    private async Task<(bool InApp, bool Email, bool Sms, bool Push)> GetChannelPreferencesAsync(string userId, NotificationType type)
     {
         var preference = await _db.Set<NotificationPreference>().AsNoTracking()
             .FirstOrDefaultAsync(p => p.UserId == userId && p.Type == type);
-        return (preference?.SmsEnabled ?? true, preference?.PushEnabled ?? true);
+        return (
+            preference?.InAppEnabled ?? true,
+            preference?.EmailEnabled ?? true,
+            preference?.SmsEnabled ?? true,
+            preference?.PushEnabled ?? true);
     }
 
     private async Task<(string Title, string Body)> RenderAsync(

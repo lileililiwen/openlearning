@@ -1,9 +1,9 @@
 namespace OpenLearning.Notifications.Models;
 
 /// <summary>
-/// Per-user, per-type channel toggles for SMS and web push. A missing row
-/// means the channels default to enabled; rows are created when a user opts
-/// out. In-app delivery is always on (no toggle).
+/// Per-user, per-type channel toggles for in-app, email, SMS, and web push.
+/// A missing row means all channels default to enabled; rows are created when
+/// a user opts out.
 /// </summary>
 public class NotificationPreference
 {
@@ -12,6 +12,10 @@ public class NotificationPreference
     public string UserId { get; set; } = string.Empty;
 
     public NotificationType Type { get; set; }
+
+    public bool InAppEnabled { get; set; } = true;
+
+    public bool EmailEnabled { get; set; } = true;
 
     public bool SmsEnabled { get; set; } = true;
 

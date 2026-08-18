@@ -233,5 +233,81 @@ public sealed class NotificationServiceChannelTests
         Assert.Equal(2, await db.Set<Notification>().CountAsync());
     }
 
+    [Fact]
+    public async Task CreateAsync_skips_in_app_when_preference_disables_it()
+    {
+        var db = CreateDb();
+        db.Set<ApplicationUser>().Add(new ApplicationUser
+        {
+            Id = "u1",
+            UserName = "u1",
+        });
+        db.Set<NotificationPreference>().Add(new NotificationPreference
+        {
+            UserId = "u1",
+            Type = NotificationType.Course,
+            InAppEnabled = false,
+        });
+        await db.SaveChangesAsync();
+
+        var email = new RecordingEmailSender();
+        var service = CreateService(db, email, new RecordingSmsSender(), new RecordingPushSender(), DefaultChannels());
+
+        await service.CreateAsync("u1", NotificationType.Course, "Title", "Body");
+
+        Assert.Empty(await db.Set<Notification>().ToListAsync());
+    }
+
+    [Fact]
+    public async Task CreateAsync_skips_email_when_preference_disables_it()
+    {
+        var db = CreateDb();
+        db.Set<ApplicationUser>().Add(new ApplicationUser
+        {
+            Id = "u1",
+            UserName = "u1",
+            Email = "u1@example.com",
+        });
+        db.Set<NotificationPreference>().Add(new NotificationPreference
+        {
+            UserId = "u1",
+            Type = NotificationType.Course,
+            EmailEnabled = false,
+        });
+        await db.SaveChangesAsync();
+
+        var email = new RecordingEmailSender();
+        var service = CreateService(db, email, new RecordingSmsSender(), new RecordingPushSender(), DefaultChannels());
+
+        await service.CreateAsync("u1", NotificationType.Course, "Title", "Body");
+
+        Assert.Empty(email.Sent);
+        Assert.Single(db.Set<Notification>()); // in-app still delivered
+    }
+
+    [Fact]
+    public async Task CreateForManyAsync_filters_in_app_recipients_by_preference()
+    {
+        var db = CreateDb();
+        db.Set<ApplicationUser>().AddRange(
+            new ApplicationUser { Id = "u1", UserName = "u1" },
+            new ApplicationUser { Id = "u2", UserName = "u2" });
+        db.Set<NotificationPreference>().Add(new NotificationPreference
+        {
+            UserId = "u2",
+            Type = NotificationType.Lesson,
+            InAppEnabled = false,
+        });
+        await db.SaveChangesAsync();
+
+        var service = CreateService(db, new RecordingEmailSender(), new RecordingSmsSender(), new RecordingPushSender(), DefaultChannels());
+
+        await service.CreateForManyAsync(_testUserIds, NotificationType.Lesson, "Title", "Body");
+
+        var notifications = await db.Set<Notification>().ToListAsync();
+        Assert.Single(notifications);
+        Assert.Equal("u1", notifications[0].UserId);
+    }
+
     private static readonly string[] _testUserIds = { "u1", "u2" };
 }

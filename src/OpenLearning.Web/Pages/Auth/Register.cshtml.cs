@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using OpenLearning.Auth.Services;
+using OpenLearning.Notifications.Models;
 
 namespace OpenLearning.Web.Pages.Auth;
 
@@ -11,10 +13,12 @@ namespace OpenLearning.Web.Pages.Auth;
 public class RegisterModel : PageModel
 {
     private readonly AccountService _account;
+    private readonly DbContext _db;
 
-    public RegisterModel(AccountService account)
+    public RegisterModel(AccountService account, DbContext db)
     {
         _account = account;
+        _db = db;
     }
 
     [BindProperty]
@@ -54,7 +58,7 @@ public class RegisterModel : PageModel
             return Page();
         }
 
-        var (result, _) = await _account.RegisterAsync(Input.Email, Input.Password, Input.DisplayName);
+        var (result, user) = await _account.RegisterAsync(Input.Email, Input.Password, Input.DisplayName);
         if (!result.Succeeded)
         {
             foreach (var error in result.Errors)
@@ -64,6 +68,22 @@ public class RegisterModel : PageModel
             return Page();
         }
 
+        await SeedDefaultPreferencesAsync(user!.Id);
         return RedirectToPage("/Index");
+    }
+
+    /// <summary>Seeds one all-enabled preference row per notification type.</summary>
+    private async Task SeedDefaultPreferencesAsync(string userId)
+    {
+        foreach (var type in Enum.GetValues<NotificationType>())
+        {
+            _db.Set<NotificationPreference>().Add(new NotificationPreference
+            {
+                UserId = userId,
+                Type = type,
+            });
+        }
+
+        await _db.SaveChangesAsync();
     }
 }

@@ -235,7 +235,13 @@ public class DetailsModel : PageModel
         }
 
         var newStatus = course.IsPublished ? CourseStatus.Draft : CourseStatus.Published;
-        await _courses.SetStatusAsync(id, userId, newStatus);
+        var (ok, error) = await _courses.SetStatusAsync(id, userId, newStatus);
+        if (!ok)
+        {
+            TempData["Message"] = error;
+            TempData["MessageType"] = "danger";
+        }
+
         return RedirectToPage(new { id });
     }
 

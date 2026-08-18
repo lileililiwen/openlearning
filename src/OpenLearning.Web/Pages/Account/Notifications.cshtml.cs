@@ -20,6 +20,10 @@ public class NotificationsModel : PageModel
     {
         public NotificationType Type { get; set; }
 
+        public bool InAppEnabled { get; set; }
+
+        public bool EmailEnabled { get; set; }
+
         public bool SmsEnabled { get; set; }
 
         public bool PushEnabled { get; set; }
@@ -53,12 +57,16 @@ public class NotificationsModel : PageModel
                 {
                     UserId = userId,
                     Type = item.Type,
+                    InAppEnabled = item.InAppEnabled,
+                    EmailEnabled = item.EmailEnabled,
                     SmsEnabled = item.SmsEnabled,
                     PushEnabled = item.PushEnabled,
                 });
             }
             else
             {
+                existing.InAppEnabled = item.InAppEnabled;
+                existing.EmailEnabled = item.EmailEnabled;
                 existing.SmsEnabled = item.SmsEnabled;
                 existing.PushEnabled = item.PushEnabled;
             }
@@ -85,7 +93,9 @@ public class NotificationsModel : PageModel
             .Select(type => new PreferenceInput
             {
                 Type = type,
-                SmsEnabled = stored.TryGetValue(type, out var p) && p.SmsEnabled,
+                InAppEnabled = stored.TryGetValue(type, out var p) && p.InAppEnabled,
+                EmailEnabled = stored.TryGetValue(type, out p) && p.EmailEnabled,
+                SmsEnabled = stored.TryGetValue(type, out p) && p.SmsEnabled,
                 PushEnabled = stored.TryGetValue(type, out p) && p.PushEnabled,
             })
             .ToList();

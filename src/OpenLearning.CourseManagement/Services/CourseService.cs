@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OpenLearning.Auth.Models;
 using OpenLearning.CourseManagement.Models;
 
 namespace OpenLearning.CourseManagement.Services;
@@ -157,19 +158,32 @@ public class CourseService
         return true;
     }
 
-    public async Task<bool> SetStatusAsync(int courseId, string ownerId, CourseStatus status)
+    public async Task<(bool Ok, string? Error)> SetStatusAsync(int courseId, string ownerId, CourseStatus status)
     {
         var course = await _db.Set<Course>()
             .FirstOrDefaultAsync(c => c.Id == courseId && c.InstructorId == ownerId);
         if (course is null)
         {
-            return false;
+            return (false, "Course not found.");
+        }
+
+        // Instructors must be identity-verified before publishing a course.
+        if (status == CourseStatus.Published)
+        {
+            var identityStatus = await _db.Set<ApplicationUser>()
+                .Where(u => u.Id == ownerId)
+                .Select(u => u.IdentityStatus)
+                .FirstOrDefaultAsync();
+            if (identityStatus != IdentityStatus.Verified)
+            {
+                return (false, "Your identity must be verified before you can publish a course.");
+            }
         }
 
         course.Status = status;
         course.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
-        return true;
+        return (true, null);
     }
 
     public Task<int> GetLessonCountAsync(int courseId)

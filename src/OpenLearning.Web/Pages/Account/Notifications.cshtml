@@ -7,7 +7,7 @@
 <div class="row">
     <div class="col-lg-8">
         <h1 class="h3 mb-1">Notification Settings</h1>
-        <p class="text-muted mb-4">Choose which channels deliver each type of notification. In-app messages are always delivered.</p>
+        <p class="text-muted mb-4">Choose which channels deliver each type of notification.</p>
 
         @if (TempData["Message"] is string message)
         {
@@ -24,6 +24,18 @@
                     <div class="border rounded p-3 mb-3">
                         <strong>@Model.Preferences[i].Type</strong>
                         <div class="row mt-2">
+                            <div class="col-auto form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="inapp-@i"
+                                       name="Input[@i].InAppEnabled" value="true" @(Model.Preferences[i].InAppEnabled ? "checked" : "") />
+                                <label class="form-check-label" for="inapp-@i">In-app</label>
+                                <input type="hidden" name="Input[@i].InAppEnabled" value="false" />
+                            </div>
+                            <div class="col-auto form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="email-@i"
+                                       name="Input[@i].EmailEnabled" value="true" @(Model.Preferences[i].EmailEnabled ? "checked" : "") />
+                                <label class="form-check-label" for="email-@i">Email</label>
+                                <input type="hidden" name="Input[@i].EmailEnabled" value="false" />
+                            </div>
                             <div class="col-auto form-check form-switch">
                                 <input type="checkbox" class="form-check-input" id="sms-@i"
                                        name="Input[@i].SmsEnabled" value="true" @(Model.Preferences[i].SmsEnabled ? "checked" : "") />

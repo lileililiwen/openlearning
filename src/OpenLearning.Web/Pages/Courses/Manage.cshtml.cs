@@ -40,15 +40,24 @@ public class ManageModel : PageModel
         }
 
         var newStatus = course.IsPublished ? CourseStatus.Draft : CourseStatus.Published;
-        await _courses.SetStatusAsync(id, userId, newStatus);
-        await _logs.RecordAsync(
-            userId,
-            User.Identity?.Name ?? string.Empty,
-            course.IsPublished ? "UnpublishCourse" : "PublishCourse",
-            "Course",
-            id.ToString(CultureInfo.InvariantCulture),
-            course.Title,
-            HttpContext.Connection.RemoteIpAddress?.ToString());
+        var (ok, error) = await _courses.SetStatusAsync(id, userId, newStatus);
+        if (ok)
+        {
+            await _logs.RecordAsync(
+                userId,
+                User.Identity?.Name ?? string.Empty,
+                course.IsPublished ? "UnpublishCourse" : "PublishCourse",
+                "Course",
+                id.ToString(CultureInfo.InvariantCulture),
+                course.Title,
+                HttpContext.Connection.RemoteIpAddress?.ToString());
+        }
+        else
+        {
+            TempData["Message"] = error;
+            TempData["MessageType"] = "danger";
+        }
+
         return RedirectToPage();
     }
 

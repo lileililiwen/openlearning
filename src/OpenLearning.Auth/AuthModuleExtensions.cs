@@ -52,6 +52,7 @@ public static class AuthModuleExtensions
         services.AddScoped<AccountService>();
         services.AddScoped<ProfileService>();
         services.AddScoped<UserService>();
+        services.AddScoped<IdentityService>();
         return services;
     }
 }
