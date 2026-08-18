@@ -53,6 +53,7 @@ public static class AuthModuleExtensions
         services.AddScoped<ProfileService>();
         services.AddScoped<UserService>();
         services.AddScoped<IdentityService>();
+        services.AddScoped<PhoneCodeService>();
         return services;
     }
 }

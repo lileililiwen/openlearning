@@ -1,0 +1,41 @@
+@page
+@model OpenLearning.Web.Pages.Auth.PhoneLoginModel
+@{
+    ViewData["Title"] = "Phone Sign-in";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-3">Sign in with your phone</h1>
+                <p class="text-muted small mb-4">
+                    Enter your phone number and we'll send a one-time verification code.
+                </p>
+
+                @if (TempData["Message"] is string message)
+                {
+                    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+                        @message
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="Input.PhoneNumber" class="form-label"></label>
+                        <input asp-for="Input.PhoneNumber" class="form-control" placeholder="+15551234567" autofocus />
+                        <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Send code</button>
+                </form>
+
+                <hr />
+                <p class="small text-center mb-0">
+                    Prefer email? <a asp-page="/Auth/Login">Sign in with email</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

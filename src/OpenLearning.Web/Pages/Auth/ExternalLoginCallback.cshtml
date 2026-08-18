@@ -1,0 +1,24 @@
+@page
+@model OpenLearning.Web.Pages.Auth.ExternalLoginCallbackModel
+@{
+    ViewData["Title"] = "External sign-in";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-3">External sign-in</h1>
+                @if (TempData["Message"] is string message)
+                {
+                    <div class="alert alert-@(TempData["MessageType"] ?? "danger")" role="alert">
+                        @message
+                    </div>
+                }
+                <p class="mb-0">
+                    <a asp-page="/Auth/Login" class="btn btn-primary">Back to sign in</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

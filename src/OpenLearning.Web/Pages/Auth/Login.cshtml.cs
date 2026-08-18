@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth.Services;
@@ -21,6 +23,9 @@ public class LoginModel : PageModel
 
     public string? ReturnUrl { get; set; }
 
+    /// <summary>Configured external authentication schemes (Google/GitHub).</summary>
+    public List<Microsoft.AspNetCore.Authentication.AuthenticationScheme> ExternalProviders { get; set; } = new();
+
     public class InputModel
     {
         [Required]
@@ -35,9 +40,21 @@ public class LoginModel : PageModel
         public bool RememberMe { get; set; }
     }
 
-    public void OnGet(string? returnUrl = null)
+    public async Task OnGetAsync(string? returnUrl = null)
     {
         ReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Content("~/");
+        var identitySchemes = new[]
+        {
+            IdentityConstants.ApplicationScheme,
+            IdentityConstants.ExternalScheme,
+            IdentityConstants.TwoFactorRememberMeScheme,
+            IdentityConstants.TwoFactorUserIdScheme,
+        };
+        ExternalProviders = (await HttpContext.RequestServices
+                .GetRequiredService<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>()
+                .GetAllSchemesAsync())
+            .Where(s => !identitySchemes.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
+            .ToList();
     }
 
     public async Task<IActionResult> OnPostAsync(string? returnUrl = null)

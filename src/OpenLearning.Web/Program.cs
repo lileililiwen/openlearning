@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assessments;
@@ -43,6 +45,56 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+// Third-party OAuth sign-in (Google/GitHub) — only configured providers
+// appear on the login page. Unknown schemes are simply not added.
+builder.Services.AddAuthentication();
+if (!string.IsNullOrWhiteSpace(builder.Configuration["Authentication:Google:ClientId"]))
+{
+    builder.Services.AddAuthentication()
+        .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+        {
+            options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
+            options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
+        });
+}
+
+if (!string.IsNullOrWhiteSpace(builder.Configuration["Authentication:GitHub:ClientId"]))
+{
+    builder.Services.AddAuthentication()
+        .AddOAuth("GitHub", options =>
+        {
+            options.ClientId = builder.Configuration["Authentication:GitHub:ClientId"]!;
+            options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"] ?? string.Empty;
+            options.CallbackPath = "/signin-github";
+            options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+            options.TokenEndpoint = "https://github.com/login/oauth/access_token";
+            options.UserInformationEndpoint = "https://api.github.com/user";
+            options.Scope.Add("user:email");
+
+            // GitHub only returns the email via a separate endpoint; use the
+            // profile name when email is unavailable.
+            options.ClaimActions.MapJsonKey("urn:github:name", "name");
+            options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+            options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+            options.Events.OnCreatingTicket = async context =>
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+                    "Bearer", context.AccessToken);
+                var response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
+                response.EnsureSuccessStatusCode();
+                var user = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                var email = user.RootElement.TryGetProperty("email", out var e) ? e.GetString() : null;
+                if (string.IsNullOrWhiteSpace(email) &&
+                    user.RootElement.TryGetProperty("login", out var login))
+                {
+                    context.Identity?.AddClaim(new Claim(ClaimTypes.Email, login.GetString() + "@users.noreply.github.com"));
+                }
+            };
+        });
+}
 
 builder.Services.AddAuthModule();
 builder.Services.AddCourseManagementModule();
