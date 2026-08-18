@@ -1,0 +1,79 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Roster.IndexModel
+@{
+    ViewData["Title"] = "Course Roster";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Roster — @Model.CourseTitle</h1>
+        <p class="text-muted mb-0">Enrolled students and their progress.</p>
+    </div>
+    <a class="btn btn-outline-primary" asp-page="/Courses/Edit" asp-route-id="@Model.CourseId">Back to course</a>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<form method="get" class="d-flex gap-2 mb-3" style="max-width: 480px">
+    <input type="hidden" name="id" value="@Model.CourseId" />
+    <input type="text" name="Search" value="@Model.Search" class="form-control" placeholder="Search by name or email" />
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+@if (Model.Roster.Count == 0)
+{
+    <div class="alert alert-info">
+        @(string.IsNullOrWhiteSpace(Model.Search)
+            ? "No students are enrolled in this course yet."
+            : "No students match your search.")
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Email</th>
+                    <th>Enrolled</th>
+                    <th class="text-center">Progress</th>
+                    <th class="text-center">Last activity</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Roster)
+                {
+                    <tr>
+                        <td>
+                            <a asp-page="/Courses/Roster/Student" asp-route-id="@Model.CourseId" asp-route-studentId="@row.StudentId" class="fw-semibold">@row.StudentName</a>
+                        </td>
+                        <td>@row.StudentEmail</td>
+                        <td>@row.EnrolledAt.ToString("yyyy-MM-dd")</td>
+                        <td class="text-center" style="min-width: 160px">
+                            <div class="progress progress-thin mb-1">
+                                <div class="progress-bar" role="progressbar" style="width: @row.ProgressPercent%"></div>
+                            </div>
+                            <span class="text-muted small">@row.ProgressPercent% (@row.CompletedLessons/@row.TotalLessons)</span>
+                        </td>
+                        <td class="text-center text-muted small">@(row.LastAccessedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Roster/Student" asp-route-id="@Model.CourseId" asp-route-studentId="@row.StudentId">View progress</a>
+                            <form method="post" asp-page-handler="Withdraw" asp-route-id="@Model.CourseId" asp-route-studentId="@row.StudentId" class="d-inline"
+                                  onsubmit="return confirm('Withdraw @row.StudentName from this course? Their progress will be removed.');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Withdraw</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

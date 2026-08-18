@@ -265,4 +265,48 @@ public class ProgressService
 
         return (int)Math.Round(finished * 100.0 / enrollments.Count);
     }
+
+    /// <summary>
+    /// Most recent LessonAccess timestamp for the given (student, course), or
+    /// null if the student has not opened any lesson yet.
+    /// </summary>
+    public async Task<DateTime?> GetLastAccessAsync(string studentId, int courseId)
+    {
+        var access = await _db.Set<LessonAccess>().AsNoTracking()
+            .Where(la => la.Enrollment!.StudentId == studentId && la.Enrollment!.CourseId == courseId)
+            .OrderByDescending(la => la.LastAccessedAt)
+            .FirstOrDefaultAsync();
+        return access?.LastAccessedAt;
+    }
+
+    /// <summary>
+    /// Per-enrollment completion counts and last-access timestamps in two
+    /// round-trips. Used by the teacher-roster page to avoid N+1 across a
+    /// course's students.
+    /// </summary>
+    public async Task<(
+        Dictionary<int, int> CompletedByEnrollment,
+        Dictionary<int, DateTime> LastAccessByEnrollment)>
+        GetEnrollmentProgressMapAsync(List<int> enrollmentIds)
+    {
+        if (enrollmentIds.Count == 0)
+        {
+            return (new Dictionary<int, int>(), new Dictionary<int, DateTime>());
+        }
+
+        var completedCounts = await _db.Set<LessonCompletion>().AsNoTracking()
+            .Where(lc => enrollmentIds.Contains(lc.EnrollmentId))
+            .GroupBy(lc => lc.EnrollmentId)
+            .Select(g => new { EnrollmentId = g.Key, Completed = g.Count() })
+            .ToListAsync();
+        var lastAccess = await _db.Set<LessonAccess>().AsNoTracking()
+            .Where(la => enrollmentIds.Contains(la.EnrollmentId))
+            .GroupBy(la => la.EnrollmentId)
+            .Select(g => new { EnrollmentId = g.Key, LastAccessedAt = g.Max(x => x.LastAccessedAt) })
+            .ToListAsync();
+
+        return (
+            completedCounts.ToDictionary(c => c.EnrollmentId, c => c.Completed),
+            lastAccess.ToDictionary(a => a.EnrollmentId, a => a.LastAccessedAt));
+    }
 }

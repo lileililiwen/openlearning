@@ -48,6 +48,15 @@ public class ScormRuntimeService
         return (enrollment?.Id, null);
     }
 
+    public async Task<List<ScormRecord>> GetRecordsForEnrollmentAsync(int enrollmentId)
+    {
+        return await _db.Set<ScormRecord>().AsNoTracking()
+            .Include(r => r.ScormPackage)
+            .Where(r => r.EnrollmentId == enrollmentId)
+            .OrderByDescending(r => r.UpdatedAt)
+            .ToListAsync();
+    }
+
     public async Task<ScormRuntimeState> GetStateAsync(int enrollmentId, int packageId)
     {
         var record = await _db.Set<ScormRecord>().AsNoTracking()

@@ -1,8 +1,24 @@
 using Microsoft.EntityFrameworkCore;
+using OpenLearning.Auth.Models;
 using OpenLearning.CourseManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 
 namespace OpenLearning.Enrollment.Services;
+
+/// <summary>
+/// One row of the instructor's course roster: enrollment metadata plus
+/// the student's progress and last activity timestamp.
+/// </summary>
+public sealed record RosterEntry(
+    int EnrollmentId,
+    string StudentId,
+    string StudentName,
+    string StudentEmail,
+    DateTime EnrolledAt,
+    int ProgressPercent,
+    int CompletedLessons,
+    int TotalLessons,
+    DateTime? LastAccessedAt);
 
 public class EnrollmentService
 {
@@ -62,5 +78,27 @@ public class EnrollmentService
         _db.Set<EnrollmentEntity>().Remove(enrollment);
         await _db.SaveChangesAsync();
         return true;
+    }
+
+    /// <summary>
+    /// Enrollments (with student) for the given course plus the total lesson
+    /// count of the course. Per-student completion/last-access is composed by
+    /// the caller from <see cref="OpenLearning.Progress.Services.ProgressService"/>
+    /// — this method stays Progress-free to keep the module graph acyclic.
+    /// </summary>
+    public async Task<(List<EnrollmentEntity> Enrollments, int TotalLessons)> GetEnrollmentsForRosterAsync(int courseId)
+    {
+        var enrollments = await _db.Set<EnrollmentEntity>().AsNoTracking()
+            .Include(e => e.Student)
+            .Where(e => e.CourseId == courseId)
+            .OrderBy(e => e.EnrolledAt)
+            .ToListAsync();
+
+        var totalLessons = await _db.Set<Module>().AsNoTracking()
+            .Where(m => m.CourseId == courseId)
+            .SelectMany(m => m.Lessons)
+            .CountAsync();
+
+        return (enrollments, totalLessons);
     }
 }

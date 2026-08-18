@@ -102,6 +102,37 @@ public class AttemptService
             .OrderByDescending(a => a.CompletedAt)
             .ToListAsync();
 
+    /// <summary>For each quiz in a course, the attempt count and best score of one student.</summary>
+    public async Task<List<(int Id, string Title, int Attempts, int BestPercent)>> GetQuizzesWithAttemptsForStudentAsync(
+        string studentId, int courseId)
+    {
+        var quizzes = await _db.Set<Quiz>().AsNoTracking()
+            .Where(q => q.CourseId == courseId)
+            .OrderBy(q => q.OrderIndex)
+            .Select(q => new { q.Id, q.Title })
+            .ToListAsync();
+        if (quizzes.Count == 0)
+        {
+            return new List<(int, string, int, int)>();
+        }
+
+        var attempts = await _db.Set<QuizAttempt>().AsNoTracking()
+            .Where(a => a.StudentId == studentId && quizzes.Select(q => q.Id).Contains(a.QuizId))
+            .Select(a => new { a.QuizId, a.Score, a.MaxScore })
+            .ToListAsync();
+
+        return quizzes.Select(q => new
+        {
+            q.Id,
+            q.Title,
+            Attempts = attempts.Count(a => a.QuizId == q.Id),
+            BestPercent = attempts.Where(a => a.QuizId == q.Id && a.MaxScore > 0)
+                .Select(a => (int)Math.Round(a.Score * 100.0 / a.MaxScore))
+                .DefaultIfEmpty(0)
+                .Max(),
+        }).Select(x => (x.Id, x.Title, x.Attempts, x.BestPercent)).ToList();
+    }
+
     public Task<QuizAttempt?> GetAttemptAsync(int attemptId, string viewerId)
         => _db.Set<QuizAttempt>().AsNoTracking()
             .Include(a => a.Quiz).ThenInclude(q => q!.Course)

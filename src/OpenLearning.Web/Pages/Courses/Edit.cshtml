@@ -5,10 +5,13 @@
     var course = Model.Course!;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">Edit course</h1>
-    <a class="btn btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">View course page</a>
-</div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Edit course</h1>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" asp-page="/Courses/Roster/Index" asp-route-id="@course.Id">Roster</a>
+            <a class="btn btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">View course page</a>
+        </div>
+    </div>
 
 <form method="post" class="card shadow-sm mb-4">
     <div class="card-body p-4">

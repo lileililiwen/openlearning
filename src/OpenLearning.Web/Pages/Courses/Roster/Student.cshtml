@@ -1,0 +1,140 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Roster.StudentModel
+@{
+    ViewData["Title"] = "Student Progress";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">@Model.Student!.DisplayName</h1>
+        <p class="text-muted mb-0">@Model.Student.Email · in @Model.CourseTitle</p>
+    </div>
+    <a class="btn btn-outline-primary" asp-page="/Courses/Roster/Index" asp-route-id="@Model.CourseId">Back to roster</a>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Progress</div>
+                <div class="h2 mb-0">@Model.ProgressPercent%</div>
+                <div class="progress progress-thin mt-2">
+                    <div class="progress-bar" role="progressbar" style="width: @Model.ProgressPercent%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Enrolled</div>
+                <div class="h2 mb-0">@Model.EnrolledAt.ToString("yyyy-MM-dd")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Last activity</div>
+                <div class="h2 mb-0">@(Model.LastAccessedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white"><strong>Lessons</strong></div>
+    @if (Model.Lessons.Count == 0)
+    {
+        <div class="card-body text-muted">This course has no lessons.</div>
+    }
+    else
+    {
+        <ul class="list-group list-group-flush">
+            @foreach (var lesson in Model.Lessons)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a asp-page="/Courses/Lessons/View" asp-route-id="@lesson.Id">@lesson.Title</a>
+                    @if (lesson.IsCompleted)
+                    {
+                        <span class="badge badge-published">Completed</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Not completed</span>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white"><strong>Quizzes</strong></div>
+    @if (Model.Quizzes.Count == 0)
+    {
+        <div class="card-body text-muted">This course has no quizzes.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th class="text-center">Attempts</th>
+                        <th class="text-center">Best score</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var q in Model.Quizzes)
+                    {
+                        <tr>
+                            <td>@q.Title</td>
+                            <td class="text-center">@q.Attempts</td>
+                            <td class="text-center">@(q.Attempts == 0 ? "—" : q.BestPercent + "%")</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Quizzes/Results" asp-route-id="@q.Id">View attempts</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white"><strong>SCORM</strong></div>
+    @if (Model.Scorm.Count == 0)
+    {
+        <div class="card-body text-muted">No SCORM activity yet.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Package</th>
+                        <th>Status</th>
+                        <th>Score</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Scorm)
+                    {
+                        <tr>
+                            <td>@row.Title</td>
+                            <td>@row.Status</td>
+                            <td>@(string.IsNullOrEmpty(row.ScoreRaw) ? "—" : row.ScoreRaw)</td>
+                            <td class="text-muted small">@row.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
