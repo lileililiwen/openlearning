@@ -108,7 +108,8 @@ public class IndexModel : PageModel
                     NotificationType.Certificate,
                     $"Certificate earned: {course.Title}",
                     "Congratulations! View and print your certificate.",
-                    $"/Certificates/View?id={certificate.Id}");
+                    $"/Certificates/View?id={certificate.Id}",
+                    new Dictionary<string, string> { ["CourseTitle"] = course.Title });
             }
         }
 

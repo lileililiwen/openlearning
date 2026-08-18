@@ -95,7 +95,12 @@ public class CreateModel : PageModel
                 NotificationType.Lesson,
                 $"New lesson in {course.Title}",
                 $"{Input.Title} has been published.",
-                $"/Courses/Details?id={courseId}");
+                $"/Courses/Details?id={courseId}",
+                new Dictionary<string, string>
+                {
+                    ["CourseTitle"] = course.Title,
+                    ["LessonTitle"] = Input.Title,
+                });
         }
 
         return RedirectToPage("/Courses/Edit", new { id = courseId });

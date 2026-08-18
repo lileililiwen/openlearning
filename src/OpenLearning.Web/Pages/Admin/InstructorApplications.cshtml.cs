@@ -51,7 +51,12 @@ public class InstructorApplicationsModel : PageModel
                 NotificationType.Application,
                 "Instructor application approved",
                 "You can now create and publish courses. Welcome aboard!",
-                "/Courses/Create");
+                "/Courses/Create",
+                new Dictionary<string, string>
+                {
+                    ["Status"] = "approved",
+                    ["Reason"] = "You can now create and publish courses. Welcome aboard!",
+                });
             await _logs.RecordAsync(
                 reviewerId,
                 User.Identity?.Name ?? string.Empty,
@@ -77,7 +82,12 @@ public class InstructorApplicationsModel : PageModel
                 NotificationType.Application,
                 "Instructor application not approved",
                 $"Reason: {reason ?? "Not specified."}",
-                null);
+                null,
+                new Dictionary<string, string>
+                {
+                    ["Status"] = "not approved",
+                    ["Reason"] = $"Reason: {reason ?? "Not specified."}",
+                });
             await _logs.RecordAsync(
                 reviewerId,
                 User.Identity?.Name ?? string.Empty,

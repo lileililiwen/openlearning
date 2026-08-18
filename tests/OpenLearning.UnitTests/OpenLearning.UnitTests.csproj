@@ -31,6 +31,7 @@
     <ProjectReference Include="..\..\src\OpenLearning.Certificates\OpenLearning.Certificates.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Data\OpenLearning.Data.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Logging\OpenLearning.Logging.csproj" />
+    <ProjectReference Include="..\..\src\OpenLearning.SystemConfig\OpenLearning.SystemConfig.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Web\OpenLearning.Web.csproj" />
   </ItemGroup>
 

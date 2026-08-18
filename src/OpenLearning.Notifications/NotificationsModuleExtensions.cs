@@ -12,6 +12,7 @@ public static class NotificationsModuleExtensions
         services.AddScoped<NotificationService>();
         services.AddScoped<AnnouncementService>();
         services.AddSingleton<IEmailSender, NoopEmailSender>();
+        services.AddScoped<INotificationTemplateRenderer, NullNotificationTemplateRenderer>();
         return services;
     }
 }

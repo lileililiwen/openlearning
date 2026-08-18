@@ -5,6 +5,7 @@ using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Enrollment.Services;
 using OpenLearning.Ratings.Services;
+using OpenLearning.SystemConfig.Services;
 
 namespace OpenLearning.Web.Pages;
 
@@ -13,12 +14,18 @@ public class IndexModel : PageModel
     private readonly CourseService _courses;
     private readonly EnrollmentService _enrollments;
     private readonly ReviewService _reviews;
+    private readonly SystemConfigService _config;
 
-    public IndexModel(CourseService courses, EnrollmentService enrollments, ReviewService reviews)
+    public IndexModel(
+        CourseService courses,
+        EnrollmentService enrollments,
+        ReviewService reviews,
+        SystemConfigService config)
     {
         _courses = courses;
         _enrollments = enrollments;
         _reviews = reviews;
+        _config = config;
     }
 
     public CourseSearchResult? Results { get; set; }
@@ -74,6 +81,7 @@ public class IndexModel : PageModel
             _ => CourseSort.Newest,
         };
         CurrentPage = Math.Max(1, page ?? 1);
+        PageSize = Math.Clamp(await _config.GetIntAsync("Catalog.PageSize", 9), 1, 50);
 
         Results = await _courses.SearchAsync(Search, Category, sortKey, CurrentPage, PageSize);
         Categories = await _courses.GetCategoriesAsync();

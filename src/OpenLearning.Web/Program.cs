@@ -21,6 +21,7 @@ using OpenLearning.Scorm;
 using OpenLearning.Scorm.Services;
 using OpenLearning.Storage;
 using OpenLearning.Storage.Services;
+using OpenLearning.SystemConfig;
 using OpenLearning.UserManagement;
 using OpenLearning.Web.Scorm;
 
@@ -58,6 +59,8 @@ builder.Services.AddStorageModule(
     builder.Configuration["Storage:Root"]
     ?? Path.Combine(builder.Environment.ContentRootPath, "storage"));
 builder.Services.AddLoggingModule(builder.Configuration.GetValue("Logging:RetentionDays", 90));
+// After AddNotificationsModule so the template renderer override wins.
+builder.Services.AddSystemConfigModule();
 builder.Services.AddSignalR();
 
 // Optional email channel: only used when Email:Enabled is true.

@@ -60,7 +60,12 @@ public class AnnouncementService
             NotificationType.Announcement,
             $"New announcement in {courseTitle}",
             trimmed,
-            $"/Courses/Details?id={courseId}");
+            $"/Courses/Details?id={courseId}",
+            new Dictionary<string, string>
+            {
+                ["CourseTitle"] = courseTitle,
+                ["Message"] = trimmed,
+            });
 
         return (true, null);
     }

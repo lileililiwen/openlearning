@@ -9,22 +9,26 @@ public class NotificationService
 {
     private readonly DbContext _db;
     private readonly IEmailSender _email;
+    private readonly INotificationTemplateRenderer _renderer;
 
-    public NotificationService(DbContext db, IEmailSender email)
+    public NotificationService(DbContext db, IEmailSender email, INotificationTemplateRenderer renderer)
     {
         _db = db;
         _email = email;
+        _renderer = renderer;
     }
 
     public async Task CreateAsync(
-        string userId, NotificationType type, string title, string body, string? link = null)
+        string userId, NotificationType type, string title, string body, string? link = null,
+        IReadOnlyDictionary<string, string>? values = null)
     {
+        var (finalTitle, finalBody) = await RenderAsync(type, title, body, values);
         _db.Set<Notification>().Add(new Notification
         {
             UserId = userId,
             Type = type,
-            Title = title,
-            Body = body,
+            Title = finalTitle,
+            Body = finalBody,
             Link = link,
         });
         await _db.SaveChangesAsync();
@@ -38,7 +42,7 @@ public class NotificationService
                 .FirstOrDefaultAsync();
             if (!string.IsNullOrWhiteSpace(emailAddress))
             {
-                await _email.SendAsync(emailAddress, $"[OpenLearning] {title}", $"{body}\n\n{link ?? string.Empty}");
+                await _email.SendAsync(emailAddress, $"[OpenLearning] {finalTitle}", $"{finalBody}\n\n{link ?? string.Empty}");
             }
         }
         catch
@@ -49,7 +53,8 @@ public class NotificationService
 
     /// <summary>Creates one notification per user id (used for course-wide events).</summary>
     public async Task CreateForManyAsync(
-        IEnumerable<string> userIds, NotificationType type, string title, string body, string? link = null)
+        IEnumerable<string> userIds, NotificationType type, string title, string body, string? link = null,
+        IReadOnlyDictionary<string, string>? values = null)
     {
         var ids = userIds.Distinct().ToList();
         if (ids.Count == 0)
@@ -57,14 +62,15 @@ public class NotificationService
             return;
         }
 
+        var (finalTitle, finalBody) = await RenderAsync(type, title, body, values);
         foreach (var userId in ids)
         {
             _db.Set<Notification>().Add(new Notification
             {
                 UserId = userId,
                 Type = type,
-                Title = title,
-                Body = body,
+                Title = finalTitle,
+                Body = finalBody,
                 Link = link,
             });
         }
@@ -81,7 +87,7 @@ public class NotificationService
                 var emailAddress = emails.FirstOrDefault(e => e.Id == userId)?.Email;
                 if (!string.IsNullOrWhiteSpace(emailAddress))
                 {
-                    await _email.SendAsync(emailAddress, $"[OpenLearning] {title}", $"{body}\n\n{link ?? string.Empty}");
+                    await _email.SendAsync(emailAddress, $"[OpenLearning] {finalTitle}", $"{finalBody}\n\n{link ?? string.Empty}");
                 }
             }
         }
@@ -89,6 +95,13 @@ public class NotificationService
         {
             // Best-effort.
         }
+    }
+
+    private async Task<(string Title, string Body)> RenderAsync(
+        NotificationType type, string title, string body, IReadOnlyDictionary<string, string>? values)
+    {
+        var rendered = await _renderer.RenderAsync(type, title, body, values);
+        return rendered ?? (title, body);
     }
 
     public Task<List<Notification>> GetRecentAsync(string userId, int count = 30)

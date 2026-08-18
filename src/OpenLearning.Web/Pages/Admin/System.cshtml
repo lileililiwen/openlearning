@@ -1,0 +1,79 @@
+@page
+@model OpenLearning.Web.Pages.Admin.SystemModel
+@{
+    ViewData["Title"] = "Admin · System";
+}
+
+<div class="mb-4">
+    <h1 class="h3 mb-1">Admin — System</h1>
+    <p class="text-muted mb-0">Configure platform parameters and notification templates.</p>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Settings</h2>
+                <form method="post" asp-page-handler="Settings">
+                    @foreach (var item in Model.Settings)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label" for="setting-@item.Key">@item.Label</label>
+                            <input id="setting-@item.Key" name="settings[@item.Key]" value="@item.Value" class="form-control" />
+                            <div class="form-text">@item.Description</div>
+                        </div>
+                    }
+                    <button type="submit" class="btn btn-primary">Save settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-1">Notification templates</h2>
+                <p class="text-muted small mb-3">
+                    Placeholders like <code>{CourseTitle}</code>, <code>{LessonTitle}</code>, <code>{QuizTitle}</code>,
+                    <code>{Score}</code>, <code>{Status}</code>, <code>{Reason}</code>, and <code>{Message}</code> are
+                    replaced at notification time. Inactive templates fall back to the default copy.
+                </p>
+                <form method="post" asp-page-handler="Templates">
+                    @for (var i = 0; i < Model.TemplatesInput.Count; i++)
+                    {
+                        <div class="border rounded p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong>@Model.TemplatesInput[i].Type</strong>
+                                <div class="form-check form-switch mb-0">
+                                    <input type="checkbox" class="form-check-input" id="active-@i"
+                                           name="TemplatesInput[@i].IsActive" value="true" @(Model.TemplatesInput[i].IsActive ? "checked" : "") />
+                                    <label class="form-check-label" for="active-@i">Active</label>
+                                    <input type="hidden" name="TemplatesInput[@i].IsActive" value="false" />
+                                </div>
+                            </div>
+                            <input type="hidden" name="TemplatesInput[@i].Id" value="@Model.TemplatesInput[i].Id" />
+                            <input type="hidden" name="TemplatesInput[@i].Type" value="@Model.TemplatesInput[i].Type" />
+                            <div class="mb-2">
+                                <input name="TemplatesInput[@i].Title" value="@Model.TemplatesInput[i].Title"
+                                       class="form-control" placeholder="Title" />
+                            </div>
+                            <div>
+                                <textarea name="TemplatesInput[@i].Body" rows="2" class="form-control"
+                                          placeholder="Body">@Model.TemplatesInput[i].Body</textarea>
+                            </div>
+                        </div>
+                    }
+                    <button type="submit" class="btn btn-primary">Save templates</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

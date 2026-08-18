@@ -12,6 +12,7 @@ using OpenLearning.Progress.Models;
 using OpenLearning.Ratings.Models;
 using OpenLearning.Scorm.Models;
 using OpenLearning.Storage.Models;
+using OpenLearning.SystemConfig.Models;
 using OpenLearning.UserManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 
@@ -72,6 +73,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<ErrorLog> ErrorLogs => Set<ErrorLog>();
 
+    public DbSet<Setting> Settings => Set<Setting>();
+
+    public DbSet<NotificationTemplate> NotificationTemplates => Set<NotificationTemplate>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -93,5 +98,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Notification).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(StoredFile).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(OperationLog).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Setting).Assembly);
     }
 }

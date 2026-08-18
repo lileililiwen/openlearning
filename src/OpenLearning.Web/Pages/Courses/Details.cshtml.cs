@@ -130,7 +130,8 @@ public class DetailsModel : PageModel
                         NotificationType.Certificate,
                         $"Certificate earned: {course.Title}",
                         "Congratulations! View and print your certificate.",
-                        $"/Certificates/View?id={Certificate.Id}");
+                        $"/Certificates/View?id={Certificate.Id}",
+                        new Dictionary<string, string> { ["CourseTitle"] = course.Title });
                 }
 
                 UserReview = await _reviews.GetUserReviewAsync(userId, id);

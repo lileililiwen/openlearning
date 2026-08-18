@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -114,7 +115,12 @@ public class TakeModel : PageModel
                 NotificationType.Quiz,
                 $"Quiz submitted: {quiz.Title}",
                 $"Your score is {percent}%. View the result below.",
-                $"/Courses/Quizzes/Result?id={attemptId}");
+                $"/Courses/Quizzes/Result?id={attemptId}",
+                new Dictionary<string, string>
+                {
+                    ["QuizTitle"] = quiz.Title,
+                    ["Score"] = percent.ToString(CultureInfo.InvariantCulture),
+                });
         }
 
         return RedirectToPage("/Courses/Quizzes/Result", new { id = attemptId });
