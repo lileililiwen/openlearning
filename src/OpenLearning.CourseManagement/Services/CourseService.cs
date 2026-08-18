@@ -126,4 +126,41 @@ public class CourseService
             .Where(m => m.CourseId == courseId)
             .SelectMany(m => m.Lessons)
             .CountAsync();
+
+    /// <summary>
+    /// Published courses matching any of the given categories, newest first,
+    /// excluding the supplied course ids. Used for dashboard recommendations.
+    /// </summary>
+    public async Task<List<Course>> GetRecommendationsAsync(
+        List<string> categories, List<int> excludeCourseIds, int count)
+    {
+        var normalized = categories.Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList();
+        if (normalized.Count == 0)
+        {
+            return new List<Course>();
+        }
+
+        return await _db.Set<Course>().AsNoTracking()
+            .Include(c => c.Instructor)
+            .Where(c => c.Status == CourseStatus.Published
+                && normalized.Contains(c.Category)
+                && !excludeCourseIds.Contains(c.Id))
+            .OrderByDescending(c => c.CreatedAt)
+            .Take(count)
+            .ToListAsync();
+    }
+
+    public async Task<(int Draft, int Published)> GetCourseCountsAsync()
+    {
+        var drafts = await _db.Set<Course>().CountAsync(c => c.Status == CourseStatus.Draft);
+        var published = await _db.Set<Course>().CountAsync(c => c.Status == CourseStatus.Published);
+        return (drafts, published);
+    }
+
+    public Task<List<Course>> GetRecentCoursesAsync(int count)
+        => _db.Set<Course>().AsNoTracking()
+            .Include(c => c.Instructor)
+            .OrderByDescending(c => c.CreatedAt)
+            .Take(count)
+            .ToListAsync();
 }

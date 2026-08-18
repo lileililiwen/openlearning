@@ -23,6 +23,12 @@ public class EnrollmentService
     public Task<bool> IsEnrolledAsync(string studentId, int courseId)
         => _db.Set<EnrollmentEntity>().AnyAsync(e => e.StudentId == studentId && e.CourseId == courseId);
 
+    public Task<int> GetEnrollmentCountAsync(int courseId)
+        => _db.Set<EnrollmentEntity>().CountAsync(e => e.CourseId == courseId);
+
+    public Task<int> GetTotalEnrollmentsAsync()
+        => _db.Set<EnrollmentEntity>().CountAsync();
+
     public async Task<(bool Ok, string? Error)> EnrollAsync(string studentId, int courseId)
     {
         var course = await _db.Set<Course>().AsNoTracking()

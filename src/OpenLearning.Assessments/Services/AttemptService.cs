@@ -108,4 +108,40 @@ public class AttemptService
             .Include(a => a.Answers).ThenInclude(x => x.Question).ThenInclude(q => q!.AnswerOptions)
             .FirstOrDefaultAsync(a => a.Id == attemptId
                 && (a.StudentId == viewerId || a.Quiz!.Course!.InstructorId == viewerId));
+
+    /// <summary>
+    /// Number of quizzes in a course vs how many distinct quizzes the Student
+    /// has attempted at least once.
+    /// </summary>
+    public async Task<(int TotalQuizzes, int AttemptedQuizzes)> GetQuizStatusAsync(string studentId, int courseId)
+    {
+        var total = await _db.Set<Quiz>().CountAsync(q => q.CourseId == courseId);
+        var attempted = await _db.Set<QuizAttempt>()
+            .Where(a => a.StudentId == studentId && a.Quiz!.CourseId == courseId)
+            .Select(a => a.QuizId)
+            .Distinct()
+            .CountAsync();
+        return (total, attempted);
+    }
+
+    /// <summary>
+    /// Percentage of quiz attempts in a course that scored at least 70% of the
+    /// maximum (the platform's default pass threshold); null when no attempts
+    /// exist yet.
+    /// </summary>
+    public async Task<int?> GetCourseQuizPassRateAsync(int courseId)
+    {
+        var attempts = await _db.Set<QuizAttempt>().AsNoTracking()
+            .Where(a => a.Quiz!.CourseId == courseId)
+            .Select(a => new { a.Score, a.MaxScore })
+            .ToListAsync();
+        if (attempts.Count == 0)
+        {
+            return null;
+        }
+
+        const double passThreshold = 0.7;
+        var passed = attempts.Count(a => a.MaxScore > 0 && a.Score * 1.0 / a.MaxScore >= passThreshold);
+        return (int)Math.Round(passed * 100.0 / attempts.Count);
+    }
 }

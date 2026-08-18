@@ -1,0 +1,148 @@
+@page
+@model OpenLearning.Web.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Platform Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="display-6 fw-bold mb-1">Platform Dashboard</h1>
+        <p class="text-muted mb-0">Platform-wide metrics at a glance.</p>
+    </div>
+    <a class="btn btn-outline-primary" asp-page="/Admin/Courses">Manage courses</a>
+</div>
+
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4">
+    <div class="col">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="h2 mb-0">@Model.StudentCount</div>
+                <div class="text-muted small">Students</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="h2 mb-0">@Model.InstructorCount</div>
+                <div class="text-muted small">Instructors</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="h2 mb-0">@Model.PublishedCourseCount<span class="text-muted fs-6">/@Model.DraftCourseCount</span></div>
+                <div class="text-muted small">Courses (published/draft)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="h2 mb-0">@Model.EnrollmentCount</div>
+                <div class="text-muted small">Enrollments</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="h2 mb-0">@Model.PaidRevenue.ToString("C0")</div>
+                <div class="text-muted small">Paid revenue</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <div class="h2 mb-0">@(Model.CompletionRate is int rate ? rate + "%" : "—")</div>
+                <div class="text-muted small">Completion rate</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="h4 mb-3">Recent activity</h2>
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white"><strong>Recent signups</strong></div>
+            <ul class="list-group list-group-flush">
+                @if (Model.RecentSignups.Count == 0)
+                {
+                    <li class="list-group-item text-muted">No users yet.</li>
+                }
+                else
+                {
+                    @foreach (var user in Model.RecentSignups)
+                    {
+                        <li class="list-group-item">
+                            <div class="fw-semibold">@user.DisplayName</div>
+                            <div class="text-muted small">@user.Email · @user.CreatedAt.ToString("yyyy-MM-dd")</div>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white"><strong>Recent courses</strong></div>
+            <ul class="list-group list-group-flush">
+                @if (Model.RecentCourses.Count == 0)
+                {
+                    <li class="list-group-item text-muted">No courses yet.</li>
+                }
+                else
+                {
+                    @foreach (var course in Model.RecentCourses)
+                    {
+                        <li class="list-group-item">
+                            <a class="fw-semibold text-decoration-none" asp-page="/Courses/Details" asp-route-id="@course.Id">
+                                @course.Title
+                            </a>
+                            <div class="text-muted small">
+                                @course.Category
+                                @if (course.Status == CourseStatus.Draft)
+                                {
+                                    <span class="badge badge-draft ms-1">Draft</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-published ms-1">Published</span>
+                                }
+                            </div>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white"><strong>Recent orders</strong></div>
+            <ul class="list-group list-group-flush">
+                @if (Model.RecentOrders.Count == 0)
+                {
+                    <li class="list-group-item text-muted">No paid orders yet.</li>
+                }
+                else
+                {
+                    @foreach (var order in Model.RecentOrders)
+                    {
+                        <li class="list-group-item">
+                            <a class="fw-semibold text-decoration-none" asp-page="/Courses/Details" asp-route-id="@order.CourseId">
+                                @(order.Course?.Title ?? $"Course #{order.CourseId}")
+                            </a>
+                            <div class="text-muted small">
+                                @order.Amount.ToString("C") · @(order.Student?.Email ?? "Unknown")
+                                · @(order.PaidAt?.ToString("yyyy-MM-dd") ?? order.CreatedAt.ToString("yyyy-MM-dd"))
+                            </div>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+    </div>
+</div>

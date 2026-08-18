@@ -26,11 +26,17 @@
                     @if (User.IsInRole(Roles.Student))
                     {
                         <li class="nav-item">
+                            <a class="nav-link" asp-page="/Dashboard/Index">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" asp-page="/MyCourses">My Courses</a>
                         </li>
                     }
                     @if (User.IsInRole(Roles.Instructor))
                     {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Dashboard/Teacher">Dashboard</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Courses/Manage">My Courses</a>
                         </li>
@@ -41,7 +47,10 @@
                     @if (User.IsInRole(Roles.Admin))
                     {
                         <li class="nav-item">
-                            <a class="nav-link" asp-page="/Admin/Courses">Admin</a>
+                            <a class="nav-link" asp-page="/Admin/Index">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Admin/Courses">Courses</a>
                         </li>
                     }
                 </ul>

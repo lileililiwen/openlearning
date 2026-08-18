@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using OpenLearning.Auth.Models;
 
 namespace OpenLearning.Auth.Services;
@@ -42,4 +43,15 @@ public class AccountService
 
     public Task SignOutAsync()
         => _signInManager.SignOutAsync();
+
+    /// <summary>Number of users holding the given role (used for admin KPIs).</summary>
+    public async Task<int> CountUsersInRoleAsync(string role)
+        => (await _userManager.GetUsersInRoleAsync(role)).Count;
+
+    public async Task<List<ApplicationUser>> GetRecentSignupsAsync(int count)
+        => await _userManager.Users
+            .AsNoTracking()
+            .OrderByDescending(u => u.CreatedAt)
+            .Take(count)
+            .ToListAsync();
 }

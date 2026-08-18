@@ -114,4 +114,29 @@ public class OrderService
             .Include(o => o.Student)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
+
+    public async Task<decimal> GetPaidRevenueForCourseAsync(int courseId)
+    {
+        var sum = await _db.Set<Order>()
+            .Where(o => o.CourseId == courseId && o.Status == OrderStatus.Paid)
+            .SumAsync(o => (decimal?)o.Amount);
+        return sum ?? 0m;
+    }
+
+    public async Task<decimal> GetTotalPaidRevenueAsync()
+    {
+        var sum = await _db.Set<Order>()
+            .Where(o => o.Status == OrderStatus.Paid)
+            .SumAsync(o => (decimal?)o.Amount);
+        return sum ?? 0m;
+    }
+
+    public Task<List<Order>> GetRecentOrdersAsync(int count)
+        => _db.Set<Order>().AsNoTracking()
+            .Where(o => o.Status == OrderStatus.Paid)
+            .Include(o => o.Course)
+            .Include(o => o.Student)
+            .OrderByDescending(o => o.PaidAt ?? o.CreatedAt)
+            .Take(count)
+            .ToListAsync();
 }

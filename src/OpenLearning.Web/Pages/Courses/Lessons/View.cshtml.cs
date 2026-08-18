@@ -70,6 +70,7 @@ public class ViewModel : PageModel
             CanTrackProgress = true;
             var completed = await _progress.GetCompletedLessonIdsAsync(userId, course.Id);
             IsCompleted = completed.Contains(id);
+            await _progress.RecordAccessAsync(userId, course.Id, id);
         }
 
         return Page();

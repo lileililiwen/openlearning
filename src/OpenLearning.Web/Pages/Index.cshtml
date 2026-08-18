@@ -4,6 +4,17 @@
     ViewData["Title"] = "Course Catalog";
 }
 
+@if (!User.Identity?.IsAuthenticated == true)
+{
+    <div class="alert alert-light border d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <strong>Welcome to OpenLearning</strong>
+            <span class="text-muted d-block">Sign in to track your progress and get a personalized dashboard.</span>
+        </div>
+        <a class="btn btn-primary" asp-page="/Auth/Login">Sign in</a>
+    </div>
+}
+
 <div class="row g-4">
     <div class="col-lg-8">
         <h1 class="display-6 fw-bold mb-1">Course Catalog</h1>

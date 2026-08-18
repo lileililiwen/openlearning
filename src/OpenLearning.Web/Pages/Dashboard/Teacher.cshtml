@@ -1,0 +1,89 @@
+@page
+@model OpenLearning.Web.Pages.Dashboard.TeacherModel
+@{
+    ViewData["Title"] = "Teacher Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="display-6 fw-bold mb-1">Teacher Dashboard</h1>
+        <p class="text-muted mb-0">Teaching statistics across your courses.</p>
+    </div>
+    <a class="btn btn-primary" asp-page="/Courses/Create">New Course</a>
+</div>
+
+@if (Model.Courses.Count == 0)
+{
+    <div class="alert alert-info">
+        You have not created any courses yet.
+        <a asp-page="/Courses/Create">Create your first course</a> to get started.
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Course</th>
+                        <th class="text-center">Enrolled</th>
+                        <th class="text-end">Revenue</th>
+                        <th class="text-center">Completion</th>
+                        <th class="text-center">Quiz pass rate</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var course in Model.Courses)
+                    {
+                        <tr>
+                            <td>
+                                <a class="fw-semibold text-decoration-none" asp-page="/Courses/Details" asp-route-id="@course.CourseId">
+                                    @course.CourseTitle
+                                </a>
+                                <div class="text-muted small">
+                                    @course.Category
+                                    @if (course.Status == CourseStatus.Draft)
+                                    {
+                                        <span class="badge badge-draft ms-1">Draft</span>
+                                    }
+                                </div>
+                            </td>
+                            <td class="text-center">@course.EnrollmentCount</td>
+                            <td class="text-end">
+                                @if (course.IsFree)
+                                {
+                                    <span class="text-muted">Free</span>
+                                }
+                                else
+                                {
+                                    @course.PaidRevenue.ToString("C")
+                                }
+                            </td>
+                            <td class="text-center">
+                                @(course.CompletionRate is int cr ? cr + "%" : "—")
+                            </td>
+                            <td class="text-center">
+                                @(course.QuizPassRate is int qp ? qp + "%" : "—")
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1">
+                                    <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Edit" asp-route-id="@course.CourseId">Edit</a>
+                                    <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Orders" asp-route-id="@course.CourseId">Orders</a>
+                                    <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Edit" asp-route-id="@course.CourseId">Quizzes</a>
+                                    <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Chat" asp-route-id="@course.CourseId">Chat</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <p class="text-muted small mt-3 mb-0">
+        Completion rate is the share of enrolled students who finished every lesson;
+        quiz pass rate is the share of attempts scoring at least 70%.
+    </p>
+}

@@ -1,0 +1,160 @@
+@page
+@model OpenLearning.Web.Pages.Dashboard.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="display-6 fw-bold mb-1">Welcome back, @Model.DisplayName</h1>
+        <p class="text-muted mb-0">Here is where you left off.</p>
+    </div>
+    <a class="btn btn-outline-primary" asp-page="/Index">Browse catalog</a>
+</div>
+
+@if (Model.CourseItems.Count == 0)
+{
+    <div class="alert alert-info">
+        You are not enrolled in any courses yet.
+        <a asp-page="/Index">Browse the catalog</a> to find something to learn.
+    </div>
+}
+else
+{
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <strong>Continue learning</strong>
+                </div>
+                @if (Model.ContinueLearning.Count == 0)
+                {
+                    <div class="card-body text-muted">
+                        You have no unfinished lessons. Pick a course below to keep going.
+                    </div>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var item in Model.ContinueLearning)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@item.CourseTitle</strong>
+                                    <span class="text-muted small d-block">@item.LessonTitle</span>
+                                </div>
+                                <a class="btn btn-sm btn-primary"
+                                   asp-page="/Courses/Lessons/View" asp-route-id="@item.LessonId">Continue</a>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <strong>Learning summary</strong>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Enrolled courses</span>
+                        <strong>@Model.CourseItems.Count</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Quizzes attempted</span>
+                        <strong>
+                            @(Model.CourseItems.Sum(c => c.AttemptedQuizzes)) /
+                            @(Model.CourseItems.Sum(c => c.TotalQuizzes))
+                        </strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Certificates earned</span>
+                        <strong>0</strong>
+                    </div>
+                    <hr />
+                    <p class="small text-muted mb-0">
+                        Certificates are issued once a course is completed at 100%.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="h4 mb-3">My courses</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+        @foreach (var item in Model.CourseItems)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a class="text-decoration-none" asp-page="/Courses/Details" asp-route-id="@item.CourseId">@item.CourseTitle</a>
+                        </h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            @item.Category
+                            @if (!string.IsNullOrEmpty(item.InstructorName))
+                            {
+                                <span>· by @item.InstructorName</span>
+                            }
+                        </h6>
+
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Progress</span>
+                            <span>@item.ProgressPercent% (@item.CompletedLessons/@item.TotalLessons lessons)</span>
+                        </div>
+                        <div class="progress progress-thin mb-3">
+                            <div class="progress-bar" role="progressbar" style="width: @item.ProgressPercent%"></div>
+                        </div>
+
+                        <div class="small text-muted">
+                            @if (item.TotalQuizzes > 0)
+                            {
+                                <span>Quizzes: @item.AttemptedQuizzes/@item.TotalQuizzes attempted</span>
+                            }
+                            else
+                            {
+                                <span>No quizzes</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@item.CourseId">Continue</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (Model.Recommendations.Count > 0)
+{
+    <h2 class="h4 mb-3">Recommended for you</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var course in Model.Recommendations)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a class="text-decoration-none" asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a>
+                        </h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            @course.Category
+                            @if (course.Instructor is not null)
+                            {
+                                <span>· by @course.Instructor.DisplayName</span>
+                            }
+                        </h6>
+                        <p class="card-text">
+                            @(course.Description.Length > 140 ? course.Description[..140] + "…" : course.Description)
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">View course</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

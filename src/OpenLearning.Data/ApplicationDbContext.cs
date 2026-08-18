@@ -28,6 +28,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<LessonCompletion> LessonCompletions => Set<LessonCompletion>();
 
+    public DbSet<LessonAccess> LessonAccesses => Set<LessonAccess>();
+
     public DbSet<Quiz> Quizzes => Set<Quiz>();
 
     public DbSet<Question> Questions => Set<Question>();
@@ -56,6 +58,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Course).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(EnrollmentEntity).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LessonCompletion).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(LessonAccess).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Quiz).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Order).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(ScormPackage).Assembly);
