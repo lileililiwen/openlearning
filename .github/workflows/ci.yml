@@ -10,6 +10,11 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
+    env:
+      # SonarCloud integration is optional: the Sonar steps only run when
+      # SONAR_TOKEN is configured as a repository secret. Until then CI is
+      # the format/build/test gate on its own.
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,6 +27,10 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Install SonarScanner for .NET
+        if: env.SONAR_TOKEN != ''
+        run: dotnet tool install --global dotnet-sonarscanner
+
       - name: Restore
         run: dotnet restore
 
@@ -29,11 +38,32 @@ jobs:
         # Fails on any drift from the .editorconfig (deterministic formatting).
         run: dotnet format OpenLearning.sln --verify-no-changes --no-restore
 
+      - name: Sonar Begin
+        if: env.SONAR_TOKEN != ''
+        env:
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: dotnet sonarscanner begin
+          /k:"$SONAR_PROJECT_KEY"
+          /o:"$SONAR_ORG"
+          /d:sonar.host.url="$SONAR_HOST_URL"
+          /d:sonar.token="$SONAR_TOKEN"
+          /d:sonar.qualitygate.wait=true
+          /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml"
+          /d:sonar.coverage.exclusions="**/Migrations/**,**/*.Designer.cs,**/obj/**"
+
       - name: Build
         run: dotnet build OpenLearning.sln -c Release --no-restore /warnaserror -bl:build.binlog
 
-      - name: Test
-        run: dotnet test OpenLearning.sln -c Release --no-build
+      - name: Test (with OpenCover coverage for Sonar)
+        run: dotnet test OpenLearning.sln -c Release --no-build --collect:"XPlat Code Coverage" --settings Coverlet.runsettings --results-directory TestResults
+
+      - name: Sonar End
+        if: env.SONAR_TOKEN != ''
+        # sonar.qualitygate.wait=true makes this fail the pipeline when the
+        # new-code quality gate is red (bugs/vulnerabilities/smells/duplication/coverage).
+        run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
 
       - name: Upload build logs on failure
         if: failure()

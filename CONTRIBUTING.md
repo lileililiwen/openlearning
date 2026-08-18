@@ -43,6 +43,21 @@ The `CI` workflow runs on every push to `main` and every pull request:
 
 The workflow **must pass before merge** (required status check).
 
+## SonarCloud quality gate (optional, host-side setup)
+
+The CI workflow already contains the Sonar steps; they activate automatically once the repository secrets below are set. To turn on continuous analysis and the merge-request quality gate:
+
+1. Create a project on [SonarCloud](https://sonarcloud.io) for this repository.
+2. Add repository secrets so the `Sonar Begin/End` steps run:
+   - `SONAR_TOKEN` — a SonarCloud user/analysis token.
+   - `SONAR_ORG` — your SonarCloud organization key.
+   - `SONAR_PROJECT_KEY` — the project key from step 1.
+   - `SONAR_HOST_URL` — `https://sonarcloud.io` (or your self-hosted SonarQube URL).
+3. In the SonarCloud project, enable the **New Code** quality gate (e.g. coverage ≥ 80%, bugs/vulnerabilities/smells = 0, duplicated lines < 3%). Old code is measured but not gating.
+4. Add the Sonar analysis check to the required status checks on `main` (alongside the `build` check) so a red gate blocks merges.
+
+The `Sonar End` step runs with `sonar.qualitygate.wait=true`, so CI fails when the new-code gate is red. Coverage XML is produced by `dotnet test` via `Coverlet.runsettings` (OpenCover format). If the secrets are absent the pipeline runs the format/build/test gates only.
+
 ## Local Git hooks
 
 Husky.Net installs two local hooks automatically on the first `dotnet restore` (no manual setup):
