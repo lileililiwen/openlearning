@@ -83,6 +83,38 @@
     </ul>
 </div>
 
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>Quizzes (@Model.Quizzes.Count)</strong>
+        <a class="btn btn-sm btn-primary" asp-page="/Courses/Quizzes/Create" asp-route-courseId="@course.Id">Add quiz</a>
+    </div>
+    <ul class="list-group list-group-flush">
+        @if (Model.Quizzes.Count == 0)
+        {
+            <li class="list-group-item text-muted">
+                No quizzes yet. Add a quiz to assess your students.
+            </li>
+        }
+        else
+        {
+            foreach (var quiz in Model.Quizzes)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>@quiz.Title</strong>
+                        <span class="text-muted small ms-2">@quiz.Questions.Count question(s)</span>
+                    </div>
+                    <span class="d-inline-flex gap-2">
+                        <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Quizzes/Results" asp-route-id="@quiz.Id">Results</a>
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Quizzes/Edit" asp-route-id="@quiz.Id">Edit</a>
+                        <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Quizzes/Delete" asp-route-id="@quiz.Id">Delete</a>
+                    </span>
+                </li>
+            }
+        }
+    </ul>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }

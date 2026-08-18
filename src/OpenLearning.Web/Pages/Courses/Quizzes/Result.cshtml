@@ -1,0 +1,82 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Quizzes.ResultModel
+@{
+    ViewData["Title"] = "Quiz Result";
+    var attempt = Model.Attempt!;
+    var quiz = attempt.Quiz!;
+    var answers = attempt.Answers.OrderBy(a => a.Question!.OrderIndex).ToList();
+    var correctCount = answers.Count(a => a.IsCorrect);
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item">
+            <a asp-page="/Courses/Details" asp-route-id="@quiz.CourseId">@quiz.Course!.Title</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">@quiz.Title</li>
+    </ol>
+</nav>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h1 class="h4 mb-1">@quiz.Title — Result</h1>
+        <p class="text-muted small mb-3">Submitted @attempt.CompletedAt.ToString("yyyy-MM-dd HH:mm")</p>
+
+        <div class="display-6 fw-bold mb-2">@attempt.Score <span class="text-muted fs-4">/ @attempt.MaxScore</span></div>
+        <div class="mb-2">
+            @if (attempt.MaxScore > 0 && attempt.Score == attempt.MaxScore)
+            {
+                <span class="badge bg-success fs-6">Perfect score!</span>
+            }
+            else if (attempt.MaxScore > 0)
+            {
+                <span class="badge bg-primary fs-6">@correctCount of @answers.Count correct</span>
+            }
+        </div>
+        <div class="progress progress-thin">
+            <div class="progress-bar" role="progressbar"
+                 style="width: @(attempt.MaxScore > 0 ? (int)Math.Round(attempt.Score * 100.0 / attempt.MaxScore) : 0)%"></div>
+        </div>
+    </div>
+</div>
+
+@foreach (var answer in answers)
+{
+    var question = answer.Question!;
+    var selectedOption = question.AnswerOptions.FirstOrDefault(o => o.Id == answer.AnswerOptionId);
+    var correctOption = question.AnswerOptions.FirstOrDefault(o => o.IsCorrect);
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <h5 class="card-title">@question.Text</h5>
+                <span class="badge @(answer.IsCorrect ? "bg-success" : "bg-danger")">
+                    @(answer.IsCorrect ? "+" + question.Points : "0") / @question.Points pt
+                </span>
+            </div>
+            <p class="mb-1">
+                <span class="text-muted">Your answer:</span>
+                @if (selectedOption is not null)
+                {
+                    <span class="@(answer.IsCorrect ? "text-success" : "text-danger")">@selectedOption.Text</span>
+                }
+                else
+                {
+                    <span class="text-danger">No answer</span>
+                }
+            </p>
+            @if (!answer.IsCorrect && correctOption is not null)
+            {
+                <p class="mb-0">
+                    <span class="text-muted">Correct answer:</span>
+                    <span class="text-success">@correctOption.Text</span>
+                </p>
+            }
+        </div>
+    </div>
+}
+
+<div class="d-flex gap-2">
+    <a class="btn btn-outline-primary" asp-page="/Courses/Quizzes/Take" asp-route-id="@quiz.Id">Try again</a>
+    <a class="btn btn-outline-secondary" asp-page="/Courses/Details" asp-route-id="@quiz.CourseId">Back to course</a>
+</div>

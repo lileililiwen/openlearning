@@ -1,0 +1,25 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Quizzes.DeleteModel
+@{
+    ViewData["Title"] = "Delete Quiz";
+    var quiz = Model.Quiz!;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4 text-center">
+                <h1 class="h4 mb-3">Delete quiz?</h1>
+                <p class="mb-4">
+                    <strong>@quiz.Title</strong> with @quiz.Questions.Count question(s)
+                    will be permanently removed, along with all student attempts.
+                    This cannot be undone.
+                </p>
+                <form method="post" asp-route-id="@quiz.Id" class="d-inline-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Delete quiz</button>
+                    <a class="btn btn-outline-secondary" asp-page="/Courses/Edit" asp-route-id="@quiz.CourseId">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

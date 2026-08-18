@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using OpenLearning.Assessments.Models;
 using OpenLearning.Auth.Models;
 using OpenLearning.CourseManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
@@ -24,6 +25,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<LessonCompletion> LessonCompletions => Set<LessonCompletion>();
 
+    public DbSet<Quiz> Quizzes => Set<Quiz>();
+
+    public DbSet<Question> Questions => Set<Question>();
+
+    public DbSet<AnswerOption> AnswerOptions => Set<AnswerOption>();
+
+    public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
+
+    public DbSet<QuizAttemptAnswer> QuizAttemptAnswers => Set<QuizAttemptAnswer>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -34,5 +45,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Course).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(EnrollmentEntity).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LessonCompletion).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Quiz).Assembly);
     }
 }

@@ -1,0 +1,24 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Quizzes.Questions.DeleteModel
+@{
+    ViewData["Title"] = "Delete Question";
+    var question = Model.Question!;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4 text-center">
+                <h1 class="h4 mb-3">Delete question?</h1>
+                <p class="mb-4">
+                    <strong>@question.Text</strong> and its answer options will be
+                    permanently removed. This cannot be undone.
+                </p>
+                <form method="post" asp-route-id="@question.Id" class="d-inline-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Delete question</button>
+                    <a class="btn btn-outline-secondary" asp-page="/Courses/Quizzes/Edit" asp-route-id="@question.QuizId">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

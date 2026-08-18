@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenLearning.Assessments;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
 using OpenLearning.CourseManagement;
@@ -29,6 +30,7 @@ builder.Services.AddAuthModule();
 builder.Services.AddCourseManagementModule();
 builder.Services.AddEnrollmentModule();
 builder.Services.AddProgressModule();
+builder.Services.AddAssessmentsModule();
 
 var app = builder.Build();
 

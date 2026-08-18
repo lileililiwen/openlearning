@@ -16,4 +16,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\OpenLearning.Assessments\OpenLearning.Assessments.csproj" />
+  </ItemGroup>
+
 </Project>

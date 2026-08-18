@@ -1,0 +1,57 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Quizzes.ResultsModel
+@{
+    ViewData["Title"] = "Quiz Results";
+    var quiz = Model.Quiz!;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">@quiz.Title — Results</h1>
+        <p class="text-muted mb-0">@Model.Attempts.Count attempt(s)</p>
+    </div>
+    <a class="btn btn-outline-primary" asp-page="/Courses/Quizzes/Edit" asp-route-id="@quiz.Id">Edit quiz</a>
+</div>
+
+@if (Model.Attempts.Count == 0)
+{
+    <div class="alert alert-info">No attempts yet. Once students take this quiz, results will appear here.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Submitted</th>
+                    <th>Score</th>
+                    <th>Percentage</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var attempt in Model.Attempts)
+                {
+                    var percent = attempt.MaxScore > 0 ? (int)Math.Round(attempt.Score * 100.0 / attempt.MaxScore) : 0;
+                    <tr>
+                        <td>@(attempt.Student?.DisplayName ?? attempt.StudentId)</td>
+                        <td>@attempt.CompletedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@attempt.Score / @attempt.MaxScore</td>
+                        <td style="min-width: 180px">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress progress-thin flex-grow-1">
+                                    <div class="progress-bar" role="progressbar" style="width: @percent%"></div>
+                                </div>
+                                <span class="small text-muted">@percent%</span>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Quizzes/Result" asp-route-id="@attempt.Id">View</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

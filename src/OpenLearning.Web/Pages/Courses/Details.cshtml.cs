@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using OpenLearning.Assessments.Models;
+using OpenLearning.Assessments.Services;
 using OpenLearning.Auth;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
@@ -14,15 +16,23 @@ public class DetailsModel : PageModel
     private readonly CourseService _courses;
     private readonly EnrollmentService _enrollments;
     private readonly ProgressService _progress;
+    private readonly QuizService _quizzes;
 
-    public DetailsModel(CourseService courses, EnrollmentService enrollments, ProgressService progress)
+    public DetailsModel(
+        CourseService courses,
+        EnrollmentService enrollments,
+        ProgressService progress,
+        QuizService quizzes)
     {
         _courses = courses;
         _enrollments = enrollments;
         _progress = progress;
+        _quizzes = quizzes;
     }
 
     public Course? Course { get; set; }
+
+    public List<Quiz> Quizzes { get; set; } = new();
 
     public bool IsOwner { get; set; }
 
@@ -52,6 +62,7 @@ public class DetailsModel : PageModel
         }
 
         Course = course;
+        Quizzes = await _quizzes.GetForCourseAsync(id);
 
         if (userId is not null)
         {

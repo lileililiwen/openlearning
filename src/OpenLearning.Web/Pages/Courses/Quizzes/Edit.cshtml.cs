@@ -3,29 +3,26 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using OpenLearning.Auth;
 using OpenLearning.Assessments.Models;
 using OpenLearning.Assessments.Services;
-using OpenLearning.Auth;
-using OpenLearning.CourseManagement.Models;
-using OpenLearning.CourseManagement.Services;
 
-namespace OpenLearning.Web.Pages.Courses;
+namespace OpenLearning.Web.Pages.Courses.Quizzes;
 
 [Authorize(Policy = Policies.RequireInstructor)]
 public class EditModel : PageModel
 {
-    private readonly CourseService _courses;
     private readonly QuizService _quizzes;
 
-    public EditModel(CourseService courses, QuizService quizzes)
+    public EditModel(QuizService quizzes)
     {
-        _courses = courses;
         _quizzes = quizzes;
     }
 
-    public Course? Course { get; set; }
+    public Quiz? Quiz { get; set; }
 
-    public List<Quiz> Quizzes { get; set; } = new();
+    [BindProperty]
+    public int Id { get; set; }
 
     [BindProperty]
     public InputModel Input { get; set; } = new();
@@ -37,57 +34,47 @@ public class EditModel : PageModel
         public string Title { get; set; } = string.Empty;
 
         [DataType(DataType.MultilineText)]
-        [StringLength(4000)]
+        [StringLength(2000)]
         public string Description { get; set; } = string.Empty;
-
-        [StringLength(100)]
-        public string Category { get; set; } = string.Empty;
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var course = await _courses.GetByIdAsync(id);
-        if (course is null)
+        var quiz = await _quizzes.GetByIdAsync(id);
+        if (quiz is null)
         {
             return NotFound();
         }
 
-        if (course.InstructorId != userId)
+        if (quiz.Course is null || quiz.Course.InstructorId != userId)
         {
             return Forbid();
         }
 
-        Course = course;
-        Quizzes = await _quizzes.GetForCourseAsync(id);
-        Input.Title = course.Title;
-        Input.Description = course.Description;
-        Input.Category = course.Category;
+        Quiz = quiz;
+        Id = id;
+        Input.Title = quiz.Title;
+        Input.Description = quiz.Description;
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(int id)
+    public async Task<IActionResult> OnPostAsync()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
         if (!ModelState.IsValid)
         {
-            var course = await _courses.GetByIdAsync(id);
-            if (course is not null)
-            {
-                Course = course;
-                Quizzes = await _quizzes.GetForCourseAsync(id);
-            }
-
+            Quiz = await _quizzes.GetByIdAsync(Id);
             return Page();
         }
 
-        var updated = await _courses.UpdateAsync(id, userId, Input.Title, Input.Description, Input.Category);
+        var updated = await _quizzes.UpdateAsync(Id, userId, Input.Title, Input.Description);
         if (!updated)
         {
             return Forbid();
         }
 
-        return RedirectToPage(new { id });
+        return RedirectToPage(new { id = Id });
     }
 }

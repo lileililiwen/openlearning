@@ -1,0 +1,73 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Quizzes.TakeModel
+@{
+    ViewData["Title"] = Model.Quiz!.Title;
+    var quiz = Model.Quiz;
+    var index = 0;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item">
+            <a asp-page="/Courses/Details" asp-route-id="@quiz.CourseId">@quiz.Course!.Title</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">@quiz.Title</li>
+    </ol>
+</nav>
+
+@if (Model.Attempts.Count > 0)
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h6">Your previous attempts</h2>
+            <ul class="list-unstyled mb-0 small">
+                @foreach (var attempt in Model.Attempts)
+                {
+                    <li>
+                        <a asp-page="/Courses/Quizzes/Result" asp-route-id="@attempt.Id">
+                            @attempt.CompletedAt.ToString("yyyy-MM-dd HH:mm") — @attempt.Score / @attempt.MaxScore
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+@if (quiz.Questions.Count == 0)
+{
+    <div class="alert alert-info">This quiz has no questions yet. Please check back later.</div>
+}
+else
+{
+    <form method="post">
+        <input type="hidden" asp-for="QuizId" />
+        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+        @foreach (var question in quiz.Questions.OrderBy(q => q.OrderIndex))
+        {
+            index++;
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Question @index
+                        <span class="badge bg-secondary">@question.Points pt</span>
+                    </h5>
+                    <p class="mb-3">@question.Text</p>
+                    @foreach (var option in question.AnswerOptions.OrderBy(o => o.OrderIndex))
+                    {
+                        <div class="form-check mb-1">
+                            <input class="form-check-input" type="radio" name="Answers[@question.Id]"
+                                   value="@option.Id" id="q@(question.Id)-o@(option.Id)" required />
+                            <label class="form-check-label" for="q@(question.Id)-o@(option.Id)">@option.Text</label>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <button type="submit" class="btn btn-primary">Submit quiz</button>
+        <a class="btn btn-outline-secondary" asp-page="/Courses/Details" asp-route-id="@quiz.CourseId">Cancel</a>
+    </form>
+}
