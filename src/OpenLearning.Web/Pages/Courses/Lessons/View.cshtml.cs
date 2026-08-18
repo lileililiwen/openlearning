@@ -6,6 +6,8 @@ using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Enrollment.Services;
 using OpenLearning.Progress.Services;
+using OpenLearning.Scorm.Models;
+using OpenLearning.Scorm.Services;
 
 namespace OpenLearning.Web.Pages.Courses.Lessons;
 
@@ -15,18 +17,22 @@ public class ViewModel : PageModel
     private readonly ModuleService _modules;
     private readonly EnrollmentService _enrollments;
     private readonly ProgressService _progress;
+    private readonly ScormService _scorm;
 
-    public ViewModel(LessonService lessons, ModuleService modules, EnrollmentService enrollments, ProgressService progress)
+    public ViewModel(LessonService lessons, ModuleService modules, EnrollmentService enrollments, ProgressService progress, ScormService scorm)
     {
         _lessons = lessons;
         _modules = modules;
         _enrollments = enrollments;
         _progress = progress;
+        _scorm = scorm;
     }
 
     public Lesson? Lesson { get; set; }
 
     public List<Lesson> ModuleLessons { get; set; } = new();
+
+    public ScormPackage? ScormPackage { get; set; }
 
     public bool CanTrackProgress { get; set; }
 
@@ -58,6 +64,7 @@ public class ViewModel : PageModel
 
         Lesson = lesson;
         ModuleLessons = await _modules.GetLessonsAsync(lesson.ModuleId);
+        ScormPackage = await _scorm.GetForLessonAsync(id);
         if (userId is not null && isEnrolled)
         {
             CanTrackProgress = true;

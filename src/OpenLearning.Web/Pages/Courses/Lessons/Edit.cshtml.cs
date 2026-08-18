@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
+using OpenLearning.Scorm.Models;
+using OpenLearning.Scorm.Services;
 
 namespace OpenLearning.Web.Pages.Courses.Lessons;
 
@@ -13,19 +15,28 @@ namespace OpenLearning.Web.Pages.Courses.Lessons;
 public class EditModel : PageModel
 {
     private readonly LessonService _lessons;
+    private readonly ScormService _scorm;
+    private readonly IWebHostEnvironment _environment;
 
-    public EditModel(LessonService lessons)
+    public EditModel(LessonService lessons, ScormService scorm, IWebHostEnvironment environment)
     {
         _lessons = lessons;
+        _scorm = scorm;
+        _environment = environment;
     }
 
     public Lesson? Lesson { get; set; }
+
+    public ScormPackage? ScormPackage { get; set; }
 
     [BindProperty]
     public int Id { get; set; }
 
     [BindProperty]
     public InputModel Input { get; set; } = new();
+
+    [BindProperty]
+    public IFormFile? ScormFile { get; set; }
 
     public class InputModel
     {
@@ -55,6 +66,7 @@ public class EditModel : PageModel
         Id = id;
         Input.Title = lesson.Title;
         Input.Content = lesson.Content;
+        ScormPackage = await _scorm.GetForLessonAsync(id);
         return Page();
     }
 
@@ -65,6 +77,7 @@ public class EditModel : PageModel
         if (!ModelState.IsValid)
         {
             Lesson = await _lessons.GetByIdAsync(Id);
+            ScormPackage = await _scorm.GetForLessonAsync(Id);
             return Page();
         }
 
@@ -76,5 +89,43 @@ public class EditModel : PageModel
 
         var courseId = (await _lessons.GetByIdAsync(Id))!.Module!.CourseId;
         return RedirectToPage("/Courses/Edit", new { id = courseId });
+    }
+
+    public async Task<IActionResult> OnPostUploadScormAsync(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        if (ScormFile is null || ScormFile.Length == 0)
+        {
+            ModelState.AddModelError(string.Empty, "Choose a SCORM .zip file to upload.");
+            Lesson = await _lessons.GetByIdAsync(id);
+            ScormPackage = await _scorm.GetForLessonAsync(id);
+            return Page();
+        }
+
+        await using var stream = ScormFile.OpenReadStream();
+        var (package, error) = await _scorm.UploadAsync(
+            id, userId, _environment.WebRootPath, stream, ScormFile.FileName);
+
+        if (error is not null)
+        {
+            ModelState.AddModelError(string.Empty, error);
+        }
+
+        Lesson = await _lessons.GetByIdAsync(id);
+        ScormPackage = await _scorm.GetForLessonAsync(id);
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostRemoveScormAsync(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var package = await _scorm.GetForLessonAsync(id);
+        if (package is not null)
+        {
+            await _scorm.RemoveAsync(package.Id, userId, _environment.WebRootPath);
+        }
+
+        return RedirectToPage(new { id });
     }
 }

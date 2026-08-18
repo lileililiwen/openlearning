@@ -34,6 +34,39 @@
                 </div>
             </div>
         </form>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white">
+                <strong>SCORM content</strong>
+            </div>
+            <div class="card-body">
+                @if (Model.ScormPackage is not null)
+                {
+                    <p class="mb-2">
+                        Attached package: <strong>@Model.ScormPackage.Title</strong>
+                        <span class="text-muted small">(@Model.ScormPackage.ScormVersion · @Model.ScormPackage.EntryPoint)</span>
+                    </p>
+                    <form method="post" asp-page-handler="RemoveScorm" asp-route-id="@lesson.Id"
+                          onsubmit="return confirm('Remove this SCORM package?');">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Remove package</button>
+                    </form>
+                }
+                else
+                {
+                    <p class="text-muted small mb-3">
+                        Upload a SCORM 1.2 package (.zip with imsmanifest.xml) to make this lesson
+                        launchable SCORM content.
+                    </p>
+                    <form method="post" asp-page-handler="UploadScorm" asp-route-id="@lesson.Id"
+                          enctype="multipart/form-data">
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="file" name="ScormFile" accept=".zip,application/zip" class="form-control" />
+                            <button type="submit" class="btn btn-primary">Upload</button>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
     </div>
 </div>
 

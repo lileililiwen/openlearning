@@ -6,6 +6,7 @@ using OpenLearning.CourseManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Progress.Models;
+using OpenLearning.Scorm.Models;
 
 namespace OpenLearning.Data;
 
@@ -38,6 +39,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Order> Orders => Set<Order>();
 
+    public DbSet<ScormPackage> ScormPackages => Set<ScormPackage>();
+
+    public DbSet<ScormRecord> ScormRecords => Set<ScormRecord>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -50,5 +55,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(LessonCompletion).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Quiz).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Order).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(ScormPackage).Assembly);
     }
 }

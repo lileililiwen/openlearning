@@ -30,3 +30,6 @@ Thumbs.db
 ## Logs
 *.log
 logs/
+
+## Uploaded SCORM packages (runtime data)
+src/OpenLearning.Web/wwwroot/scorm/

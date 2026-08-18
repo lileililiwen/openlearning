@@ -29,6 +29,15 @@
             </div>
         </article>
 
+        @if (Model.ScormPackage is not null)
+        {
+            <div class="mt-3">
+                <a class="btn btn-primary" asp-page="/Courses/Lessons/Scorm/Launch" asp-route-id="@Model.Lesson.Id">
+                    Launch SCORM content
+                </a>
+            </div>
+        }
+
         @if (Model.CanTrackProgress)
         {
             <div class="mt-3">

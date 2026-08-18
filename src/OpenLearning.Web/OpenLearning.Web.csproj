@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenLearning.Assessments\OpenLearning.Assessments.csproj" />
     <ProjectReference Include="..\OpenLearning.Ecommerce\OpenLearning.Ecommerce.csproj" />
+    <ProjectReference Include="..\OpenLearning.Scorm\OpenLearning.Scorm.csproj" />
   </ItemGroup>
 
 </Project>
