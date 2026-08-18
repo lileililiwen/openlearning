@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.SystemConfig",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Memberships", "src\OpenLearning.Memberships\OpenLearning.Memberships.csproj", "{E337CE51-D0FB-4FBD-BB49-539A8C051905}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Operations", "src\OpenLearning.Operations\OpenLearning.Operations.csproj", "{5C692F9E-7EE5-4F22-B098-E689EBBC1DC6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -142,6 +144,10 @@ Global
 		{E337CE51-D0FB-4FBD-BB49-539A8C051905}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E337CE51-D0FB-4FBD-BB49-539A8C051905}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E337CE51-D0FB-4FBD-BB49-539A8C051905}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C692F9E-7EE5-4F22-B098-E689EBBC1DC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C692F9E-7EE5-4F22-B098-E689EBBC1DC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C692F9E-7EE5-4F22-B098-E689EBBC1DC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C692F9E-7EE5-4F22-B098-E689EBBC1DC6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{59266E3F-A056-48B6-A2EC-CBBAFD1AB326} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
@@ -165,5 +171,6 @@ Global
 		{D04D01EA-6A11-4646-879F-CA91143D0BB6} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
 		{C6D29374-0EC4-4E02-91AB-AD0F98ACA19E} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
 		{E337CE51-D0FB-4FBD-BB49-539A8C051905} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
+		{5C692F9E-7EE5-4F22-B098-E689EBBC1DC6} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
 	EndGlobalSection
 EndGlobal

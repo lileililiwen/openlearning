@@ -27,6 +27,16 @@ public class CourseService
         _tags = tags;
     }
 
+    public Task<List<Course>> GetPublishedByIdsAsync(IEnumerable<int> ids)
+    {
+        var idList = ids.ToList();
+        return _db.Set<Course>().AsNoTracking()
+                .Include(c => c.Instructor)
+                .Include(c => c.Tags).ThenInclude(t => t.Tag)
+                .Where(c => c.Status == CourseStatus.Published && idList.Contains(c.Id))
+                .ToListAsync();
+    }
+
     public Task<List<Course>> GetPublishedCoursesAsync()
     {
         return _db.Set<Course>().AsNoTracking()

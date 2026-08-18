@@ -42,6 +42,7 @@ public sealed class ModuleArchitectureTests
         "OpenLearning.Logging",
         "OpenLearning.SystemConfig",
         "OpenLearning.Memberships",
+        "OpenLearning.Operations",
         "OpenLearning.Data",
         "OpenLearning.Web",
     };
@@ -66,6 +67,7 @@ public sealed class ModuleArchitectureTests
             ["OpenLearning.Logging"] = Array.Empty<string>(),
             ["OpenLearning.SystemConfig"] = new[] { "OpenLearning.Notifications" },
             ["OpenLearning.Memberships"] = Array.Empty<string>(),
+            ["OpenLearning.Operations"] = Array.Empty<string>(),
         };
 
     private static readonly Architecture _architecture = new ArchLoader()

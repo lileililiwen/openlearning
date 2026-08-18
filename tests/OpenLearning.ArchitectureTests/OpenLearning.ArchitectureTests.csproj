@@ -40,6 +40,7 @@
     <ProjectReference Include="..\..\src\OpenLearning.Data\OpenLearning.Data.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Web\OpenLearning.Web.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Memberships\OpenLearning.Memberships.csproj" />
+    <ProjectReference Include="..\..\src\OpenLearning.Operations\OpenLearning.Operations.csproj" />
   </ItemGroup>
 
 </Project>

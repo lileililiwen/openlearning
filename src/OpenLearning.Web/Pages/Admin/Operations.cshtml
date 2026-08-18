@@ -1,0 +1,242 @@
+@page
+@model OpenLearning.Web.Pages.Admin.OperationsModel
+@{
+    ViewData["Title"] = "Admin · Operations";
+    var tab = Model.Tab;
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Admin — Operations</h1>
+        <p class="text-muted mb-0">Homepage banners, pop-ups, campaigns, and featured content.</p>
+    </div>
+    <a class="btn btn-outline-primary" asp-page="/Admin/Index">Back to dashboard</a>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link @(tab == "banners" ? "active" : "")" asp-page="/Admin/Operations" asp-route-tab="banners">Banners</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(tab == "popups" ? "active" : "")" asp-page="/Admin/Operations" asp-route-tab="popups">Pop-ups</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(tab == "campaigns" ? "active" : "")" asp-page="/Admin/Operations" asp-route-tab="campaigns">Campaigns</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(tab == "home" ? "active" : "")" asp-page="/Admin/Operations" asp-route-tab="home">Homepage</a>
+    </li>
+</ul>
+
+@if (tab == "banners")
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">New banner</h2>
+            <form method="post" asp-page-handler="CreateBanner" class="row g-2">
+                <div class="col-md-3"><input name="title" class="form-control" placeholder="Title" /></div>
+                <div class="col-md-3"><input name="imageUrl" class="form-control" placeholder="Image URL" /></div>
+                <div class="col-md-3"><input name="linkUrl" class="form-control" placeholder="Link URL" /></div>
+                <div class="col-md-2">
+                    <select name="campaignId" class="form-select">
+                        <option value="">No campaign</option>
+                        @foreach (var campaign in Model.Campaigns)
+                        {
+                            <option value="@campaign.Id">@campaign.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-1"><button type="submit" class="btn btn-primary">Add</button></div>
+            </form>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Banners (@Model.Banners.Count)</h2>
+            <table class="table align-middle">
+                <thead>
+                    <tr><th>#</th><th>Title</th><th>Campaign</th><th class="text-center">Active</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var banner in Model.Banners)
+                    {
+                        <tr>
+                            <td>@banner.OrderIndex</td>
+                            <td>
+                                <strong>@banner.Title</strong>
+                                <div class="small text-muted">@banner.ImageUrl</div>
+                            </td>
+                            <td>@(banner.Campaign?.Name ?? "—")</td>
+                            <td class="text-center">@(banner.IsActive ? "✓" : "—")</td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <form method="post" asp-page-handler="ToggleBanner" asp-route-id="@banner.Id">
+                                        <button type="submit" class="btn btn-sm btn-outline-@(banner.IsActive ? "warning" : "success")">
+                                            @(banner.IsActive ? "Deactivate" : "Activate")
+                                        </button>
+                                    </form>
+                                    <form method="post" asp-page-handler="MoveBanner" asp-route-id="@banner.Id" asp-route-direction="-1">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Up</button>
+                                    </form>
+                                    <form method="post" asp-page-handler="MoveBanner" asp-route-id="@banner.Id" asp-route-direction="1">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Down</button>
+                                    </form>
+                                    <form method="post" asp-page-handler="DeleteBanner" asp-route-id="@banner.Id"
+                                          onsubmit="return confirm('Delete this banner?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (Model.Banners.Count == 0)
+            {
+                <div class="alert alert-info mb-0">No banners yet.</div>
+            }
+        </div>
+    </div>
+}
+else if (tab == "popups")
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">New pop-up</h2>
+            <form method="post" asp-page-handler="CreatePopup" class="row g-2">
+                <div class="col-md-3"><input name="title" class="form-control" placeholder="Title" /></div>
+                <div class="col-md-3"><input name="body" class="form-control" placeholder="Body" /></div>
+                <div class="col-md-2"><input name="linkUrl" class="form-control" placeholder="Link URL" /></div>
+                <div class="col-md-2"><input name="startsAt" type="datetime-local" class="form-control" /></div>
+                <div class="col-md-1"><input name="endsAt" type="datetime-local" class="form-control" /></div>
+                <div class="col-md-1"><button type="submit" class="btn btn-primary">Add</button></div>
+            </form>
+            <div class="form-text">Pop-ups are shown once per session while within their window.</div>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Pop-ups (@Model.Popups.Count)</h2>
+            <table class="table align-middle">
+                <thead>
+                    <tr><th>Title</th><th>Window</th><th class="text-center">Active</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var popup in Model.Popups)
+                    {
+                        <tr>
+                            <td><strong>@popup.Title</strong></td>
+                            <td class="small">@popup.StartsAt.ToString("yyyy-MM-dd HH:mm") → @popup.EndsAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="text-center">@(popup.IsActive ? "✓" : "—")</td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <form method="post" asp-page-handler="TogglePopup" asp-route-id="@popup.Id">
+                                        <button type="submit" class="btn btn-sm btn-outline-@(popup.IsActive ? "warning" : "success")">
+                                            @(popup.IsActive ? "Deactivate" : "Activate")
+                                        </button>
+                                    </form>
+                                    <form method="post" asp-page-handler="DeletePopup" asp-route-id="@popup.Id"
+                                          onsubmit="return confirm('Delete this pop-up?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (Model.Popups.Count == 0)
+            {
+                <div class="alert alert-info mb-0">No pop-ups yet.</div>
+            }
+        </div>
+    </div>
+}
+else if (tab == "campaigns")
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">New campaign</h2>
+            <form method="post" asp-page-handler="CreateCampaign" class="row g-2">
+                <div class="col-md-4"><input name="name" class="form-control" placeholder="Name" /></div>
+                <div class="col-md-3"><input name="startsAt" type="datetime-local" class="form-control" /></div>
+                <div class="col-md-3"><input name="endsAt" type="datetime-local" class="form-control" /></div>
+                <div class="col-md-2"><button type="submit" class="btn btn-primary">Create</button></div>
+            </form>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Campaigns (@Model.Campaigns.Count)</h2>
+            <table class="table align-middle">
+                <thead>
+                    <tr><th>Name</th><th>Window</th><th class="text-center">Active</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var campaign in Model.Campaigns)
+                    {
+                        <tr>
+                            <td><strong>@campaign.Name</strong></td>
+                            <td class="small">@campaign.StartsAt.ToString("yyyy-MM-dd HH:mm") → @campaign.EndsAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="text-center">@(campaign.IsActive ? "✓" : "—")</td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <form method="post" asp-page-handler="ToggleCampaign" asp-route-id="@campaign.Id">
+                                        <button type="submit" class="btn btn-sm btn-outline-@(campaign.IsActive ? "warning" : "success")">
+                                            @(campaign.IsActive ? "Deactivate" : "Activate")
+                                        </button>
+                                    </form>
+                                    <form method="post" asp-page-handler="DeleteCampaign" asp-route-id="@campaign.Id"
+                                          onsubmit="return confirm('Delete this campaign?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (Model.Campaigns.Count == 0)
+            {
+                <div class="alert alert-info mb-0">No campaigns yet.</div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Featured courses</h2>
+            <form method="post" asp-page-handler="SaveHome">
+                <div class="row g-2 mb-3">
+                    @for (var i = 0; i < 3; i++)
+                    {
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">Featured course @(i + 1)</label>
+                            <select name="courseIds" class="form-select">
+                                <option value="">—</option>
+                                @foreach (var course in Model.AllCourses)
+                                {
+                                    <option value="@course.Id"
+                                            selected="@(i < Model.FeatureCourseIds.Count && Model.FeatureCourseIds[i] == course.Id)">
+                                        @course.Title
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    }
+                </div>
+                <button type="submit" class="btn btn-primary">Save homepage</button>
+            </form>
+        </div>
+    </div>
+}

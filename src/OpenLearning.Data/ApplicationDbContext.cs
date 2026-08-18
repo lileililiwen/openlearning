@@ -9,6 +9,7 @@ using OpenLearning.Ecommerce.Models;
 using OpenLearning.Logging.Models;
 using OpenLearning.Memberships.Models;
 using OpenLearning.Notifications.Models;
+using OpenLearning.Operations.Models;
 using OpenLearning.Progress.Models;
 using OpenLearning.Ratings.Models;
 using OpenLearning.Scorm.Models;
@@ -94,6 +95,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Membership> Memberships => Set<Membership>();
 
+    public DbSet<Banner> Banners => Set<Banner>();
+
+    public DbSet<Popup> Popups => Set<Popup>();
+
+    public DbSet<Campaign> Campaigns => Set<Campaign>();
+
+    public DbSet<HomepageFeature> HomepageFeatures => Set<HomepageFeature>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -117,5 +126,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(OperationLog).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Setting).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(MembershipPlan).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Banner).Assembly);
     }
 }

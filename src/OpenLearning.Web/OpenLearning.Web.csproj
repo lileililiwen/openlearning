@@ -32,6 +32,7 @@
     <ProjectReference Include="..\OpenLearning.Logging\OpenLearning.Logging.csproj" />
     <ProjectReference Include="..\OpenLearning.SystemConfig\OpenLearning.SystemConfig.csproj" />
     <ProjectReference Include="..\OpenLearning.Memberships\OpenLearning.Memberships.csproj" />
+    <ProjectReference Include="..\OpenLearning.Operations\OpenLearning.Operations.csproj" />
   </ItemGroup>
 
 </Project>
