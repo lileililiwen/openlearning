@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using OpenLearning.Assessments.Services;
 using OpenLearning.Auth;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
+using OpenLearning.Logging.Services;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Notifications.Services;
 
@@ -19,12 +21,14 @@ public class EditModel : PageModel
     private readonly CourseService _courses;
     private readonly QuizService _quizzes;
     private readonly AnnouncementService _announcements;
+    private readonly LogService _logs;
 
-    public EditModel(CourseService courses, QuizService quizzes, AnnouncementService announcements)
+    public EditModel(CourseService courses, QuizService quizzes, AnnouncementService announcements, LogService logs)
     {
         _courses = courses;
         _quizzes = quizzes;
         _announcements = announcements;
+        _logs = logs;
     }
 
     public Course? Course { get; set; }
@@ -149,6 +153,18 @@ public class EditModel : PageModel
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var (ok, error) = await _announcements.PostAsync(id, userId, AnnouncementBody ?? string.Empty);
+        if (ok)
+        {
+            await _logs.RecordAsync(
+                userId,
+                User.Identity?.Name ?? string.Empty,
+                "PostAnnouncement",
+                "Course",
+                id.ToString(CultureInfo.InvariantCulture),
+                null,
+                HttpContext.Connection.RemoteIpAddress?.ToString());
+        }
+
         TempData["Message"] = ok ? "Announcement posted to enrolled students." : error;
         TempData["MessageType"] = ok ? "success" : "danger";
         return RedirectToPage(new { id });

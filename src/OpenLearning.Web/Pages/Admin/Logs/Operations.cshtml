@@ -1,0 +1,70 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Logs.OperationsModel
+@{
+    ViewData["Title"] = "Operation log";
+}
+
+<h1>Operation log</h1>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input asp-for="Action" class="form-control" placeholder="Action" />
+    </div>
+    <div class="col-auto">
+        <input asp-for="Actor" class="form-control" placeholder="Actor name" />
+    </div>
+    <div class="col-auto">
+        <input asp-for="From" type="date" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <input asp-for="To" type="date" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a asp-page="Operations" class="btn btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
+<p class="text-muted">@Model.Total entries</p>
+
+<table class="table table-sm table-striped">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Actor</th>
+            <th>Action</th>
+            <th>Target</th>
+            <th>Details</th>
+            <th>IP</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entry in Model.Items)
+        {
+            <tr>
+                <td>@entry.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@entry.ActorName</td>
+                <td>@entry.Action</td>
+                <td>@(entry.TargetType is null ? "" : $"{entry.TargetType} #{entry.TargetId}")</td>
+                <td>@entry.Details</td>
+                <td>@entry.IpAddress</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                    <a class="page-link" asp-page="Operations"
+                       asp-route-page="@p" asp-route-action="@Model.Action" asp-route-actor="@Model.Actor"
+                       asp-route-from="@Model.From?.ToString("yyyy-MM-dd")" asp-route-to="@Model.To?.ToString("yyyy-MM-dd")">@p</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

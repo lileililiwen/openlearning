@@ -11,6 +11,8 @@ using OpenLearning.CourseManagement;
 using OpenLearning.Data;
 using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
+using OpenLearning.Logging;
+using OpenLearning.Logging.Middleware;
 using OpenLearning.Notifications;
 using OpenLearning.Notifications.Email;
 using OpenLearning.Progress;
@@ -55,6 +57,7 @@ builder.Services.AddNotificationsModule();
 builder.Services.AddStorageModule(
     builder.Configuration["Storage:Root"]
     ?? Path.Combine(builder.Environment.ContentRootPath, "storage"));
+builder.Services.AddLoggingModule(builder.Configuration.GetValue("Logging:RetentionDays", 90));
 builder.Services.AddSignalR();
 
 // Optional email channel: only used when Email:Enabled is true.
@@ -76,6 +79,10 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
+
+// Persists unhandled exceptions to ErrorLog, then rethrows so the exception
+// handler above still renders the error page.
+app.UseMiddleware<LoggingExceptionMiddleware>();
 
 app.UseStaticFiles();
 app.UseRouting();

@@ -6,6 +6,7 @@ using OpenLearning.Certificates.Models;
 using OpenLearning.Chat.Models;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.Ecommerce.Models;
+using OpenLearning.Logging.Models;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Progress.Models;
 using OpenLearning.Ratings.Models;
@@ -67,6 +68,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
 
+    public DbSet<OperationLog> OperationLogs => Set<OperationLog>();
+
+    public DbSet<ErrorLog> ErrorLogs => Set<ErrorLog>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -87,5 +92,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Certificate).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Notification).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(StoredFile).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(OperationLog).Assembly);
     }
 }

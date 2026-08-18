@@ -11,8 +11,8 @@ namespace OpenLearning.Storage.Services;
 public class StorageService
 {
     /// <summary>Per-purpose defaults; system-config can override these later.</summary>
-    private static readonly IReadOnlyDictionary<FilePurpose, (long MaxBytes, string[] Extensions)> _limits =
-        new Dictionary<FilePurpose, (long, string[])>
+    private static readonly Dictionary<FilePurpose, (long MaxBytes, string[] Extensions)> _limits =
+        new()
         {
             [FilePurpose.Avatar] = (2 * 1024 * 1024, new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" }),
             [FilePurpose.Video] = (500L * 1024 * 1024, new[] { ".mp4", ".webm", ".mov" }),

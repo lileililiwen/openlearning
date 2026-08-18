@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth;
+using OpenLearning.Logging.Services;
 using OpenLearning.UserManagement.Services;
 
 namespace OpenLearning.Web.Pages.Admin;
@@ -11,10 +12,12 @@ namespace OpenLearning.Web.Pages.Admin;
 public class UserDetailModel : PageModel
 {
     private readonly UserManagementService _users;
+    private readonly LogService _logs;
 
-    public UserDetailModel(UserManagementService users)
+    public UserDetailModel(UserManagementService users, LogService logs)
     {
         _users = users;
+        _logs = logs;
     }
 
     public UserDetailItem? Detail { get; set; }
@@ -36,6 +39,11 @@ public class UserDetailModel : PageModel
     public async Task<IActionResult> OnPostToggleRoleAsync(string userId, string role, bool add)
     {
         var (ok, error) = await _users.SetRoleAsync(userId, role, add);
+        if (ok)
+        {
+            await RecordLog("ToggleRole", "User", userId, add ? $"Added {role}." : $"Removed {role}.");
+        }
+
         return Flash(ok, error, userId);
     }
 
@@ -48,7 +56,24 @@ public class UserDetailModel : PageModel
         }
 
         var (ok, error) = await _users.SetSuspendedAsync(userId, suspended);
+        if (ok)
+        {
+            await RecordLog(suspended ? "SuspendUser" : "UnsuspendUser", "User", userId, null);
+        }
+
         return Flash(ok, error, userId);
+    }
+
+    private Task RecordLog(string action, string targetType, string targetId, string? details)
+    {
+        return _logs.RecordAsync(
+            User.FindFirstValue(ClaimTypes.NameIdentifier),
+            User.Identity?.Name ?? string.Empty,
+            action,
+            targetType,
+            targetId,
+            details,
+            HttpContext.Connection.RemoteIpAddress?.ToString());
     }
 
     private RedirectToPageResult Flash(bool ok, string? error, string userId)

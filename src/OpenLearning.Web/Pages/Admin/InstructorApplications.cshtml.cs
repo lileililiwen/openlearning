@@ -1,8 +1,10 @@
+using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth;
+using OpenLearning.Logging.Services;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Notifications.Services;
 using OpenLearning.UserManagement.Models;
@@ -15,13 +17,16 @@ public class InstructorApplicationsModel : PageModel
 {
     private readonly InstructorApplicationService _applications;
     private readonly NotificationService _notifications;
+    private readonly LogService _logs;
 
     public InstructorApplicationsModel(
         InstructorApplicationService applications,
-        NotificationService notifications)
+        NotificationService notifications,
+        LogService logs)
     {
         _applications = applications;
         _notifications = notifications;
+        _logs = logs;
     }
 
     public List<InstructorApplication> Pending { get; set; } = new();
@@ -47,6 +52,14 @@ public class InstructorApplicationsModel : PageModel
                 "Instructor application approved",
                 "You can now create and publish courses. Welcome aboard!",
                 "/Courses/Create");
+            await _logs.RecordAsync(
+                reviewerId,
+                User.Identity?.Name ?? string.Empty,
+                "ApproveInstructorApplication",
+                "InstructorApplication",
+                id.ToString(CultureInfo.InvariantCulture),
+                null,
+                HttpContext.Connection.RemoteIpAddress?.ToString());
         }
 
         return Flash(ok, error);
@@ -65,6 +78,14 @@ public class InstructorApplicationsModel : PageModel
                 "Instructor application not approved",
                 $"Reason: {reason ?? "Not specified."}",
                 null);
+            await _logs.RecordAsync(
+                reviewerId,
+                User.Identity?.Name ?? string.Empty,
+                "RejectInstructorApplication",
+                "InstructorApplication",
+                id.ToString(CultureInfo.InvariantCulture),
+                reason,
+                HttpContext.Connection.RemoteIpAddress?.ToString());
         }
 
         return Flash(ok, error);

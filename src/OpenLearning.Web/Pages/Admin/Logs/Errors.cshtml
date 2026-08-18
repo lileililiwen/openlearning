@@ -1,0 +1,62 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Logs.ErrorsModel
+@{
+    ViewData["Title"] = "Error log";
+}
+
+<h1>Error log</h1>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input asp-for="From" type="date" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <input asp-for="To" type="date" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a asp-page="Errors" class="btn btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
+<p class="text-muted">@Model.Total entries</p>
+
+<table class="table table-sm table-striped">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Method</th>
+            <th>Path</th>
+            <th>User</th>
+            <th>Message</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entry in Model.Items)
+        {
+            <tr>
+                <td>@entry.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@entry.RequestMethod</td>
+                <td>@entry.Path</td>
+                <td>@entry.UserId</td>
+                <td><code>@entry.Message</code></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                    <a class="page-link" asp-page="Errors"
+                       asp-route-page="@p"
+                       asp-route-from="@Model.From?.ToString("yyyy-MM-dd")" asp-route-to="@Model.To?.ToString("yyyy-MM-dd")">@p</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

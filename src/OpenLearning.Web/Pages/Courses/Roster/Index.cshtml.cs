@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Enrollment.Services;
+using OpenLearning.Logging.Services;
 using OpenLearning.Progress.Services;
 
 namespace OpenLearning.Web.Pages.Courses.Roster;
@@ -27,15 +29,18 @@ public class IndexModel : PageModel
     private readonly CourseService _courses;
     private readonly EnrollmentService _enrollments;
     private readonly ProgressService _progress;
+    private readonly LogService _logs;
 
     public IndexModel(
         CourseService courses,
         EnrollmentService enrollments,
-        ProgressService progress)
+        ProgressService progress,
+        LogService logs)
     {
         _courses = courses;
         _enrollments = enrollments;
         _progress = progress;
+        _logs = logs;
     }
 
     [BindProperty(SupportsGet = true)]
@@ -104,6 +109,18 @@ public class IndexModel : PageModel
         }
 
         var ok = await _enrollments.WithdrawAsync(studentId, id);
+        if (ok)
+        {
+            await _logs.RecordAsync(
+                userId,
+                User.Identity?.Name ?? string.Empty,
+                "WithdrawStudent",
+                "Course",
+                id.ToString(CultureInfo.InvariantCulture),
+                $"student {studentId}",
+                HttpContext.Connection.RemoteIpAddress?.ToString());
+        }
+
         TempData["Message"] = ok ? "Student withdrawn." : "Could not withdraw the student.";
         TempData["MessageType"] = ok ? "success" : "danger";
         return RedirectToPage(new { id });
