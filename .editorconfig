@@ -140,6 +140,13 @@ insert_final_newline = true
 dotnet_diagnostic.CA1861.severity = none
 
 # ----------------------------------------------------------------------
+# xUnit test code — test method names follow the underscore convention
+# (Method_State_Expectation); CA1707 is structurally inapplicable here.
+# ----------------------------------------------------------------------
+[tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none
+
+# ----------------------------------------------------------------------
 # Solution files
 # ----------------------------------------------------------------------
 [*.sln]
