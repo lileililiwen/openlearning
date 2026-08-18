@@ -70,6 +70,9 @@
         <div class="card shadow-sm">
             <div class="card-header bg-white"><strong>Edit profile</strong></div>
             <div class="card-body">
+                <div class="mb-3 small">
+                    <a asp-page="/Account/Notifications">Manage notification channels (SMS, web push)</a>
+                </div>
                 <form method="post" asp-page-handler="SaveProfile">
                     <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
                     <div class="mb-3">

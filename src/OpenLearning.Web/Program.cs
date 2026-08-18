@@ -14,6 +14,7 @@ using OpenLearning.Enrollment;
 using OpenLearning.Logging;
 using OpenLearning.Logging.Middleware;
 using OpenLearning.Notifications;
+using OpenLearning.Notifications.Channels;
 using OpenLearning.Notifications.Email;
 using OpenLearning.Progress;
 using OpenLearning.Ratings;
@@ -73,6 +74,25 @@ if (builder.Configuration.GetValue<bool>("Email:Enabled"))
         builder.Configuration["Email:User"],
         builder.Configuration["Email:Password"],
         builder.Configuration.GetValue("Email:UseSsl", false)));
+}
+
+// Optional SMS + web-push channels: only registered when enabled in config.
+// The module's no-op defaults remain registered otherwise.
+if (builder.Configuration.GetValue<bool>("Messaging:SmsEnabled"))
+{
+    builder.Services.AddSingleton<ISmsSender, SmsSender>();
+}
+
+if (builder.Configuration.GetValue<bool>("Messaging:PushEnabled") &&
+    !string.IsNullOrWhiteSpace(builder.Configuration["Messaging:VapidPublicKey"]) &&
+    !string.IsNullOrWhiteSpace(builder.Configuration["Messaging:VapidPrivateKey"]))
+{
+    builder.Services.AddScoped<IWebPushSender>(sp => new WebPushSender(
+        sp.GetRequiredService<DbContext>(),
+        builder.Configuration["Messaging:VapidSubject"] ?? "mailto:no-reply@openlearning.local",
+        builder.Configuration["Messaging:VapidPublicKey"]!,
+        builder.Configuration["Messaging:VapidPrivateKey"]!,
+        sp.GetRequiredService<ILogger<WebPushSender>>()));
 }
 
 var app = builder.Build();

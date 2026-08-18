@@ -1,0 +1,88 @@
+@page "/Account/Notifications"
+@model OpenLearning.Web.Pages.Account.NotificationsModel
+@{
+    ViewData["Title"] = "Notification Settings";
+}
+
+<div class="row">
+    <div class="col-lg-8">
+        <h1 class="h3 mb-1">Notification Settings</h1>
+        <p class="text-muted mb-4">Choose which channels deliver each type of notification. In-app messages are always delivered.</p>
+
+        @if (TempData["Message"] is string message)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @message
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <form method="post" asp-page-handler="Save" class="card shadow-sm mb-4">
+            <div class="card-body">
+                @for (var i = 0; i < Model.Preferences.Count; i++)
+                {
+                    <div class="border rounded p-3 mb-3">
+                        <strong>@Model.Preferences[i].Type</strong>
+                        <div class="row mt-2">
+                            <div class="col-auto form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="sms-@i"
+                                       name="Input[@i].SmsEnabled" value="true" @(Model.Preferences[i].SmsEnabled ? "checked" : "") />
+                                <label class="form-check-label" for="sms-@i">SMS</label>
+                                <input type="hidden" name="Input[@i].SmsEnabled" value="false" />
+                            </div>
+                            <div class="col-auto form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="push-@i"
+                                       name="Input[@i].PushEnabled" value="true" @(Model.Preferences[i].PushEnabled ? "checked" : "") />
+                                <label class="form-check-label" for="push-@i">Web push</label>
+                                <input type="hidden" name="Input[@i].PushEnabled" value="false" />
+                            </div>
+                        </div>
+                        <input type="hidden" name="Input[@i].Type" value="@Model.Preferences[i].Type" />
+                    </div>
+                }
+                <button type="submit" class="btn btn-primary">Save preferences</button>
+            </div>
+        </form>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-1">Web push device</h2>
+                <p class="text-muted small mb-3">Register this browser to receive notifications even when the app is closed.</p>
+                <div class="d-flex gap-2 align-items-center">
+                    <button type="button" id="push-register" class="btn btn-outline-primary">Enable push on this device</button>
+                    <span id="push-status" class="small text-muted"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="~/js/push-client.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            var status = document.getElementById('push-status');
+            var button = document.getElementById('push-register');
+            if (!window.openLearningPush || !window.openLearningPush.isSupported()) {
+                status.textContent = 'Push is not supported by this browser.';
+                button.disabled = true;
+                return;
+            }
+
+            button.addEventListener('click', function () {
+                var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                button.disabled = true;
+                status.textContent = 'Registering…';
+                window.openLearningPush.register(token).then(function (result) {
+                    if (result.ok) {
+                        status.textContent = 'Push enabled on this device.';
+                    } else {
+                        status.textContent = result.error || 'Registration failed.';
+                        button.disabled = false;
+                    }
+                });
+            });
+        })();
+    </script>
+}

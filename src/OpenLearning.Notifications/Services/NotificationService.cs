@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OpenLearning.Auth.Models;
+using OpenLearning.Notifications.Channels;
+using OpenLearning.Notifications.Configuration;
 using OpenLearning.Notifications.Email;
 using OpenLearning.Notifications.Models;
 
@@ -9,13 +12,25 @@ public class NotificationService
 {
     private readonly DbContext _db;
     private readonly IEmailSender _email;
+    private readonly ISmsSender _sms;
+    private readonly IWebPushSender _push;
     private readonly INotificationTemplateRenderer _renderer;
+    private readonly ChannelOptions _channels;
 
-    public NotificationService(DbContext db, IEmailSender email, INotificationTemplateRenderer renderer)
+    public NotificationService(
+        DbContext db,
+        IEmailSender email,
+        ISmsSender sms,
+        IWebPushSender push,
+        INotificationTemplateRenderer renderer,
+        IOptions<ChannelOptions> channels)
     {
         _db = db;
         _email = email;
+        _sms = sms;
+        _push = push;
         _renderer = renderer;
+        _channels = channels.Value;
     }
 
     public async Task CreateAsync(
@@ -33,13 +48,12 @@ public class NotificationService
         });
         await _db.SaveChangesAsync();
 
-        // Fire-and-forget email delivery; failures never block in-app delivery.
+        var (emailAddress, phoneNumber) = await GetContactAsync(userId);
+        var (smsAllowed, pushAllowed) = await GetChannelPreferencesAsync(userId, type);
+
+        // Fire-and-forget delivery on optional channels; failures never block in-app delivery.
         try
         {
-            var emailAddress = await _db.Set<ApplicationUser>().AsNoTracking()
-                .Where(u => u.Id == userId)
-                .Select(u => u.Email)
-                .FirstOrDefaultAsync();
             if (!string.IsNullOrWhiteSpace(emailAddress))
             {
                 await _email.SendAsync(emailAddress, $"[OpenLearning] {finalTitle}", $"{finalBody}\n\n{link ?? string.Empty}");
@@ -48,6 +62,30 @@ public class NotificationService
         catch
         {
             // Email is best-effort and optional.
+        }
+
+        if (_channels.SmsEnabled && smsAllowed && !string.IsNullOrWhiteSpace(phoneNumber))
+        {
+            try
+            {
+                await _sms.SendAsync(phoneNumber, $"{finalTitle}: {finalBody}");
+            }
+            catch
+            {
+                // SMS is best-effort and optional.
+            }
+        }
+
+        if (_channels.PushEnabled && pushAllowed)
+        {
+            try
+            {
+                await _push.SendAsync(userId, finalTitle, finalBody, link);
+            }
+            catch
+            {
+                // Push is best-effort and optional.
+            }
         }
     }
 
@@ -76,15 +114,19 @@ public class NotificationService
         }
         await _db.SaveChangesAsync();
 
+        var users = await _db.Set<ApplicationUser>().AsNoTracking()
+            .Where(u => ids.Contains(u.Id))
+            .Select(u => new { u.Id, u.Email, u.PhoneNumber })
+            .ToListAsync();
+        var preferences = await _db.Set<NotificationPreference>().AsNoTracking()
+            .Where(p => ids.Contains(p.UserId) && p.Type == type)
+            .ToDictionaryAsync(p => p.UserId);
+
         try
         {
-            var emails = await _db.Set<ApplicationUser>().AsNoTracking()
-                .Where(u => ids.Contains(u.Id))
-                .Select(u => new { u.Id, u.Email })
-                .ToListAsync();
             foreach (var userId in ids)
             {
-                var emailAddress = emails.FirstOrDefault(e => e.Id == userId)?.Email;
+                var emailAddress = users.FirstOrDefault(e => e.Id == userId)?.Email;
                 if (!string.IsNullOrWhiteSpace(emailAddress))
                 {
                     await _email.SendAsync(emailAddress, $"[OpenLearning] {finalTitle}", $"{finalBody}\n\n{link ?? string.Empty}");
@@ -95,6 +137,52 @@ public class NotificationService
         {
             // Best-effort.
         }
+
+        foreach (var userId in ids)
+        {
+            var phoneNumber = users.FirstOrDefault(u => u.Id == userId)?.PhoneNumber;
+            var smsAllowed = preferences.GetValueOrDefault(userId)?.SmsEnabled ?? true;
+            if (_channels.SmsEnabled && smsAllowed && !string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                try
+                {
+                    await _sms.SendAsync(phoneNumber, $"{finalTitle}: {finalBody}");
+                }
+                catch
+                {
+                    // Best-effort.
+                }
+            }
+
+            var pushAllowed = preferences.GetValueOrDefault(userId)?.PushEnabled ?? true;
+            if (_channels.PushEnabled && pushAllowed)
+            {
+                try
+                {
+                    await _push.SendAsync(userId, finalTitle, finalBody, link);
+                }
+                catch
+                {
+                    // Best-effort.
+                }
+            }
+        }
+    }
+
+    private async Task<(string? Email, string? Phone)> GetContactAsync(string userId)
+    {
+        var contact = await _db.Set<ApplicationUser>().AsNoTracking()
+            .Where(u => u.Id == userId)
+            .Select(u => new { u.Email, u.PhoneNumber })
+            .FirstOrDefaultAsync();
+        return (contact?.Email, contact?.PhoneNumber);
+    }
+
+    private async Task<(bool Sms, bool Push)> GetChannelPreferencesAsync(string userId, NotificationType type)
+    {
+        var preference = await _db.Set<NotificationPreference>().AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == userId && p.Type == type);
+        return (preference?.SmsEnabled ?? true, preference?.PushEnabled ?? true);
     }
 
     private async Task<(string Title, string Body)> RenderAsync(
