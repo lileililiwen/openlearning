@@ -68,6 +68,14 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Admin/InstructorApplications">Applications</a>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Reports</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-page="/Admin/Reports/Revenue">Revenue</a></li>
+                                <li><a class="dropdown-item" asp-page="/Admin/Reports/Enrollments">Enrollments</a></li>
+                                <li><a class="dropdown-item" asp-page="/Admin/Reports/Users">Users</a></li>
+                            </ul>
+                        </li>
                     }
                     @if (SignInManager.IsSignedIn(User) && !User.IsInRole(Roles.Instructor) && !User.IsInRole(Roles.Admin))
                     {

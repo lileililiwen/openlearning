@@ -118,4 +118,91 @@ public class EnrollmentService
             .ToListAsync();
         return grouped.ToDictionary(g => g.CourseId, g => g.Count);
     }
+
+    // ===== Platform analytics (admin reports) =====
+
+    /// <summary>Enrollment count per day in the range.</summary>
+    public async Task<List<(DateTime Day, int Count)>> GetEnrollmentsOverTimeAsync(DateTime? from, DateTime? to)
+    {
+        var rangeFrom = NormalizeUtc(from);
+        var rangeTo = NormalizeUtc(to);
+
+        IQueryable<EnrollmentEntity> query = _db.Set<EnrollmentEntity>().AsNoTracking();
+        if (rangeFrom is not null)
+        {
+            query = query.Where(e => e.EnrolledAt >= rangeFrom.Value);
+        }
+        if (rangeTo is not null)
+        {
+            var end = rangeTo.Value.Date.AddDays(1);
+            query = query.Where(e => e.EnrolledAt < end);
+        }
+
+        var rows = await query
+            .GroupBy(e => e.EnrolledAt.Date)
+            .Select(g => new { Day = g.Key, Count = g.Count() })
+            .OrderBy(r => r.Day)
+            .ToListAsync();
+        return rows.Select(r => (r.Day, r.Count)).ToList();
+    }
+
+    /// <summary>Enrollment count per course in the range.</summary>
+    public sealed record EnrollmentsByCourseRow(int CourseId, string CourseTitle, int Count);
+
+    public async Task<List<EnrollmentsByCourseRow>> GetEnrollmentsByCourseAsync(DateTime? from, DateTime? to)
+    {
+        var rangeFrom = NormalizeUtc(from);
+        var rangeTo = NormalizeUtc(to);
+
+        IQueryable<EnrollmentEntity> query = _db.Set<EnrollmentEntity>().AsNoTracking();
+        if (rangeFrom is not null)
+        {
+            query = query.Where(e => e.EnrolledAt >= rangeFrom.Value);
+        }
+        if (rangeTo is not null)
+        {
+            var end = rangeTo.Value.Date.AddDays(1);
+            query = query.Where(e => e.EnrolledAt < end);
+        }
+
+        var enrollments = await query
+            .Include(e => e.Course)
+            .ToListAsync();
+
+        return enrollments
+            .GroupBy(e => new { e.CourseId, CourseTitle = e.Course?.Title ?? string.Empty })
+            .Select(g => new EnrollmentsByCourseRow(g.Key.CourseId, g.Key.CourseTitle, g.Count()))
+            .OrderByDescending(r => r.Count)
+            .ToList();
+    }
+
+    /// <summary>Enrollments in the range with course/student, for CSV export.</summary>
+    public async Task<List<EnrollmentEntity>> GetEnrollmentsForExportAsync(DateTime? from, DateTime? to)
+    {
+        var rangeFrom = NormalizeUtc(from);
+        var rangeTo = NormalizeUtc(to);
+
+        IQueryable<EnrollmentEntity> query = _db.Set<EnrollmentEntity>().AsNoTracking();
+        if (rangeFrom is not null)
+        {
+            query = query.Where(e => e.EnrolledAt >= rangeFrom.Value);
+        }
+        if (rangeTo is not null)
+        {
+            var end = rangeTo.Value.Date.AddDays(1);
+            query = query.Where(e => e.EnrolledAt < end);
+        }
+
+        return await query
+            .Include(e => e.Course)
+            .Include(e => e.Student)
+            .OrderByDescending(e => e.EnrolledAt)
+            .ToListAsync();
+    }
+
+    /// <summary>Date-only inputs bind with Kind=Unspecified, which Npgsql rejects for timestamptz.</summary>
+    private static DateTime? NormalizeUtc(DateTime? value)
+        => value is null
+            ? null
+            : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
 }

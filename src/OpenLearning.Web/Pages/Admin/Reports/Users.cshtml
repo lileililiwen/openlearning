@@ -1,0 +1,99 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Reports.UsersModel
+@{
+    ViewData["Title"] = "Admin · Users Report";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Users report</h1>
+        <p class="text-muted mb-0">New signups over time with role breakdown.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-page="/Admin/Reports/Revenue">Revenue</a>
+        <a class="btn btn-outline-primary" asp-page="/Admin/Reports/Enrollments">Enrollments</a>
+    </div>
+</div>
+
+<form method="get" class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">From</label>
+                <input type="date" name="from" value="@(Model.From?.ToString("yyyy-MM-dd") ?? "")" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">To</label>
+                <input type="date" name="to" value="@(Model.To?.ToString("yyyy-MM-dd") ?? "")" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a class="btn btn-outline-secondary" asp-page="/Admin/Reports/Users">All time</a>
+                    <a class="btn btn-outline-success ms-auto" asp-page="/Admin/Reports/Users" asp-page-handler="Export"
+                       asp-route-from="@(Model.From?.ToString("yyyy-MM-dd") ?? "")" asp-route-to="@(Model.To?.ToString("yyyy-MM-dd") ?? "")">Export CSV</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-muted small">Total signups</div>
+                <div class="h3 mb-0">@Model.TotalSignups</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Suspended accounts</div>
+                <div class="h3 mb-0">@Model.Suspended</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">By role</div>
+                <div class="mb-0">
+                    @foreach (var role in Model.SignupsByRole)
+                    {
+                        <span class="badge bg-secondary me-1">@role.Role: @role.Count</span>
+                    }
+                    @if (Model.SignupsByRole.Count == 0)
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white"><strong>Signups over time</strong></div>
+    <div class="card-body">
+        @if (Model.SignupsOverTime.Count == 0)
+        {
+            <p class="text-muted mb-0">No signups in the selected period.</p>
+        }
+        else
+        {
+            <table class="table table-sm align-middle mb-0">
+                <tbody>
+                    @foreach (var item in Model.SignupsOverTime)
+                    {
+                        var width = Model.MaxDayCount == 0 ? 0 : (int)Math.Round(item.Count * 100.0 / Model.MaxDayCount);
+                        <tr>
+                            <td class="text-muted small" style="width: 130px">@item.Day.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 14px">
+                                        <div class="progress-bar" role="progressbar" style="width: @width%"></div>
+                                    </div>
+                                    <span class="small text-muted" style="width: 40px">@item.Count</span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
