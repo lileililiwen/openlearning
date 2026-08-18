@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -13,8 +14,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="TngTech.ArchUnitNET" Version="0.13.3" />
-    <PackageReference Include="TngTech.ArchUnitNET.xUnit" Version="0.13.3" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.30" />
     <PackageReference Include="coverlet.collector" Version="8.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -26,14 +27,8 @@
     <ProjectReference Include="..\..\src\OpenLearning.CourseManagement\OpenLearning.CourseManagement.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Enrollment\OpenLearning.Enrollment.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Progress\OpenLearning.Progress.csproj" />
-    <ProjectReference Include="..\..\src\OpenLearning.Assessments\OpenLearning.Assessments.csproj" />
-    <ProjectReference Include="..\..\src\OpenLearning.Ecommerce\OpenLearning.Ecommerce.csproj" />
-    <ProjectReference Include="..\..\src\OpenLearning.Scorm\OpenLearning.Scorm.csproj" />
-    <ProjectReference Include="..\..\src\OpenLearning.Chat\OpenLearning.Chat.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Ratings\OpenLearning.Ratings.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Certificates\OpenLearning.Certificates.csproj" />
-    <ProjectReference Include="..\..\src\OpenLearning.Notifications\OpenLearning.Notifications.csproj" />
-    <ProjectReference Include="..\..\src\OpenLearning.UserManagement\OpenLearning.UserManagement.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Data\OpenLearning.Data.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Web\OpenLearning.Web.csproj" />
   </ItemGroup>

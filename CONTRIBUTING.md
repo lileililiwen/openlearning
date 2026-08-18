@@ -58,6 +58,24 @@ The CI workflow already contains the Sonar steps; they activate automatically on
 
 The `Sonar End` step runs with `sonar.qualitygate.wait=true`, so CI fails when the new-code gate is red. Coverage XML is produced by `dotnet test` via `Coverlet.runsettings` (OpenCover format). If the secrets are absent the pipeline runs the format/build/test gates only.
 
+## Local coverage
+
+Run the unit and architecture tests with line coverage locally:
+
+```bash
+dotnet test OpenLearning.sln --collect:"XPlat Code Coverage" \
+  --settings Coverlet.runsettings --results-directory TestResults
+```
+
+Reports are written to `TestResults/<guid>/coverage.opencover.xml` (one per test project, OpenCover format — the same XML consumed by SonarCloud). To check the incremental gate locally (as CI does on PRs):
+
+```bash
+python3 scripts/check_incremental_coverage.py --base origin/main \
+  --threshold 0.80 --reports 'TestResults/**/coverage.opencover.xml'
+```
+
+The gate compares executable lines added by the branch against the coverage report: new lines must be ≥ 80% covered. Test projects, EF migrations, and generated code are excluded; overall coverage is reported but never blocks.
+
 ## NuGet vulnerability policy
 
 NuGet packages are audited for known vulnerabilities at restore time (direct and transitive, high/critical severity) and by a CI step (`dotnet list package --vulnerable --include-transitive`). Restore-time audit failures surface as build errors because warnings are treated as errors.

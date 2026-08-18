@@ -70,6 +70,21 @@ jobs:
       - name: Test (with OpenCover coverage for Sonar)
         run: dotnet test OpenLearning.sln -c Release --no-build --collect:"XPlat Code Coverage" --settings Coverlet.runsettings --results-directory TestResults
 
+      - name: Incremental coverage gate
+        # Fails when the executable lines added by this PR fall below 80%
+        # coverage (test projects, EF migrations, and generated code excluded).
+        # Only evaluated on pull requests, where the base ref exists.
+        if: github.event_name == 'pull_request'
+        run: python3 scripts/check_incremental_coverage.py --base origin/main --threshold 0.80 --reports 'TestResults/**/coverage.opencover.xml'
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: TestResults/**/coverage.opencover.xml
+          if-no-files-found: ignore
+
       - name: Sonar End
         if: env.SONAR_TOKEN != ''
         # sonar.qualitygate.wait=true makes this fail the pipeline when the

@@ -31,5 +31,8 @@ Thumbs.db
 *.log
 logs/
 
+## Test coverage output
+TestResults/
+
 ## Uploaded SCORM packages (runtime data)
 src/OpenLearning.Web/wwwroot/scorm/
