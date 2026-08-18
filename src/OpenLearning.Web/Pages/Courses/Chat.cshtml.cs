@@ -1,7 +1,9 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth;
+using OpenLearning.Auth.Models;
 using OpenLearning.Chat.Models;
 using OpenLearning.Chat.Services;
 using OpenLearning.CourseManagement.Models;
@@ -15,12 +17,18 @@ public class ChatModel : PageModel
     private readonly CourseService _courses;
     private readonly EnrollmentService _enrollments;
     private readonly ChatService _chat;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public ChatModel(CourseService courses, EnrollmentService enrollments, ChatService chat)
+    public ChatModel(
+        CourseService courses,
+        EnrollmentService enrollments,
+        ChatService chat,
+        UserManager<ApplicationUser> userManager)
     {
         _courses = courses;
         _enrollments = enrollments;
         _chat = chat;
+        _userManager = userManager;
     }
 
     public Course? Course { get; set; }
@@ -39,6 +47,12 @@ public class ChatModel : PageModel
         if (userId is null)
         {
             return Challenge();
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user?.IsSuspended == true)
+        {
+            return Forbid();
         }
 
         var isOwner = course.InstructorId == userId;

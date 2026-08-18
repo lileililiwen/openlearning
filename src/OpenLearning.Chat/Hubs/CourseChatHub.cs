@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using OpenLearning.Auth.Models;
 using OpenLearning.Chat.Services;
 
 namespace OpenLearning.Chat.Hubs;
@@ -9,16 +11,18 @@ namespace OpenLearning.Chat.Hubs;
 public class CourseChatHub : Hub
 {
     private readonly ChatService _chat;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public CourseChatHub(ChatService chat)
+    public CourseChatHub(ChatService chat, UserManager<ApplicationUser> userManager)
     {
         _chat = chat;
+        _userManager = userManager;
     }
 
     public async Task JoinCourse(int courseId)
     {
         var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId is null)
+        if (userId is null || await IsSuspendedAsync())
         {
             return;
         }
@@ -34,7 +38,7 @@ public class CourseChatHub : Hub
     public async Task SendMessage(int courseId, string body)
     {
         var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId is null)
+        if (userId is null || await IsSuspendedAsync())
         {
             return;
         }
@@ -50,6 +54,17 @@ public class CourseChatHub : Hub
             message.User?.DisplayName ?? userId,
             message.Body,
             message.SentAt);
+    }
+
+    private async Task<bool> IsSuspendedAsync()
+    {
+        if (Context.User is null)
+        {
+            return true;
+        }
+
+        var user = await _userManager.GetUserAsync(Context.User);
+        return user?.IsSuspended == true;
     }
 
     private static string GroupName(int courseId)

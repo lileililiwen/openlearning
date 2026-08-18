@@ -8,6 +8,7 @@ using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Progress.Models;
 using OpenLearning.Scorm.Models;
+using OpenLearning.UserManagement.Models;
 
 namespace OpenLearning.Data;
 
@@ -48,6 +49,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
 
+    public DbSet<InstructorApplication> InstructorApplications => Set<InstructorApplication>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -63,5 +66,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Order).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(ScormPackage).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(ChatMessage).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(InstructorApplication).Assembly);
     }
 }

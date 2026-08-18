@@ -1,7 +1,9 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth;
+using OpenLearning.Auth.Models;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Enrollment.Services;
@@ -18,14 +20,22 @@ public class ViewModel : PageModel
     private readonly EnrollmentService _enrollments;
     private readonly ProgressService _progress;
     private readonly ScormService _scorm;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public ViewModel(LessonService lessons, ModuleService modules, EnrollmentService enrollments, ProgressService progress, ScormService scorm)
+    public ViewModel(
+        LessonService lessons,
+        ModuleService modules,
+        EnrollmentService enrollments,
+        ProgressService progress,
+        ScormService scorm,
+        UserManager<ApplicationUser> userManager)
     {
         _lessons = lessons;
         _modules = modules;
         _enrollments = enrollments;
         _progress = progress;
         _scorm = scorm;
+        _userManager = userManager;
     }
 
     public Lesson? Lesson { get; set; }
@@ -38,6 +48,12 @@ public class ViewModel : PageModel
 
     public bool IsCompleted { get; set; }
 
+    private async Task<bool> IsSuspendedAsync()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        return user?.IsSuspended == true;
+    }
+
     public async Task<IActionResult> OnGetAsync(int id)
     {
         var lesson = await _lessons.GetByIdAsync(id);
@@ -47,6 +63,11 @@ public class ViewModel : PageModel
         }
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is not null && await IsSuspendedAsync())
+        {
+            return Forbid();
+        }
+
         var course = lesson.Module.Course;
         var isOwner = userId is not null && course.InstructorId == userId;
         var isAdmin = User.IsInRole(Roles.Admin);
@@ -84,6 +105,11 @@ public class ViewModel : PageModel
             return Challenge();
         }
 
+        if (await IsSuspendedAsync())
+        {
+            return Forbid();
+        }
+
         var lesson = await _lessons.GetByIdAsync(id);
         if (lesson?.Module?.Course is null)
         {
@@ -100,6 +126,11 @@ public class ViewModel : PageModel
         if (userId is null)
         {
             return Challenge();
+        }
+
+        if (await IsSuspendedAsync())
+        {
+            return Forbid();
         }
 
         var lesson = await _lessons.GetByIdAsync(id);

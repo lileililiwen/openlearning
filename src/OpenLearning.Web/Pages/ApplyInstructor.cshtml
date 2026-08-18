@@ -1,0 +1,67 @@
+@page
+@model OpenLearning.Web.Pages.ApplyInstructorModel
+@{
+    ViewData["Title"] = "Become an Instructor";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h1 class="h3 mb-1">Become an Instructor</h1>
+        <p class="text-muted mb-4">Tell us why you want to teach on OpenLearning. An admin will review your application.</p>
+
+        @if (TempData["Message"] is string message)
+        {
+            <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+                @message
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (Model.Application is not null)
+        {
+            @switch (Model.Application.Status)
+            {
+                case InstructorApplicationStatus.Pending:
+                    <div class="alert alert-warning">
+                        Your application is <strong>pending review</strong> (submitted @Model.Application.SubmittedAt.ToString("yyyy-MM-dd HH:mm")).
+                    </div>
+                    break;
+                case InstructorApplicationStatus.Approved:
+                    <div class="alert alert-success">
+                        Your application was <strong>approved</strong>. You can now create courses.
+                    </div>
+                    break;
+                case InstructorApplicationStatus.Rejected:
+                    <div class="alert alert-danger">
+                        Your application was <strong>rejected</strong>
+                        @if (!string.IsNullOrWhiteSpace(Model.Application.RejectionReason))
+                        {
+                            <span>— @Model.Application.RejectionReason</span>
+                        }
+                        . You may apply again below.
+                    </div>
+                    break;
+            }
+        }
+
+        <form method="post" class="card shadow-sm">
+            <div class="card-body p-4">
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Motivation" class="form-label"></label>
+                    <textarea asp-for="Input.Motivation" class="form-control" rows="5" placeholder="Experience, topics you want to teach, etc."></textarea>
+                    <span asp-validation-for="Input.Motivation" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    @(Model.Application is not null ? "Update application" : "Submit application")
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

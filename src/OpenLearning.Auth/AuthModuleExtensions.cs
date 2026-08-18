@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using OpenLearning.Auth.Authorization;
 using OpenLearning.Auth.Services;
 
 namespace OpenLearning.Auth;
@@ -21,11 +24,26 @@ public static class AuthModuleExtensions
             options.SlidingExpiration = true;
         });
 
+        // Re-validate the security stamp on every request so admin role changes
+        // and suspensions take effect immediately on the user's next request.
+        services.Configure<SecurityStampValidatorOptions>(options =>
+        {
+            options.ValidationInterval = TimeSpan.Zero;
+        });
+
+        services.AddScoped<IAuthorizationHandler, NotSuspendedHandler>();
+
         services.AddAuthorization(options =>
         {
-            options.AddPolicy(Policies.RequireStudent, p => p.RequireRole(Roles.Student));
-            options.AddPolicy(Policies.RequireInstructor, p => p.RequireRole(Roles.Instructor));
-            options.AddPolicy(Policies.RequireAdmin, p => p.RequireRole(Roles.Admin));
+            options.AddPolicy(Policies.RequireStudent, p => p
+                .RequireRole(Roles.Student)
+                .AddRequirements(new NotSuspendedRequirement()));
+            options.AddPolicy(Policies.RequireInstructor, p => p
+                .RequireRole(Roles.Instructor)
+                .AddRequirements(new NotSuspendedRequirement()));
+            options.AddPolicy(Policies.RequireAdmin, p => p
+                .RequireRole(Roles.Admin)
+                .AddRequirements(new NotSuspendedRequirement()));
         });
 
         services.AddScoped<AccountService>();

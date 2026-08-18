@@ -1,0 +1,130 @@
+@page
+@model OpenLearning.Web.Pages.Admin.UserDetailModel
+@{
+    ViewData["Title"] = "Admin · User";
+    var user = Model.Detail!.User;
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">@user.DisplayName</h1>
+        <p class="text-muted mb-0">@user.Email · joined @user.CreatedAt.ToString("yyyy-MM-dd")</p>
+    </div>
+    <a class="btn btn-outline-primary" asp-page="/Admin/Users" asp-route-search="@Model.Search">Back to users</a>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (user.IsSuspended)
+{
+    <div class="alert alert-danger">
+        This account is <strong>suspended</strong>. The user cannot learn, teach, or chat.
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white"><strong>Roles & status</strong></div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>
+                        <strong>Status</strong>
+                        @if (user.IsSuspended)
+                        {
+                            <span class="badge bg-danger ms-1">Suspended</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-published ms-1">Active</span>
+                        }
+                    </span>
+                    <form method="post" asp-page-handler="SetSuspended"
+                          asp-route-userId="@user.Id" asp-route-suspended="@(!user.IsSuspended)" class="d-inline">
+                        <button type="submit" class="btn btn-sm @(user.IsSuspended ? "btn-outline-success" : "btn-outline-danger")">
+                            @(user.IsSuspended ? "Reactivate" : "Suspend")
+                        </button>
+                    </form>
+                </div>
+                <hr />
+                @foreach (var role in new[] { Roles.Student, Roles.Instructor })
+                {
+                    var hasRole = Model.Detail!.Roles.Contains(role);
+                    <div class="d-flex justify-content-between align-items-center py-1">
+                        <span>
+                            @role
+                            @if (hasRole)
+                            {
+                                <span class="badge bg-secondary ms-1">assigned</span>
+                            }
+                        </span>
+                        <form method="post" asp-page-handler="ToggleRole"
+                              asp-route-userId="@user.Id" asp-route-role="@role" asp-route-add="@(!hasRole)" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                @(hasRole ? "Remove" : "Assign")
+                            </button>
+                        </form>
+                    </div>
+                }
+                <p class="text-muted small mb-0 mt-3">
+                    The Admin role cannot be changed from the console.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white"><strong>Enrollments (@Model.Detail!.Enrollments.Count)</strong></div>
+            <ul class="list-group list-group-flush">
+                @if (Model.Detail!.Enrollments.Count == 0)
+                {
+                    <li class="list-group-item text-muted">This user has not enrolled in any courses.</li>
+                }
+                else
+                {
+                    @foreach (var enrollment in Model.Detail!.Enrollments)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a asp-page="/Courses/Details" asp-route-id="@enrollment.CourseId">@(enrollment.Course?.Title ?? $"Course #{enrollment.CourseId}")</a>
+                            <span class="text-muted small">@enrollment.EnrolledAt.ToString("yyyy-MM-dd")</span>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><strong>Owned courses (@Model.Detail!.Courses.Count)</strong></div>
+            <ul class="list-group list-group-flush">
+                @if (Model.Detail!.Courses.Count == 0)
+                {
+                    <li class="list-group-item text-muted">This user does not own any courses.</li>
+                }
+                else
+                {
+                    @foreach (var course in Model.Detail!.Courses)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a>
+                            @if (course.IsPublished)
+                            {
+                                <span class="badge badge-published">Published</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-draft">Draft</span>
+                            }
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+    </div>
+</div>

@@ -11,6 +11,13 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
+    @{
+        ApplicationUser? currentUser = null;
+        if (SignInManager.IsSignedIn(User))
+        {
+            currentUser = await UserManager.GetUserAsync(User);
+        }
+    }
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
         <div class="container">
             <a class="navbar-brand fw-bold" asp-page="/Index">OpenLearning</a>
@@ -50,14 +57,25 @@
                             <a class="nav-link" asp-page="/Admin/Index">Dashboard</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" asp-page="/Admin/Users">Users</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" asp-page="/Admin/Courses">Courses</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Admin/InstructorApplications">Applications</a>
+                        </li>
+                    }
+                    @if (SignInManager.IsSignedIn(User) && !User.IsInRole(Roles.Instructor) && !User.IsInRole(Roles.Admin))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/ApplyInstructor">Become an Instructor</a>
                         </li>
                     }
                 </ul>
                 <ul class="navbar-nav">
                     @if (SignInManager.IsSignedIn(User))
                     {
-                        var currentUser = await UserManager.GetUserAsync(User);
                         <li class="nav-item">
                             <span class="navbar-text text-white me-3">
                                 @(currentUser?.DisplayName ?? User.Identity?.Name)
@@ -82,6 +100,15 @@
             </div>
         </div>
     </nav>
+
+    @if (currentUser?.IsSuspended == true)
+    {
+        <div class="container mb-4">
+            <div class="alert alert-danger mb-0" role="alert">
+                Your account is <strong>suspended</strong>. You cannot learn, teach, or chat until an admin reactivates it.
+            </div>
+        </div>
+    }
 
     <main class="container pb-5">
         @RenderBody()

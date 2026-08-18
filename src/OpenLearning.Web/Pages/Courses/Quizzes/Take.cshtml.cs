@@ -1,8 +1,10 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Assessments.Models;
 using OpenLearning.Assessments.Services;
+using OpenLearning.Auth.Models;
 using OpenLearning.Enrollment.Services;
 
 namespace OpenLearning.Web.Pages.Courses.Quizzes;
@@ -11,11 +13,16 @@ public class TakeModel : PageModel
 {
     private readonly AttemptService _attempts;
     private readonly EnrollmentService _enrollments;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public TakeModel(AttemptService attempts, EnrollmentService enrollments)
+    public TakeModel(
+        AttemptService attempts,
+        EnrollmentService enrollments,
+        UserManager<ApplicationUser> userManager)
     {
         _attempts = attempts;
         _enrollments = enrollments;
+        _userManager = userManager;
     }
 
     public Quiz? Quiz { get; set; }
@@ -34,6 +41,12 @@ public class TakeModel : PageModel
         if (userId is null)
         {
             return Challenge();
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user?.IsSuspended == true)
+        {
+            return Forbid();
         }
 
         var quiz = await _attempts.GetQuizForTakeAsync(id);
@@ -56,6 +69,12 @@ public class TakeModel : PageModel
     public async Task<IActionResult> OnPostAsync()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user?.IsSuspended == true)
+        {
+            return Forbid();
+        }
 
         if (!ModelState.IsValid)
         {
