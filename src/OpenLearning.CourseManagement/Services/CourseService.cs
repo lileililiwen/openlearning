@@ -19,16 +19,19 @@ public enum CourseSort
 public class CourseService
 {
     private readonly DbContext _db;
+    private readonly TagService _tags;
 
-    public CourseService(DbContext db)
+    public CourseService(DbContext db, TagService tags)
     {
         _db = db;
+        _tags = tags;
     }
 
     public Task<List<Course>> GetPublishedCoursesAsync()
     {
         return _db.Set<Course>().AsNoTracking()
                 .Include(c => c.Instructor)
+                .Include(c => c.Tags).ThenInclude(t => t.Tag)
                 .Where(c => c.Status == CourseStatus.Published)
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
@@ -38,6 +41,7 @@ public class CourseService
     {
         return _db.Set<Course>().AsNoTracking()
                 .Include(c => c.Modules).ThenInclude(m => m.Lessons)
+                .Include(c => c.Tags).ThenInclude(t => t.Tag)
                 .Where(c => c.InstructorId == instructorId)
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
@@ -47,6 +51,7 @@ public class CourseService
     {
         return _db.Set<Course>().AsNoTracking()
                 .Include(c => c.Instructor)
+                .Include(c => c.Tags).ThenInclude(t => t.Tag)
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
     }
@@ -55,6 +60,7 @@ public class CourseService
     {
         return _db.Set<Course>().AsNoTracking()
                 .Include(c => c.Instructor)
+                .Include(c => c.Tags).ThenInclude(t => t.Tag)
                 .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
                     .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -75,7 +81,8 @@ public class CourseService
         string duration,
         string language,
         string prerequisites,
-        string learningOutcomes)
+        string learningOutcomes,
+        IEnumerable<string>? tagNames = null)
     {
         var course = new Course
         {
@@ -93,6 +100,7 @@ public class CourseService
 
         _db.Set<Course>().Add(course);
         await _db.SaveChangesAsync();
+        await SetTagsAsync(course.Id, tagNames);
         return course;
     }
 
@@ -107,7 +115,8 @@ public class CourseService
         string duration,
         string language,
         string prerequisites,
-        string learningOutcomes)
+        string learningOutcomes,
+        IEnumerable<string>? tagNames = null)
     {
         var course = await _db.Set<Course>()
             .FirstOrDefaultAsync(c => c.Id == courseId && c.InstructorId == ownerId);
@@ -127,7 +136,30 @@ public class CourseService
         course.LearningOutcomes = learningOutcomes;
         course.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
+        await SetTagsAsync(courseId, tagNames);
         return true;
+    }
+
+    /// <summary>Replaces the course's tags with the resolved set (auto-creating unknown names).</summary>
+    private async Task SetTagsAsync(int courseId, IEnumerable<string>? tagNames)
+    {
+        var tags = tagNames is null ? new List<Tag>() : await _tags.EnsureByNamesAsync(tagNames);
+        var existing = await _db.Set<CourseTag>()
+            .Where(ct => ct.CourseId == courseId)
+            .ToListAsync();
+        var desired = tags.Select(t => t.Id).ToHashSet();
+
+        foreach (var link in existing.Where(ct => !desired.Contains(ct.TagId)))
+        {
+            _db.Set<CourseTag>().Remove(link);
+        }
+
+        foreach (var tag in tags.Where(t => !existing.Any(ct => ct.TagId == t.Id)))
+        {
+            _db.Set<CourseTag>().Add(new CourseTag { CourseId = courseId, TagId = tag.Id });
+        }
+
+        await _db.SaveChangesAsync();
     }
 
     public async Task<bool> DeleteAsync(int courseId, string ownerId)
@@ -240,6 +272,7 @@ public class CourseService
     public async Task<CourseSearchResult> SearchAsync(
         string? search,
         string? category,
+        string? tag,
         CourseSort sort,
         int page,
         int pageSize)
@@ -269,6 +302,28 @@ public class CourseService
             query = query.Where(c => c.Category == cat);
         }
 
+        if (!string.IsNullOrWhiteSpace(tag))
+        {
+            var slug = tag.Trim().ToLowerInvariant();
+            // Resolve slug -> tag id, then project matching course ids. This
+            // avoids navigation-based Any which is not reliably translated
+            // when combined with pagination.
+            var tagId = await _db.Set<Tag>().AsNoTracking()
+                .Where(t => t.Slug == slug && t.IsActive)
+                .Select(t => (int?)t.Id)
+                .FirstOrDefaultAsync();
+            if (tagId is null)
+            {
+                return new CourseSearchResult(new List<Course>(), 0);
+            }
+
+            var courseIds = await _db.Set<CourseTag>().AsNoTracking()
+                .Where(ct => ct.TagId == tagId)
+                .Select(ct => ct.CourseId)
+                .ToListAsync();
+            query = query.Where(c => courseIds.Contains(c.Id));
+        }
+
         var total = await query.CountAsync();
 
         query = sort switch
@@ -286,6 +341,7 @@ public class CourseService
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Include(c => c.Instructor)
+            .Include(c => c.Tags).ThenInclude(t => t.Tag)
             .ToListAsync();
 
         return new CourseSearchResult(courses, total);

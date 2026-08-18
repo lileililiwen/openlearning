@@ -12,17 +12,20 @@ namespace OpenLearning.Web.Pages;
 public class IndexModel : PageModel
 {
     private readonly CourseService _courses;
+    private readonly TagService _tags;
     private readonly EnrollmentService _enrollments;
     private readonly ReviewService _reviews;
     private readonly SystemConfigService _config;
 
     public IndexModel(
         CourseService courses,
+        TagService tags,
         EnrollmentService enrollments,
         ReviewService reviews,
         SystemConfigService config)
     {
         _courses = courses;
+        _tags = tags;
         _enrollments = enrollments;
         _reviews = reviews;
         _config = config;
@@ -31,6 +34,8 @@ public class IndexModel : PageModel
     public CourseSearchResult? Results { get; set; }
 
     public List<string> Categories { get; set; } = new();
+
+    public List<Tag> Tags { get; set; } = new();
 
     public int CurrentPage { get; set; } = 1;
 
@@ -46,6 +51,9 @@ public class IndexModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public string? Category { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public string? Tag { get; set; }
 
     [BindProperty(SupportsGet = true)]
     public string? Sort { get; set; }
@@ -83,8 +91,9 @@ public class IndexModel : PageModel
         CurrentPage = Math.Max(1, page ?? 1);
         PageSize = Math.Clamp(await _config.GetIntAsync("Catalog.PageSize", 9), 1, 50);
 
-        Results = await _courses.SearchAsync(Search, Category, sortKey, CurrentPage, PageSize);
+        Results = await _courses.SearchAsync(Search, Category, Tag, sortKey, CurrentPage, PageSize);
         Categories = await _courses.GetCategoriesAsync();
+        Tags = await _tags.GetActiveAsync();
 
         if (Results.Courses.Count > 0)
         {

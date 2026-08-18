@@ -4,8 +4,9 @@
     ViewData["Title"] = "Course Catalog";
     var search = Model.Search ?? string.Empty;
     var category = Model.Category ?? string.Empty;
+    var tag = Model.Tag ?? string.Empty;
     var sort = Model.ActiveSort;
-    bool HasQuery = !string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(category) || (sort != "newest") || Model.CurrentPage > 1;
+    bool HasQuery = !string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(category) || !string.IsNullOrEmpty(tag) || (sort != "newest") || Model.CurrentPage > 1;
     var ratings = Model.Ratings;
 }
 
@@ -41,6 +42,16 @@
                     @foreach (var c in Model.Categories)
                     {
                         <option value="@c" selected="@(c == category)">@c</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Tag</label>
+                <select name="tag" class="form-select">
+                    <option value="">All tags</option>
+                    @foreach (var t in Model.Tags)
+                    {
+                        <option value="@t.Slug" selected="@(t.Slug == tag)">@t.Name</option>
                     }
                 </select>
             </div>
@@ -116,6 +127,16 @@ else
                                 }
                             }
                         </div>
+                        @if (course.Tags.Count > 0)
+                        {
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach (var courseTag in course.Tags.Select(ct => ct.Tag))
+                                {
+                                    <a class="badge bg-primary-subtle text-primary text-decoration-none"
+                                       asp-page="/Index" asp-route-tag="@courseTag.Slug">@courseTag.Name</a>
+                                }
+                            </div>
+                        }
                     </div>
                     <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
                         <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">View course</a>

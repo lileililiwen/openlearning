@@ -10,6 +10,7 @@ public static class CourseManagementModuleExtensions
         services.AddScoped<CourseService>();
         services.AddScoped<ModuleService>();
         services.AddScoped<LessonService>();
+        services.AddScoped<TagService>();
         return services;
     }
 }

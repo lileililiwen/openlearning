@@ -53,6 +53,8 @@ public class Course
 
     public ICollection<Module> Modules { get; set; } = new List<Module>();
 
+    public ICollection<CourseTag> Tags { get; set; } = new List<CourseTag>();
+
     public bool IsPublished => Status == CourseStatus.Published;
 
     public bool IsFree => Price is null or <= 0;

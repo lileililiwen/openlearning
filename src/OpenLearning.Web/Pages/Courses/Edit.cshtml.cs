@@ -81,6 +81,10 @@ public class EditModel : PageModel
         [StringLength(2000)]
         [Display(Name = "What students will learn")]
         public string LearningOutcomes { get; set; } = string.Empty;
+
+        [StringLength(500)]
+        [Display(Name = "Tags (comma-separated)")]
+        public string Tags { get; set; } = string.Empty;
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -109,6 +113,7 @@ public class EditModel : PageModel
         Input.Language = course.Language;
         Input.Prerequisites = course.Prerequisites;
         Input.LearningOutcomes = course.LearningOutcomes;
+        Input.Tags = string.Join(", ", course.Tags.Select(ct => ct.Tag.Name));
         return Page();
     }
 
@@ -140,13 +145,19 @@ public class EditModel : PageModel
             Input.Duration,
             Input.Language,
             Input.Prerequisites,
-            Input.LearningOutcomes);
+            Input.LearningOutcomes,
+            SplitTags(Input.Tags));
         if (!updated)
         {
             return Forbid();
         }
 
         return RedirectToPage(new { id });
+    }
+
+    private static string[] SplitTags(string tags)
+    {
+        return tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
     public async Task<IActionResult> OnPostAnnounceAsync(int id)

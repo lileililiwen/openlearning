@@ -60,6 +60,10 @@ public class CreateModel : PageModel
         [StringLength(2000)]
         [Display(Name = "What students will learn")]
         public string LearningOutcomes { get; set; } = string.Empty;
+
+        [StringLength(500)]
+        [Display(Name = "Tags (comma-separated)")]
+        public string Tags { get; set; } = string.Empty;
     }
 
     public void OnGet()
@@ -85,7 +89,13 @@ public class CreateModel : PageModel
             Input.Duration,
             Input.Language,
             Input.Prerequisites,
-            Input.LearningOutcomes);
+            Input.LearningOutcomes,
+            SplitTags(Input.Tags));
         return RedirectToPage("/Courses/Edit", new { id = course!.Id });
+    }
+
+    private static string[] SplitTags(string tags)
+    {
+        return tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 }

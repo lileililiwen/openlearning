@@ -82,6 +82,17 @@
             }
         </div>
 
+        @if (course.Tags.Count > 0)
+        {
+            <div class="d-flex flex-wrap gap-1 mt-2">
+                @foreach (var tag in course.Tags.Select(ct => ct.Tag))
+                {
+                    <a class="badge bg-primary-subtle text-primary text-decoration-none"
+                       asp-page="/Index" asp-route-tag="@tag.Slug">@tag.Name</a>
+                }
+            </div>
+        }
+
         @if (!string.IsNullOrWhiteSpace(course.Prerequisites))
         {
             <h2 class="h5 mt-4">Prerequisites</h2>

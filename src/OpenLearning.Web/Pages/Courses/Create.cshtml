@@ -71,6 +71,13 @@
                     <span asp-validation-for="Input.LearningOutcomes" class="text-danger small"></span>
                 </div>
 
+                <div class="mb-3">
+                    <label asp-for="Input.Tags" class="form-label"></label>
+                    <input asp-for="Input.Tags" class="form-control" placeholder="csharp, beginner, web" />
+                    <span asp-validation-for="Input.Tags" class="text-danger small"></span>
+                    <div class="form-text">Comma-separated tags. Unknown tags are created automatically.</div>
+                </div>
+
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">Create course</button>
                     <a class="btn btn-outline-secondary" asp-page="/Courses/Manage">Cancel</a>
