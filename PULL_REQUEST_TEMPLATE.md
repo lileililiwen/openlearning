@@ -6,6 +6,14 @@
 
 <!-- e.g. openspec/changes/<name> (archives to openspec/specs/<cap>/spec.md) -->
 
+## AI involvement
+
+- [ ] `AI: generated` — blocks written by an AI with minor human edits
+- [ ] `AI: assisted` — human-written with AI suggestions/refactors
+- [ ] `AI: none` — human-authored
+
+If generated or assisted, the AI review checklist below also applies.
+
 ## Test evidence
 
 <!--
@@ -25,6 +33,14 @@ How did you verify this? Include both:
 - [ ] Server-side validation and authorization on every mutating page
 - [ ] No changes outside the change's scope (composition-root one-liners excepted)
 - [ ] Commit message is conventional and explains the *why*
+
+## AI review checklist (only if marked generated/assisted)
+
+- [ ] Code matches its OpenSpec change (spec compliance)
+- [ ] Ownership/authorization checks on every mutating path; no injection or secret regressions
+- [ ] Unit tests exist for new logic, or a stated reason why not
+- [ ] No dead code, unused branches, or leftover scaffolding
+- [ ] License/attribution for any copied fragments
 
 ## Notes for the reviewer
 

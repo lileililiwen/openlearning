@@ -58,6 +58,24 @@ The CI workflow already contains the Sonar steps; they activate automatically on
 
 The `Sonar End` step runs with `sonar.qualitygate.wait=true`, so CI fails when the new-code gate is red. Coverage XML is produced by `dotnet test` via `Coverlet.runsettings` (OpenCover format). If the secrets are absent the pipeline runs the format/build/test gates only.
 
+## AI involvement markers
+
+Every pull request records the AI involvement of its code in the PR description (and, for large changes, as a commit footer):
+
+- `AI: generated` — a block was written by an AI with only minor human edits.
+- `AI: assisted` — human-written with AI suggestions, refactors, or helpers.
+- `AI: none` — human-authored.
+
+AI-marked code is not blocked, but it is reviewed with extra care. For `AI: generated` / `AI: assisted` changes, the reviewer confirms:
+
+- Spec compliance: the change matches its OpenSpec change and the four canonical artifacts.
+- Security: ownership/authorization checks are present on every mutating path; no injection or secret-handling regressions.
+- Tests: unit tests exist for new logic, or a stated reason why not.
+- No dead code, unused branches, or leftover scaffolding.
+- License/attribution for any copied fragments (the repo is MIT; copied code must be compatible and attributed).
+
+An optional, non-blocking CI workflow (`.github/workflows/ai-marker-check.yml`) posts a soft-warning comment when a large diff (500+ added lines) has no AI marker. It never fails the pipeline.
+
 ## Local coverage
 
 Run the unit and architecture tests with line coverage locally:
@@ -121,3 +139,4 @@ For reviewers (and for the author before requesting review):
 - [ ] Server-side validation and authorization on every mutating page; no secrets in logs/URLs
 - [ ] No changes outside the change's scope (composition-root one-liners excepted)
 - [ ] Commit message is conventional and explains *why*
+- [ ] AI involvement marker recorded in the PR (generated / assisted / none); if generated or assisted, the AI review checklist applies
