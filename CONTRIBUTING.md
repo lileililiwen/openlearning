@@ -43,6 +43,15 @@ The `CI` workflow runs on every push to `main` and every pull request:
 
 The workflow **must pass before merge** (required status check).
 
+## Local Git hooks
+
+Husky.Net installs two local hooks automatically on the first `dotnet restore` (no manual setup):
+
+- **pre-commit** — runs `dotnet format --verify-no-changes` on the staged C#/Razor files; the commit is blocked on formatting drift.
+- **pre-push** — runs `dotnet build OpenLearning.sln --no-restore /warnaserror`; the push is blocked on build/analyzer errors.
+
+Hooks are a **fast local pre-check** only — CI is the authoritative gate. They can be skipped for a single command with `--no-verify` (e.g. `git commit --no-verify`) or disabled entirely with `HUSKY=0`.
+
 ## Handling format / analyzer failures
 
 - **Formatting drift** → run `dotnet format OpenLearning.sln`, review the diff, commit it. The SDK is pinned by [`global.json`](global.json); use a matching SDK so local and CI agree.

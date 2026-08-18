@@ -1,0 +1,10 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Fast local format check on staged C#/Razor files only.
+# CI (dotnet format --verify-no-changes on the whole tree) is the
+# authoritative gate; this hook gives instant feedback before commit.
+staged_files=$(git diff --cached --name-only --diff-filter=ACM -- '*.cs' '*.cshtml')
+if [ -n "$staged_files" ]; then
+  dotnet format OpenLearning.sln --verify-no-changes --no-restore --include $staged_files
+fi
