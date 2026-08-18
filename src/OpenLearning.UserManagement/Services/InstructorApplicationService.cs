@@ -51,6 +51,10 @@ public class InstructorApplicationService
         => _db.Set<InstructorApplication>().AsNoTracking()
             .FirstOrDefaultAsync(a => a.UserId == userId);
 
+    public Task<InstructorApplication?> GetByIdAsync(int applicationId)
+        => _db.Set<InstructorApplication>().AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == applicationId);
+
     public Task<List<InstructorApplication>> GetPendingAsync()
         => _db.Set<InstructorApplication>().AsNoTracking()
             .Include(a => a.User)

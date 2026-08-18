@@ -10,6 +10,8 @@ using OpenLearning.Certificates.Services;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Enrollment.Services;
+using OpenLearning.Notifications.Models;
+using OpenLearning.Notifications.Services;
 using OpenLearning.Progress.Services;
 
 namespace OpenLearning.Web.Pages.Dashboard;
@@ -37,6 +39,7 @@ public class IndexModel : PageModel
     private readonly CourseService _courses;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly CertificateService _certificates;
+    private readonly NotificationService _notifications;
 
     public IndexModel(
         EnrollmentService enrollments,
@@ -44,7 +47,8 @@ public class IndexModel : PageModel
         AttemptService attempts,
         CourseService courses,
         UserManager<ApplicationUser> userManager,
-        CertificateService certificates)
+        CertificateService certificates,
+        NotificationService notifications)
     {
         _enrollments = enrollments;
         _progress = progress;
@@ -52,6 +56,7 @@ public class IndexModel : PageModel
         _courses = courses;
         _userManager = userManager;
         _certificates = certificates;
+        _notifications = notifications;
     }
 
     public string DisplayName { get; set; } = string.Empty;
@@ -71,6 +76,7 @@ public class IndexModel : PageModel
         DisplayName = user?.DisplayName ?? User.Identity?.Name ?? string.Empty;
 
         var enrollments = await _enrollments.GetStudentEnrollmentsAsync(userId);
+        var earnedCourseIds = await _certificates.GetEarnedCourseIdsAsync(userId);
         foreach (var enrollment in enrollments)
         {
             var course = enrollment.Course!;
@@ -93,7 +99,17 @@ public class IndexModel : PageModel
                 course.Instructor?.DisplayName ?? string.Empty));
 
             // Issuance is idempotent; completed courses get a certificate now.
-            await _certificates.EnsureIssuedAsync(userId, course.Id);
+            var hadCertificate = earnedCourseIds.Contains(course.Id);
+            var certificate = await _certificates.EnsureIssuedAsync(userId, course.Id);
+            if (certificate is not null && !hadCertificate)
+            {
+                await _notifications.CreateAsync(
+                    userId,
+                    NotificationType.Certificate,
+                    $"Certificate earned: {course.Title}",
+                    "Congratulations! View and print your certificate.",
+                    $"/Certificates/View?id={certificate.Id}");
+            }
         }
 
         Certificates = await _certificates.GetForUserAsync(userId);

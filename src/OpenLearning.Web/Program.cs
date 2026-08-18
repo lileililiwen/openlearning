@@ -11,8 +11,10 @@ using OpenLearning.CourseManagement;
 using OpenLearning.Data;
 using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
+using OpenLearning.Notifications;
 using OpenLearning.Progress;
 using OpenLearning.Ratings;
+using OpenLearning.Notifications.Email;
 using OpenLearning.Scorm;
 using OpenLearning.Scorm.Services;
 using OpenLearning.UserManagement;
@@ -46,7 +48,20 @@ builder.Services.AddChatModule();
 builder.Services.AddUserManagementModule();
 builder.Services.AddRatingsModule();
 builder.Services.AddCertificatesModule();
+builder.Services.AddNotificationsModule();
 builder.Services.AddSignalR();
+
+// Optional email channel: only used when Email:Enabled is true.
+if (builder.Configuration.GetValue<bool>("Email:Enabled"))
+{
+    builder.Services.AddSingleton<IEmailSender>(_ => new SmtpEmailSender(
+        builder.Configuration["Email:Host"] ?? "localhost",
+        builder.Configuration.GetValue("Email:Port", 25),
+        builder.Configuration["Email:From"] ?? "no-reply@openlearning.local",
+        builder.Configuration["Email:User"],
+        builder.Configuration["Email:Password"],
+        builder.Configuration.GetValue("Email:UseSsl", false)));
+}
 
 var app = builder.Build();
 

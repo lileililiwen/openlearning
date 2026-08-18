@@ -11,6 +11,8 @@ using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Ecommerce.Services;
 using OpenLearning.Enrollment.Services;
+using OpenLearning.Notifications.Models;
+using OpenLearning.Notifications.Services;
 using OpenLearning.Progress.Services;
 using OpenLearning.Ratings.Models;
 using OpenLearning.Ratings.Services;
@@ -26,6 +28,7 @@ public class DetailsModel : PageModel
     private readonly OrderService _orders;
     private readonly ReviewService _reviews;
     private readonly CertificateService _certificates;
+    private readonly NotificationService _notifications;
 
     public DetailsModel(
         CourseService courses,
@@ -34,7 +37,8 @@ public class DetailsModel : PageModel
         QuizService quizzes,
         OrderService orders,
         ReviewService reviews,
-        CertificateService certificates)
+        CertificateService certificates,
+        NotificationService notifications)
     {
         _courses = courses;
         _enrollments = enrollments;
@@ -43,6 +47,7 @@ public class DetailsModel : PageModel
         _orders = orders;
         _reviews = reviews;
         _certificates = certificates;
+        _notifications = notifications;
     }
 
     public class ReviewInputModel
@@ -114,7 +119,20 @@ public class DetailsModel : PageModel
             {
                 CompletedLessonIds = await _progress.GetCompletedLessonIdsAsync(userId, id);
                 ProgressPercent = await _progress.GetProgressPercentAsync(userId, id);
+
+                // Issue a certificate at 100% and notify the student once.
+                var hadCertificate = (await _certificates.GetEarnedCourseIdsAsync(userId)).Contains(id);
                 Certificate = await _certificates.EnsureIssuedAsync(userId, id);
+                if (Certificate is not null && !hadCertificate)
+                {
+                    await _notifications.CreateAsync(
+                        userId,
+                        NotificationType.Certificate,
+                        $"Certificate earned: {course.Title}",
+                        "Congratulations! View and print your certificate.",
+                        $"/Certificates/View?id={Certificate.Id}");
+                }
+
                 UserReview = await _reviews.GetUserReviewAsync(userId, id);
                 if (UserReview is not null)
                 {

@@ -6,6 +6,8 @@ using OpenLearning.Assessments.Models;
 using OpenLearning.Assessments.Services;
 using OpenLearning.Auth.Models;
 using OpenLearning.Enrollment.Services;
+using OpenLearning.Notifications.Models;
+using OpenLearning.Notifications.Services;
 
 namespace OpenLearning.Web.Pages.Courses.Quizzes;
 
@@ -14,15 +16,18 @@ public class TakeModel : PageModel
     private readonly AttemptService _attempts;
     private readonly EnrollmentService _enrollments;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly NotificationService _notifications;
 
     public TakeModel(
         AttemptService attempts,
         EnrollmentService enrollments,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        NotificationService notifications)
     {
         _attempts = attempts;
         _enrollments = enrollments;
         _userManager = userManager;
+        _notifications = notifications;
     }
 
     public Quiz? Quiz { get; set; }
@@ -89,6 +94,27 @@ public class TakeModel : PageModel
             Quiz = await _attempts.GetQuizForTakeAsync(QuizId);
             Attempts = await _attempts.GetAttemptsForStudentAsync(userId, QuizId);
             return Page();
+        }
+
+        if (attemptId is null)
+        {
+            ModelState.AddModelError(string.Empty, "Could not save your attempt.");
+            Quiz = await _attempts.GetQuizForTakeAsync(QuizId);
+            Attempts = await _attempts.GetAttemptsForStudentAsync(userId, QuizId);
+            return Page();
+        }
+
+        var attempt = await _attempts.GetAttemptAsync(attemptId.Value, userId);
+        var quiz = attempt?.Quiz;
+        if (quiz is not null)
+        {
+            var percent = attempt!.MaxScore > 0 ? (int)Math.Round(attempt.Score * 100.0 / attempt.MaxScore) : 0;
+            await _notifications.CreateAsync(
+                userId,
+                NotificationType.Quiz,
+                $"Quiz submitted: {quiz.Title}",
+                $"Your score is {percent}%. View the result below.",
+                $"/Courses/Quizzes/Result?id={attemptId}");
         }
 
         return RedirectToPage("/Courses/Quizzes/Result", new { id = attemptId });

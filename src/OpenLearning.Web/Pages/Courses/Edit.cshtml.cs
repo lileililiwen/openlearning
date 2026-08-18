@@ -8,6 +8,8 @@ using OpenLearning.Assessments.Services;
 using OpenLearning.Auth;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
+using OpenLearning.Notifications.Models;
+using OpenLearning.Notifications.Services;
 
 namespace OpenLearning.Web.Pages.Courses;
 
@@ -16,19 +18,26 @@ public class EditModel : PageModel
 {
     private readonly CourseService _courses;
     private readonly QuizService _quizzes;
+    private readonly AnnouncementService _announcements;
 
-    public EditModel(CourseService courses, QuizService quizzes)
+    public EditModel(CourseService courses, QuizService quizzes, AnnouncementService announcements)
     {
         _courses = courses;
         _quizzes = quizzes;
+        _announcements = announcements;
     }
 
     public Course? Course { get; set; }
 
     public List<Quiz> Quizzes { get; set; } = new();
 
+    public List<CourseAnnouncement> Announcements { get; set; } = new();
+
     [BindProperty]
     public InputModel Input { get; set; } = new();
+
+    [BindProperty]
+    public string? AnnouncementBody { get; set; }
 
     public class InputModel
     {
@@ -86,6 +95,7 @@ public class EditModel : PageModel
 
         Course = course;
         Quizzes = await _quizzes.GetForCourseAsync(id);
+        Announcements = await _announcements.ListForCourseAsync(id);
         Input.Title = course.Title;
         Input.Description = course.Description;
         Input.Category = course.Category;
@@ -109,6 +119,7 @@ public class EditModel : PageModel
             {
                 Course = course;
                 Quizzes = await _quizzes.GetForCourseAsync(id);
+                Announcements = await _announcements.ListForCourseAsync(id);
             }
 
             return Page();
@@ -131,6 +142,15 @@ public class EditModel : PageModel
             return Forbid();
         }
 
+        return RedirectToPage(new { id });
+    }
+
+    public async Task<IActionResult> OnPostAnnounceAsync(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var (ok, error) = await _announcements.PostAsync(id, userId, AnnouncementBody ?? string.Empty);
+        TempData["Message"] = ok ? "Announcement posted to enrolled students." : error;
+        TempData["MessageType"] = ok ? "success" : "danger";
         return RedirectToPage(new { id });
     }
 }

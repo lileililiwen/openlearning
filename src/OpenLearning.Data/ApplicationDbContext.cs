@@ -7,6 +7,7 @@ using OpenLearning.Chat.Models;
 using OpenLearning.CourseManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 using OpenLearning.Ecommerce.Models;
+using OpenLearning.Notifications.Models;
 using OpenLearning.Progress.Models;
 using OpenLearning.Ratings.Models;
 using OpenLearning.Scorm.Models;
@@ -57,6 +58,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Certificate> Certificates => Set<Certificate>();
 
+    public DbSet<Notification> Notifications => Set<Notification>();
+
+    public DbSet<CourseAnnouncement> CourseAnnouncements => Set<CourseAnnouncement>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -75,5 +80,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(InstructorApplication).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Review).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Certificate).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Notification).Assembly);
     }
 }

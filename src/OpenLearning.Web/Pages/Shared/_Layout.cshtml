@@ -1,6 +1,9 @@
 @using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using OpenLearning.Notifications.Services
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@inject NotificationService NotificationService
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -76,6 +79,17 @@
                 <ul class="navbar-nav">
                     @if (SignInManager.IsSignedIn(User))
                     {
+                        var unreadCount = await NotificationService.GetUnreadCountAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" asp-page="/Notifications" title="Notifications">
+                                &#128276;
+                                @if (unreadCount > 0)
+                                {
+                                    <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle"
+                                          style="font-size: 0.65rem">@unreadCount</span>
+                                }
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <span class="navbar-text text-white me-3">
                                 @(currentUser?.DisplayName ?? User.Identity?.Name)

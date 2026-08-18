@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
+using OpenLearning.Enrollment.Services;
+using OpenLearning.Notifications.Models;
+using OpenLearning.Notifications.Services;
 
 namespace OpenLearning.Web.Pages.Courses.Lessons;
 
@@ -14,11 +17,19 @@ public class CreateModel : PageModel
 {
     private readonly LessonService _lessons;
     private readonly ModuleService _modules;
+    private readonly EnrollmentService _enrollments;
+    private readonly NotificationService _notifications;
 
-    public CreateModel(LessonService lessons, ModuleService modules)
+    public CreateModel(
+        LessonService lessons,
+        ModuleService modules,
+        EnrollmentService enrollments,
+        NotificationService notifications)
     {
         _lessons = lessons;
         _modules = modules;
+        _enrollments = enrollments;
+        _notifications = notifications;
     }
 
     public Module? Module { get; set; }
@@ -73,7 +84,20 @@ public class CreateModel : PageModel
             return Forbid();
         }
 
-        var courseId = (await _modules.GetByIdAsync(ModuleId))!.CourseId;
+        var course = await _modules.GetByIdAsync(ModuleId);
+        var courseId = course!.CourseId;
+        if (courseId > 0)
+        {
+            // Notify every enrolled student that a new lesson was added.
+            var (enrollments, _) = await _enrollments.GetEnrollmentsForRosterAsync(courseId);
+            await _notifications.CreateForManyAsync(
+                enrollments.Select(e => e.StudentId),
+                NotificationType.Lesson,
+                $"New lesson in {course.Title}",
+                $"{Input.Title} has been published.",
+                $"/Courses/Details?id={courseId}");
+        }
+
         return RedirectToPage("/Courses/Edit", new { id = courseId });
     }
 }
