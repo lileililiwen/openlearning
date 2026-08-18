@@ -1,0 +1,64 @@
+@page
+@model OpenLearning.Web.Pages.Memberships.IndexModel
+@{
+    ViewData["Title"] = "Memberships";
+}
+
+<div class="mb-4">
+    <h1 class="h3 mb-1">Memberships</h1>
+    <p class="text-muted mb-0">Unlimited access to paid courses for one subscription price.</p>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.ActiveMembership is not null)
+{
+    <div class="alert alert-success">
+        <strong>Your membership is active</strong> until
+        @Model.ActiveMembership.ExpiresAt.ToLocalTime().ToString("yyyy-MM-dd")
+        (@(Model.ActiveMembership.Plan?.Name ?? "Membership")).
+    </div>
+}
+
+@if (Model.Plans.Count == 0)
+{
+    <div class="alert alert-info">No membership plans are available right now.</div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var plan in Model.Plans)
+        {
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h2 class="h5 mb-1">@plan.Name</h2>
+                        <p class="text-muted small flex-grow-1">@plan.Description</p>
+                        <div class="mb-3">
+                            <span class="fs-4 fw-bold">@plan.Price.ToString("C")</span>
+                            <span class="text-muted">/ @plan.DurationDays days</span>
+                        </div>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <form method="post" asp-page-handler="Purchase" asp-route-id="@plan.Id">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    @(Model.ActiveMembership is not null ? "Renew" : "Purchase")
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-primary w-100" asp-page="/Auth/Login">Sign in to purchase</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

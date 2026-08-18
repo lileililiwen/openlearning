@@ -11,6 +11,7 @@ using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Ecommerce.Services;
 using OpenLearning.Enrollment.Services;
+using OpenLearning.Memberships.Services;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Notifications.Services;
 using OpenLearning.Progress.Services;
@@ -29,6 +30,7 @@ public class DetailsModel : PageModel
     private readonly ReviewService _reviews;
     private readonly CertificateService _certificates;
     private readonly NotificationService _notifications;
+    private readonly MembershipService _memberships;
 
     public DetailsModel(
         CourseService courses,
@@ -38,7 +40,8 @@ public class DetailsModel : PageModel
         OrderService orders,
         ReviewService reviews,
         CertificateService certificates,
-        NotificationService notifications)
+        NotificationService notifications,
+        MembershipService memberships)
     {
         _courses = courses;
         _enrollments = enrollments;
@@ -48,6 +51,7 @@ public class DetailsModel : PageModel
         _reviews = reviews;
         _certificates = certificates;
         _notifications = notifications;
+        _memberships = memberships;
     }
 
     public class ReviewInputModel
@@ -70,6 +74,8 @@ public class DetailsModel : PageModel
     public bool IsEnrolled { get; set; }
 
     public bool HasPaidOrder { get; set; }
+
+    public bool IsMember { get; set; }
 
     public HashSet<int> CompletedLessonIds { get; set; } = new();
 
@@ -110,6 +116,7 @@ public class DetailsModel : PageModel
         if (userId is not null)
         {
             IsEnrolled = await _enrollments.IsEnrolledAsync(userId, id);
+            IsMember = await _memberships.IsActiveAsync(userId);
             if (course.Price is > 0)
             {
                 HasPaidOrder = await _orders.HasPaidOrderAsync(userId, id);
@@ -169,12 +176,17 @@ public class DetailsModel : PageModel
             return NotFound();
         }
 
-        // Paid courses cannot be enrolled directly without a paid order.
+        // Paid courses cannot be enrolled directly without a paid order,
+        // unless the student has an active membership (free-enrollment benefit).
         if (course.Price is > 0 && !await _orders.HasPaidOrderAsync(userId, id))
         {
-            TempData["Message"] = "This course requires purchase before enrollment.";
-            TempData["MessageType"] = "danger";
-            return RedirectToPage(new { id });
+            var isMember = await _memberships.IsActiveAsync(userId);
+            if (!isMember)
+            {
+                TempData["Message"] = "This course requires purchase before enrollment.";
+                TempData["MessageType"] = "danger";
+                return RedirectToPage(new { id });
+            }
         }
 
         var (ok, error) = await _enrollments.EnrollAsync(userId, id);

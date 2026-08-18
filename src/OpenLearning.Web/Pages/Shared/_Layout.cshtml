@@ -37,6 +37,9 @@
                     <li class="nav-item">
                         <a class="nav-link" asp-page="/Index">Catalog</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Memberships/Index">Memberships</a>
+                    </li>
                     @if (User.IsInRole(Roles.Student))
                     {
                         <li class="nav-item">
@@ -80,6 +83,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Admin/Tags">Tags</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Admin/MembershipPlans">Membership Plans</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Admin/System">System</a>

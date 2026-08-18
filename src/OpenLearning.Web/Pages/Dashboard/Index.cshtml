@@ -12,6 +12,17 @@
     <a class="btn btn-outline-primary" asp-page="/Index">Browse catalog</a>
 </div>
 
+@if (Model.ActiveMembership is not null)
+{
+    <div class="alert alert-success d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Membership active</strong> — expires
+            @Model.ActiveMembership.ExpiresAt.ToLocalTime().ToString("yyyy-MM-dd")
+        </div>
+        <a class="btn btn-sm btn-outline-primary" asp-page="/Memberships/Index">Renew</a>
+    </div>
+}
+
 @if (Model.CourseItems.Count == 0)
 {
     <div class="alert alert-info">

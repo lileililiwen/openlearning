@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assessments.Services;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
@@ -10,6 +11,8 @@ using OpenLearning.Certificates.Services;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Enrollment.Services;
+using OpenLearning.Memberships.Models;
+using OpenLearning.Memberships.Services;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Notifications.Services;
 using OpenLearning.Progress.Services;
@@ -40,6 +43,8 @@ public class IndexModel : PageModel
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly CertificateService _certificates;
     private readonly NotificationService _notifications;
+    private readonly MembershipService _memberships;
+    private readonly DbContext _db;
 
     public IndexModel(
         EnrollmentService enrollments,
@@ -48,7 +53,9 @@ public class IndexModel : PageModel
         CourseService courses,
         UserManager<ApplicationUser> userManager,
         CertificateService certificates,
-        NotificationService notifications)
+        NotificationService notifications,
+        MembershipService memberships,
+        DbContext db)
     {
         _enrollments = enrollments;
         _progress = progress;
@@ -57,6 +64,8 @@ public class IndexModel : PageModel
         _userManager = userManager;
         _certificates = certificates;
         _notifications = notifications;
+        _memberships = memberships;
+        _db = db;
     }
 
     public string DisplayName { get; set; } = string.Empty;
@@ -68,6 +77,8 @@ public class IndexModel : PageModel
     public List<Course> Recommendations { get; set; } = new();
 
     public List<Certificate> Certificates { get; set; } = new();
+
+    public Membership? ActiveMembership { get; set; }
 
     public async Task OnGetAsync()
     {
@@ -116,6 +127,9 @@ public class IndexModel : PageModel
         Certificates = await _certificates.GetForUserAsync(userId);
         ContinueLearning = await _progress.GetContinueLearningItemsAsync(userId);
 
+        ActiveMembership = await _memberships.GetActiveAsync(userId);
+        await SendMembershipRemindersAsync(userId);
+
         var enrolledCourseIds = enrollments.Select(e => e.CourseId).ToList();
         var categories = enrollments
             .Select(e => e.Course!.Category)
@@ -123,5 +137,34 @@ public class IndexModel : PageModel
             .Distinct()
             .ToList();
         Recommendations = await _courses.GetRecommendationsAsync(categories, enrolledCourseIds, 6);
+    }
+
+    /// <summary>
+    /// One reminder per membership expiring within 7 days. Deduplication uses
+    /// the notification link as the stable key (a "Membership" type does not
+    /// exist), so repeated dashboard loads only notify once.
+    /// </summary>
+    private async Task SendMembershipRemindersAsync(string userId)
+    {
+        var expiring = await _memberships.GetExpiringAsync(withinDays: 7);
+        foreach (var membership in expiring.Where(m => m.UserId == userId))
+        {
+            var link = $"/Memberships/Index?membershipId={membership.Id}";
+            var alreadyNotified = await _db.Set<Notification>()
+                .Where(n => n.UserId == userId && n.Link == link)
+                .AnyAsync();
+            if (alreadyNotified)
+            {
+                continue;
+            }
+
+            await _notifications.CreateAsync(
+                userId,
+                NotificationType.Membership,
+                "Membership expiring soon",
+                $"Your {membership.Plan?.Name ?? "membership"} expires on " +
+                $"{membership.ExpiresAt.ToLocalTime():yyyy-MM-dd}. Renew to keep your benefits.",
+                link);
+        }
     }
 }

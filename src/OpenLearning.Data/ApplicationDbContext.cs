@@ -7,6 +7,7 @@ using OpenLearning.Chat.Models;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Logging.Models;
+using OpenLearning.Memberships.Models;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Progress.Models;
 using OpenLearning.Ratings.Models;
@@ -89,6 +90,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<PhoneCode> PhoneCodes => Set<PhoneCode>();
 
+    public DbSet<MembershipPlan> MembershipPlans => Set<MembershipPlan>();
+
+    public DbSet<Membership> Memberships => Set<Membership>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -111,5 +116,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(StoredFile).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(OperationLog).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Setting).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(MembershipPlan).Assembly);
     }
 }

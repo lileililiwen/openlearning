@@ -310,10 +310,12 @@
                 }
                 else if (course.IsPublished && User.Identity?.IsAuthenticated == true && !Model.IsOwner)
                 {
-                    @if (course.IsFree)
+                    @if (course.IsFree || Model.IsMember)
                     {
                         <form method="post" asp-page-handler="Enroll" asp-route-id="@course.Id">
-                            <button type="submit" class="btn btn-primary w-100">Enroll</button>
+                            <button type="submit" class="btn btn-primary w-100">
+                                @(Model.IsMember ? "Enroll (member)" : "Enroll")
+                            </button>
                         </form>
                     }
                     else

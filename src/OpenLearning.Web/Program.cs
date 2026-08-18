@@ -15,6 +15,7 @@ using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
 using OpenLearning.Logging;
 using OpenLearning.Logging.Middleware;
+using OpenLearning.Memberships;
 using OpenLearning.Notifications;
 using OpenLearning.Notifications.Channels;
 using OpenLearning.Notifications.Email;
@@ -112,6 +113,7 @@ builder.Services.AddStorageModule(
     builder.Configuration["Storage:Root"]
     ?? Path.Combine(builder.Environment.ContentRootPath, "storage"));
 builder.Services.AddLoggingModule(builder.Configuration.GetValue("Logging:RetentionDays", 90));
+builder.Services.AddMembershipsModule();
 // After AddNotificationsModule so the template renderer override wins.
 builder.Services.AddSystemConfigModule();
 builder.Services.AddSignalR();
