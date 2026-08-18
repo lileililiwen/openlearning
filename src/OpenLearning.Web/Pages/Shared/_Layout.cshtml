@@ -92,7 +92,7 @@
                         </li>
                         <li class="nav-item">
                             <span class="navbar-text text-white me-3">
-                                @(currentUser?.DisplayName ?? User.Identity?.Name)
+                                <a class="text-white text-decoration-none" asp-page="/Profile/Index">@(currentUser?.DisplayName ?? User.Identity?.Name)</a>
                             </span>
                         </li>
                         <li class="nav-item">

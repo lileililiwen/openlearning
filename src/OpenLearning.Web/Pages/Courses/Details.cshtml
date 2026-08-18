@@ -50,7 +50,9 @@
         <p class="text-muted mb-1">
             @if (course.Instructor is not null)
             {
-                <span>By <strong>@course.Instructor.DisplayName</strong></span>
+                <span>
+                    By <a asp-page="/Instructors/Index" asp-route-id="@course.InstructorId" class="fw-semibold text-decoration-none">@course.Instructor.DisplayName</a>
+                </span>
             }
         </p>
         <p class="text-muted small">

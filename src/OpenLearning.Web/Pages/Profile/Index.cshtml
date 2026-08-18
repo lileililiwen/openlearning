@@ -1,0 +1,101 @@
+@page
+@model OpenLearning.Web.Pages.Profile.IndexModel
+@{
+    ViewData["Title"] = "My Profile";
+    var user = Model.CurrentUser;
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                @if (!string.IsNullOrWhiteSpace(user?.AvatarUrl))
+                {
+                    <img src="@user.AvatarUrl" alt="Avatar" class="rounded-circle mb-3"
+                         style="width: 120px; height: 120px; object-fit: cover" />
+                }
+                else
+                {
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
+                         style="width: 120px; height: 120px; font-size: 2.5rem">
+                        @(user?.DisplayName?.FirstOrDefault() ?? '?')
+                    </div>
+                }
+                <h2 class="h4 mb-1">@user?.DisplayName</h2>
+                <p class="text-muted small mb-1">@user?.Email</p>
+                <p class="text-muted small mb-0">
+                    @foreach (var role in Model.UserClaims())
+                    {
+                        <span class="badge bg-primary me-1">@role</span>
+                    }
+                </p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-white"><strong>Account security</strong></div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="ChangePassword">
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+                    <div class="mb-2">
+                        <label asp-for="PasswordInput.CurrentPassword" class="form-label small"></label>
+                        <input asp-for="PasswordInput.CurrentPassword" class="form-control" autocomplete="current-password" />
+                        <span asp-validation-for="PasswordInput.CurrentPassword" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-2">
+                        <label asp-for="PasswordInput.NewPassword" class="form-label small"></label>
+                        <input asp-for="PasswordInput.NewPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="PasswordInput.NewPassword" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="PasswordInput.ConfirmPassword" class="form-label small"></label>
+                        <input asp-for="PasswordInput.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="PasswordInput.ConfirmPassword" class="text-danger small"></span>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary w-100">Change password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        @if (TempData["Message"] is string message)
+        {
+            <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+                @message
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><strong>Edit profile</strong></div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="SaveProfile">
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="ProfileInput.DisplayName" class="form-label"></label>
+                        <input asp-for="ProfileInput.DisplayName" class="form-control" />
+                        <span asp-validation-for="ProfileInput.DisplayName" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ProfileInput.Bio" class="form-label"></label>
+                        <textarea asp-for="ProfileInput.Bio" class="form-control" rows="4"
+                                  placeholder="Tell learners a bit about yourself…"></textarea>
+                        <span asp-validation-for="ProfileInput.Bio" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ProfileInput.AvatarUrl" class="form-label"></label>
+                        <input asp-for="ProfileInput.AvatarUrl" class="form-control" placeholder="https://example.com/avatar.png" />
+                        <span asp-validation-for="ProfileInput.AvatarUrl" class="text-danger small"></span>
+                        <div class="form-text">Avatar uploads are not supported yet — paste an image URL instead.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

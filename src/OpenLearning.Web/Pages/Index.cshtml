@@ -88,7 +88,7 @@ else
                             @course.Category
                             @if (course.Instructor is not null)
                             {
-                                <span>· by @course.Instructor.DisplayName</span>
+                                <span>· by <a class="text-decoration-none" asp-page="/Instructors/Index" asp-route-id="@course.InstructorId">@course.Instructor.DisplayName</a></span>
                             }
                         </h6>
                         <p class="card-text">

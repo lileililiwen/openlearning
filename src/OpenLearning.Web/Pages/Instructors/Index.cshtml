@@ -1,0 +1,75 @@
+@page "{id}"
+@model OpenLearning.Web.Pages.Instructors.IndexModel
+@{
+    ViewData["Title"] = Model.Instructor!.DisplayName;
+    var instructor = Model.Instructor;
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                @if (!string.IsNullOrWhiteSpace(instructor.AvatarUrl))
+                {
+                    <img src="@instructor.AvatarUrl" alt="Avatar" class="rounded-circle mb-3"
+                         style="width: 120px; height: 120px; object-fit: cover" />
+                }
+                else
+                {
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
+                         style="width: 120px; height: 120px; font-size: 2.5rem">
+                        @(instructor.DisplayName.FirstOrDefault())
+                    </div>
+                }
+                <h1 class="h4 mb-1">@instructor.DisplayName</h1>
+                <p class="text-muted small mb-0">Instructor</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><strong>About</strong></div>
+            <div class="card-body">
+                @if (string.IsNullOrWhiteSpace(instructor.Bio))
+                {
+                    <p class="text-muted mb-0">@instructor.DisplayName has not written a bio yet.</p>
+                }
+                else
+                {
+                    <p class="mb-0">@instructor.Bio</p>
+                }
+            </div>
+        </div>
+
+        <h2 class="h5 mt-4 mb-3">Courses (@Model.PublishedCourses.Count)</h2>
+        @if (Model.PublishedCourses.Count == 0)
+        {
+            <div class="alert alert-info">No published courses yet.</div>
+        }
+        else
+        {
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                @foreach (var course in Model.PublishedCourses)
+                {
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a class="text-decoration-none" asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a>
+                                </h5>
+                                <h6 class="card-subtitle mb-2 text-muted">@course.Category</h6>
+                                <p class="card-text">
+                                    @(course.Description.Length > 140 ? course.Description[..140] + "…" : course.Description)
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">View course</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
