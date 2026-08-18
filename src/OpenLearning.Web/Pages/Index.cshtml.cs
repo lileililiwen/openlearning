@@ -4,6 +4,7 @@ using OpenLearning.Auth;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Enrollment.Services;
+using OpenLearning.Ratings.Services;
 
 namespace OpenLearning.Web.Pages;
 
@@ -11,11 +12,13 @@ public class IndexModel : PageModel
 {
     private readonly CourseService _courses;
     private readonly EnrollmentService _enrollments;
+    private readonly ReviewService _reviews;
 
-    public IndexModel(CourseService courses, EnrollmentService enrollments)
+    public IndexModel(CourseService courses, EnrollmentService enrollments, ReviewService reviews)
     {
         _courses = courses;
         _enrollments = enrollments;
+        _reviews = reviews;
     }
 
     public CourseSearchResult? Results { get; set; }
@@ -27,6 +30,9 @@ public class IndexModel : PageModel
     public int PageSize { get; set; } = 9;
 
     public int TotalPages => Results is null ? 0 : (int)Math.Ceiling(Results.TotalCount / (double)PageSize);
+
+    /// <summary>Per-course rating aggregate (CourseId → Average+Count). Empty entry for courses with no reviews.</summary>
+    public Dictionary<int, RatingAggregate> Ratings { get; set; } = new();
 
     [BindProperty(SupportsGet = true)]
     public string? Search { get; set; }
@@ -72,6 +78,15 @@ public class IndexModel : PageModel
         Results = await _courses.SearchAsync(Search, Category, sortKey, CurrentPage, PageSize);
         Categories = await _courses.GetCategoriesAsync();
 
+        if (Results.Courses.Count > 0)
+        {
+            var ids = Results.Courses.Select(c => c.Id).ToList();
+            var ratingMap = await _reviews.GetRatingsAsync(ids);
+            Ratings = ids.ToDictionary(
+                id => id,
+                id => ratingMap.TryGetValue(id, out var r) ? r : new RatingAggregate(0d, 0));
+        }
+
         if (sortKey == CourseSort.Popular && Results.Courses.Count > 0)
         {
             var ids = Results.Courses.Select(c => c.Id).ToList();
@@ -79,6 +94,16 @@ public class IndexModel : PageModel
             Results = new CourseSearchResult(
                 Results.Courses
                     .OrderByDescending(c => counts.GetValueOrDefault(c.Id))
+                    .ThenByDescending(c => c.CreatedAt)
+                    .ToList(),
+                Results.TotalCount);
+        }
+        else if (sortKey == CourseSort.Rating && Results.Courses.Count > 0)
+        {
+            Results = new CourseSearchResult(
+                Results.Courses
+                    .OrderByDescending(c => Ratings.GetValueOrDefault(c.Id)?.Average ?? 0d)
+                    .ThenByDescending(c => Ratings.GetValueOrDefault(c.Id)?.Count ?? 0)
                     .ThenByDescending(c => c.CreatedAt)
                     .ToList(),
                 Results.TotalCount);

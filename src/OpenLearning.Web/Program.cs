@@ -11,6 +11,7 @@ using OpenLearning.Data;
 using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
 using OpenLearning.Progress;
+using OpenLearning.Ratings;
 using OpenLearning.Scorm;
 using OpenLearning.Scorm.Services;
 using OpenLearning.UserManagement;
@@ -42,6 +43,7 @@ builder.Services.AddEcommerceModule();
 builder.Services.AddScormModule();
 builder.Services.AddChatModule();
 builder.Services.AddUserManagementModule();
+builder.Services.AddRatingsModule();
 builder.Services.AddSignalR();
 
 var app = builder.Build();

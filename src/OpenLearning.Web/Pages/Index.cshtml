@@ -6,6 +6,7 @@
     var category = Model.Category ?? string.Empty;
     var sort = Model.ActiveSort;
     bool HasQuery = !string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(category) || (sort != "newest") || Model.CurrentPage > 1;
+    var ratings = Model.Ratings;
 }
 
 @if (!User.Identity?.IsAuthenticated == true)
@@ -105,6 +106,14 @@ else
                             @if (!string.IsNullOrWhiteSpace(course.Language))
                             {
                                 <span class="badge bg-light text-dark border">@course.Language</span>
+                            }
+                            @{
+                                if (ratings.TryGetValue(course.Id, out var agg) && agg is not null && agg.Count > 0)
+                                {
+                                    <span class="badge bg-warning text-dark" title="Average student rating">
+                                        &#9733; @agg.Average.ToString("0.0") (@agg.Count)
+                                    </span>
+                                }
                             }
                         </div>
                     </div>

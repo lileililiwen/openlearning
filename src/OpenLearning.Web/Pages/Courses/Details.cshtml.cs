@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -9,6 +10,8 @@ using OpenLearning.CourseManagement.Services;
 using OpenLearning.Ecommerce.Services;
 using OpenLearning.Enrollment.Services;
 using OpenLearning.Progress.Services;
+using OpenLearning.Ratings.Models;
+using OpenLearning.Ratings.Services;
 
 namespace OpenLearning.Web.Pages.Courses;
 
@@ -19,19 +22,31 @@ public class DetailsModel : PageModel
     private readonly ProgressService _progress;
     private readonly QuizService _quizzes;
     private readonly OrderService _orders;
+    private readonly ReviewService _reviews;
 
     public DetailsModel(
         CourseService courses,
         EnrollmentService enrollments,
         ProgressService progress,
         QuizService quizzes,
-        OrderService orders)
+        OrderService orders,
+        ReviewService reviews)
     {
         _courses = courses;
         _enrollments = enrollments;
         _progress = progress;
         _quizzes = quizzes;
         _orders = orders;
+        _reviews = reviews;
+    }
+
+    public class ReviewInputModel
+    {
+        [Range(1, 5, ErrorMessage = "Please choose a rating from 1 to 5 stars.")]
+        public int Rating { get; set; }
+
+        [StringLength(2000, ErrorMessage = "Comment must be 2000 characters or fewer.")]
+        public string? Comment { get; set; }
     }
 
     public Course? Course { get; set; }
@@ -49,6 +64,15 @@ public class DetailsModel : PageModel
     public HashSet<int> CompletedLessonIds { get; set; } = new();
 
     public int ProgressPercent { get; set; }
+
+    public RatingAggregate Aggregate { get; set; } = new(0d, 0);
+
+    public List<ReviewWithAuthor> PublicReviews { get; set; } = new();
+
+    public Review? UserReview { get; set; }
+
+    [BindProperty]
+    public ReviewInputModel ReviewInput { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -69,6 +93,7 @@ public class DetailsModel : PageModel
 
         Course = course;
         Quizzes = await _quizzes.GetForCourseAsync(id);
+        Aggregate = await _reviews.GetRatingAsync(id);
 
         if (userId is not null)
         {
@@ -82,8 +107,23 @@ public class DetailsModel : PageModel
             {
                 CompletedLessonIds = await _progress.GetCompletedLessonIdsAsync(userId, id);
                 ProgressPercent = await _progress.GetProgressPercentAsync(userId, id);
+                UserReview = await _reviews.GetUserReviewAsync(userId, id);
+                if (UserReview is not null)
+                {
+                    ReviewInput = new ReviewInputModel
+                    {
+                        Rating = UserReview.Rating,
+                        Comment = UserReview.Comment,
+                    };
+                }
             }
         }
+
+        // Owner sees all reviews; public visitors see up to 5 most recent.
+        var allReviews = await _reviews.GetReviewsForCourseAsync(id);
+        PublicReviews = IsOwner || IsAdmin
+            ? allReviews
+            : allReviews.Take(5).ToList();
 
         return Page();
     }
@@ -130,6 +170,27 @@ public class DetailsModel : PageModel
 
         await _enrollments.WithdrawAsync(userId, id);
         return RedirectToPage("/MyCourses");
+    }
+
+    public async Task<IActionResult> OnPostSubmitReviewAsync(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return Challenge();
+        }
+
+        if (!await _enrollments.IsEnrolledAsync(userId, id))
+        {
+            TempData["Message"] = "You must be enrolled in this course to leave a review.";
+            TempData["MessageType"] = "danger";
+            return RedirectToPage(new { id });
+        }
+
+        var (ok, error) = await _reviews.SubmitAsync(userId, id, ReviewInput.Rating, ReviewInput.Comment);
+        TempData["Message"] = ok ? "Thanks for your review!" : error;
+        TempData["MessageType"] = ok ? "success" : "danger";
+        return RedirectToPage(new { id });
     }
 
     public async Task<IActionResult> OnPostPublishAsync(int id)
