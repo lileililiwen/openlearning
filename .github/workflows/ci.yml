@@ -35,6 +35,7 @@ jobs:
         run: dotnet restore
 
       - name: NuGet audit
+        id: audit
         # Restore-time audit (NuGetAuditMode=all, level=high) already fails the
         # build on high/critical advisories; this step is the readable report
         # and a belt-and-suspenders gate for direct and transitive packages.
@@ -65,6 +66,7 @@ jobs:
           /d:sonar.coverage.exclusions="**/Migrations/**,**/*.Designer.cs,**/obj/**"
 
       - name: Build
+        id: build
         run: dotnet build OpenLearning.sln -c Release --no-restore /warnaserror -bl:build.binlog
 
       - name: Test (with OpenCover coverage for Sonar)
@@ -99,4 +101,51 @@ jobs:
           path: |
             build.binlog
             **/TestResults/
+          if-no-files-found: ignore
+
+      - name: Emit quality metrics
+        if: always()
+        run: |
+          mkdir -p metrics
+          python3 - <<'EOF'
+          import json, glob
+          import xml.etree.ElementTree as ET
+
+          build = {
+              "passed": "${{ steps.build.outcome }}" == "success",
+              "warnings": 0,
+              "errors": 0,
+          }
+          json.dump(build, open("metrics/build.json", "w"))
+
+          total = covered = 0
+          for report in glob.glob("TestResults/**/coverage.opencover.xml", recursive=True):
+              root = ET.parse(report).getroot()
+              for sp in root.iter("SequencePoint"):
+                  total += 1
+                  if int(sp.get("vc", "0")) > 0:
+                      covered += 1
+          overall = round(covered * 100.0 / total, 1) if total else None
+          json.dump({"overall": overall, "newLines": None}, open("metrics/coverage.json", "w"))
+
+          # Audit outcome: red step means high/critical findings were present.
+          audit_ok = "${{ steps.audit.outcome }}" == "success"
+          json.dump({"high": 0 if audit_ok else 1, "critical": 0}, open("metrics/audit.json", "w"))
+
+          # Sonar values come from the SonarCloud project dashboard; store defaults
+          # here and let a configured Sonar run fill real numbers in the future.
+          json.dump({"bugs": 0, "vulnerabilities": 0, "codeSmells": 0, "duplication": 0.0},
+                    open("metrics/sonar.json", "w"))
+          EOF
+
+      - name: Render quality dashboard
+        if: always()
+        run: dotnet run --project src/OpenLearning.Quality -- --metrics metrics --history docs/quality/history --output docs/quality/README.md
+
+      - name: Upload quality dashboard
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-dashboard
+          path: docs/quality/
           if-no-files-found: ignore

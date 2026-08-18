@@ -34,5 +34,9 @@ logs/
 ## Test coverage output
 TestResults/
 
+## Quality dashboard runtime state (history accumulates locally; README is committed)
+metrics/
+docs/quality/history/
+
 ## Uploaded SCORM packages (runtime data)
 src/OpenLearning.Web/wwwroot/scorm/
