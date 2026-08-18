@@ -58,6 +58,16 @@ The CI workflow already contains the Sonar steps; they activate automatically on
 
 The `Sonar End` step runs with `sonar.qualitygate.wait=true`, so CI fails when the new-code gate is red. Coverage XML is produced by `dotnet test` via `Coverlet.runsettings` (OpenCover format). If the secrets are absent the pipeline runs the format/build/test gates only.
 
+## NuGet vulnerability policy
+
+NuGet packages are audited for known vulnerabilities at restore time (direct and transitive, high/critical severity) and by a CI step (`dotnet list package --vulnerable --include-transitive`). Restore-time audit failures surface as build errors because warnings are treated as errors.
+
+When the audit flags a vulnerability, follow this order:
+
+1. **Upgrade** — update the package (or a transitive dependency's parent) to a patched version. This is the default fix; upgrades are reviewed like any change.
+2. **Pin** — if a patched version is unavailable for the framework band, pin the minimal safe version and record why.
+3. **Accept** — only when the advisory cannot be fixed by upgrading (e.g. no fix exists for the referenced version). Add the advisory URL to `NuGetAuditSuppress` in `Directory.Build.props` **with a comment stating the rationale**, and note it in the PR for review. Accepted advisories are never silent.
+
 ## Local Git hooks
 
 Husky.Net installs two local hooks automatically on the first `dotnet restore` (no manual setup):

@@ -34,6 +34,17 @@ jobs:
       - name: Restore
         run: dotnet restore
 
+      - name: NuGet audit
+        # Restore-time audit (NuGetAuditMode=all, level=high) already fails the
+        # build on high/critical advisories; this step is the readable report
+        # and a belt-and-suspenders gate for direct and transitive packages.
+        run: |
+          dotnet list OpenLearning.sln package --vulnerable --include-transitive
+          if dotnet list OpenLearning.sln package --vulnerable --include-transitive | grep -qE '^\s*>\s+\S+\s+[0-9].*\s(High|Critical)\s'; then
+            echo "::error::Known high/critical NuGet vulnerabilities found. Upgrade the package or add an accepted advisory to NuGetAuditSuppress with a reviewed rationale (see CONTRIBUTING.md)."
+            exit 1
+          fi
+
       - name: Format verify
         # Fails on any drift from the .editorconfig (deterministic formatting).
         run: dotnet format OpenLearning.sln --verify-no-changes --no-restore

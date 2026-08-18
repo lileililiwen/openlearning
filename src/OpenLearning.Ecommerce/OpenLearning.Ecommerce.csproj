@@ -9,7 +9,7 @@
     <ProjectReference Include="..\OpenLearning.Auth\OpenLearning.Auth.csproj" />
     <ProjectReference Include="..\OpenLearning.CourseManagement\OpenLearning.CourseManagement.csproj" />
     <ProjectReference Include="..\OpenLearning.Enrollment\OpenLearning.Enrollment.csproj" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.30" />
   </ItemGroup>
 
 </Project>

@@ -10,6 +10,14 @@
     <WarningsNotAsErrors></WarningsNotAsErrors>
     <!-- Make bin/obj outputs deterministic across machines. -->
     <Deterministic>true</Deterministic>
+    <!-- NuGet vulnerability audit at restore time: direct + transitive, fail on
+         high/critical (see nuget-audit change). Accepted advisories go in
+         NuGetAuditSuppress with a reviewed rationale. -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>high</NuGetAuditLevel>
+    <!-- Accepted advisories (empty until one is documented in CONTRIBUTING.md). -->
+    <NuGetAuditSuppress></NuGetAuditSuppress>
   </PropertyGroup>
 
   <ItemGroup>
