@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3463386F-B8D6-4899-A736-63B07DB9D55D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Web", "src\OpenLearning.Web\OpenLearning.Web.csproj", "{59266E3F-A056-48B6-A2EC-CBBAFD1AB326}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Auth", "src\OpenLearning.Auth\OpenLearning.Auth.csproj", "{4AC02408-1993-4B1C-9313-BE3FE9B1A2D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.CourseManagement", "src\OpenLearning.CourseManagement\OpenLearning.CourseManagement.csproj", "{0C577CA4-36B0-42BA-9D3A-49B7824F3B43}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Enrollment", "src\OpenLearning.Enrollment\OpenLearning.Enrollment.csproj", "{218A6626-EF56-4221-B75E-9E80221F278F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Progress", "src\OpenLearning.Progress\OpenLearning.Progress.csproj", "{9A8D4D9A-E916-498F-9C9F-159558CFD67B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Data", "src\OpenLearning.Data\OpenLearning.Data.csproj", "{0B282BE4-D8E4-4AF6-A8CC-216751DD85ED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{59266E3F-A056-48B6-A2EC-CBBAFD1AB326}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59266E3F-A056-48B6-A2EC-CBBAFD1AB326}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59266E3F-A056-48B6-A2EC-CBBAFD1AB326}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59266E3F-A056-48B6-A2EC-CBBAFD1AB326}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AC02408-1993-4B1C-9313-BE3FE9B1A2D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AC02408-1993-4B1C-9313-BE3FE9B1A2D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AC02408-1993-4B1C-9313-BE3FE9B1A2D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AC02408-1993-4B1C-9313-BE3FE9B1A2D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C577CA4-36B0-42BA-9D3A-49B7824F3B43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C577CA4-36B0-42BA-9D3A-49B7824F3B43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C577CA4-36B0-42BA-9D3A-49B7824F3B43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C577CA4-36B0-42BA-9D3A-49B7824F3B43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{218A6626-EF56-4221-B75E-9E80221F278F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{218A6626-EF56-4221-B75E-9E80221F278F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{218A6626-EF56-4221-B75E-9E80221F278F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{218A6626-EF56-4221-B75E-9E80221F278F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A8D4D9A-E916-498F-9C9F-159558CFD67B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A8D4D9A-E916-498F-9C9F-159558CFD67B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A8D4D9A-E916-498F-9C9F-159558CFD67B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A8D4D9A-E916-498F-9C9F-159558CFD67B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B282BE4-D8E4-4AF6-A8CC-216751DD85ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B282BE4-D8E4-4AF6-A8CC-216751DD85ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B282BE4-D8E4-4AF6-A8CC-216751DD85ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B282BE4-D8E4-4AF6-A8CC-216751DD85ED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{59266E3F-A056-48B6-A2EC-CBBAFD1AB326} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
+		{4AC02408-1993-4B1C-9313-BE3FE9B1A2D5} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
+		{0C577CA4-36B0-42BA-9D3A-49B7824F3B43} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
+		{218A6626-EF56-4221-B75E-9E80221F278F} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
+		{9A8D4D9A-E916-498F-9C9F-159558CFD67B} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
+		{0B282BE4-D8E4-4AF6-A8CC-216751DD85ED} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
+	EndGlobalSection
+EndGlobal

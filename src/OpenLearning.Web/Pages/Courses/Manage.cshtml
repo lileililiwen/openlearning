@@ -1,0 +1,73 @@
+@page
+@model OpenLearning.Web.Pages.Courses.ManageModel
+@{
+    ViewData["Title"] = "My Courses";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">My Courses</h1>
+        <p class="text-muted mb-0">Manage the courses you teach.</p>
+    </div>
+    <a class="btn btn-primary" asp-page="/Courses/Create">New course</a>
+</div>
+
+@if (Model.Courses.Count == 0)
+{
+    <div class="alert alert-info">
+        You have not created any courses yet.
+        <a asp-page="/Courses/Create">Create your first course</a>.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Lessons</th>
+                    <th>Created</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var course in Model.Courses)
+                {
+                    <tr>
+                        <td>
+                            <a asp-page="/Courses/Details" asp-route-id="@course.Id" class="fw-semibold">@course.Title</a>
+                        </td>
+                        <td>@course.Category</td>
+                        <td>
+                            @if (course.IsPublished)
+                            {
+                                <span class="badge badge-published">Published</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-draft">Draft</span>
+                            }
+                        </td>
+                        <td>@course.Modules.Sum(m => m.Lessons.Count)</td>
+                        <td>@course.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td class="text-end d-flex justify-content-end gap-2">
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Edit" asp-route-id="@course.Id">Edit</a>
+                            <form method="post" asp-page-handler="Publish" asp-route-id="@course.Id">
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    @(course.IsPublished ? "Unpublish" : "Publish")
+                                </button>
+                            </form>
+                            <form method="post" asp-page-handler="Delete" asp-route-id="@course.Id"
+                                  onsubmit="return confirm('Delete this course and all of its content?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

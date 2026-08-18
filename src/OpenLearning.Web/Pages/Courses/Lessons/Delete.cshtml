@@ -1,0 +1,26 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Lessons.DeleteModel
+@{
+    ViewData["Title"] = "Delete Lesson";
+    var lesson = Model.Lesson!;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4 text-center">
+                <h1 class="h4 mb-3">Delete lesson?</h1>
+                <p class="mb-4">
+                    <strong>@lesson.Title</strong> will be permanently removed.
+                    This cannot be undone.
+                </p>
+                <form method="post" asp-route-id="@lesson.Id" class="d-inline-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Delete lesson</button>
+                    <a class="btn btn-outline-secondary"
+                       asp-page="/Courses/Edit"
+                       asp-route-id="@(lesson.Module?.CourseId)">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

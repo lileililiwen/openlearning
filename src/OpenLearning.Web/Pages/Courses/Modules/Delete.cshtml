@@ -1,0 +1,24 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Modules.DeleteModel
+@{
+    ViewData["Title"] = "Delete Module";
+    var module = Model.Module!;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4 text-center">
+                <h1 class="h4 mb-3">Delete module?</h1>
+                <p class="mb-4">
+                    <strong>@module.Title</strong> and its @module.Lessons.Count lesson(s)
+                    will be permanently removed. This cannot be undone.
+                </p>
+                <form method="post" asp-route-id="@module.Id" class="d-inline-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Delete module</button>
+                    <a class="btn btn-outline-secondary" asp-page="/Courses/Edit" asp-route-id="@module.CourseId">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

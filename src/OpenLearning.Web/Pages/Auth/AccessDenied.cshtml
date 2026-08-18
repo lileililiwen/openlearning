@@ -1,0 +1,16 @@
+@page
+@{
+    ViewData["Title"] = "Access denied";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+        <h1 class="display-6 fw-bold text-danger">403</h1>
+        <p class="lead">You do not have permission to view this page.</p>
+        <p class="text-muted">
+            If you believe this is a mistake, sign in with an account that has the
+            required role.
+        </p>
+        <a class="btn btn-primary" asp-page="/Index">Back to catalog</a>
+    </div>
+</div>

@@ -1,0 +1,32 @@
+## .NET build output
+bin/
+obj/
+*.user
+
+## Visual Studio
+.vs/
+.vscode/
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Rider
+.idea/
+*.sln.iml
+
+## User-specific files
+*.rsuser
+*.local
+
+## Environment / secrets
+appsettings.Production.json
+.env
+*.pfx
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Logs
+*.log
+logs/

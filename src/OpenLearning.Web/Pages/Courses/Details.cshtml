@@ -1,0 +1,183 @@
+@page
+@model OpenLearning.Web.Pages.Courses.DetailsModel
+@{
+    ViewData["Title"] = Model.Course!.Title;
+    var course = Model.Course;
+    var canViewStructure = Model.IsEnrolled || Model.IsOwner || Model.IsAdmin;
+}
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@course.Title</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <h1 class="h2 mb-2">@course.Title</h1>
+        <div class="mb-3">
+            @if (course.IsPublished)
+            {
+                <span class="badge badge-published">Published</span>
+            }
+            else
+            {
+                <span class="badge badge-draft">Draft</span>
+            }
+            @if (!string.IsNullOrEmpty(course.Category))
+            {
+                <span class="badge bg-secondary">@course.Category</span>
+            }
+        </div>
+        <p class="text-muted mb-1">
+            @if (course.Instructor is not null)
+            {
+                <span>By <strong>@course.Instructor.DisplayName</strong></span>
+            }
+        </p>
+        <p class="text-muted small">
+            Created @course.CreatedAt.ToString("yyyy-MM-dd")
+            · @course.Modules.Count module(s)
+            · @course.Modules.Sum(m => m.Lessons.Count) lesson(s)
+        </p>
+
+        <p class="lead mt-3">@course.Description</p>
+
+        <hr />
+
+        @if (canViewStructure)
+        {
+            @if (course.Modules.Count == 0)
+            {
+                <p class="text-muted">This course has no content yet.</p>
+            }
+            else
+            {
+                <h2 class="h4 mb-3">Course content</h2>
+                foreach (var module in course.Modules)
+                {
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <strong>@module.Title</strong>
+                            @if (Model.IsOwner)
+                            {
+                                <span class="d-inline-flex gap-2">
+                                    <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Lessons/Create" asp-route-moduleId="@module.Id">Add lesson</a>
+                                    <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Modules/Edit" asp-route-id="@module.Id">Edit</a>
+                                    <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Modules/Delete" asp-route-id="@module.Id">Delete</a>
+                                </span>
+                            }
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            @if (module.Lessons.Count == 0)
+                            {
+                                <li class="list-group-item text-muted">No lessons yet.</li>
+                            }
+                            else
+                            {
+                                foreach (var lesson in module.Lessons)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        @if (Model.IsEnrolled)
+                                        {
+                                            @if (Model.CompletedLessonIds.Contains(lesson.Id))
+                                            {
+                                                <span class="text-success me-2" title="Completed">&#10003;</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted me-2" title="Not completed">&#9675;</span>
+                                            }
+                                            <a asp-page="/Courses/Lessons/View" asp-route-id="@lesson.Id">@lesson.Title</a>
+                                        }
+                                        else
+                                        {
+                                            <span>@lesson.Title</span>
+                                        }
+                                        @if (Model.IsOwner)
+                                        {
+                                            <span class="d-inline-flex gap-2">
+                                                <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Lessons/Edit" asp-route-id="@lesson.Id">Edit</a>
+                                                <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Lessons/Delete" asp-route-id="@lesson.Id">Delete</a>
+                                            </span>
+                                        }
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                }
+            }
+        }
+        else
+        {
+            <div class="alert alert-secondary">
+                <i>Course content is available after you enroll.</i>
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                @if (Model.IsEnrolled)
+                {
+                    <h2 class="h6">Your progress</h2>
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>@Model.ProgressPercent% complete</span>
+                    </div>
+                    <div class="progress progress-thin mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: @Model.ProgressPercent%"></div>
+                    </div>
+                    <a class="btn btn-primary w-100 mb-2" asp-page="/Courses/Details" asp-route-id="@course.Id">Continue learning</a>
+                    <form method="post" asp-page-handler="Withdraw" asp-route-id="@course.Id"
+                          onsubmit="return confirm('Withdraw from this course?');">
+                        <button type="submit" class="btn btn-outline-danger w-100">Withdraw</button>
+                    </form>
+                }
+                else if (course.IsPublished && User.Identity?.IsAuthenticated == true && !Model.IsOwner)
+                {
+                    <form method="post" asp-page-handler="Enroll" asp-route-id="@course.Id">
+                        <button type="submit" class="btn btn-primary w-100">Enroll</button>
+                    </form>
+                }
+                else if (course.IsPublished && User.Identity?.IsAuthenticated != true)
+                {
+                    <a class="btn btn-primary w-100" asp-page="/Auth/Login">Sign in to enroll</a>
+                }
+
+                @if (Model.IsOwner)
+                {
+                    <hr />
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Edit" asp-route-id="@course.Id">Edit course</a>
+                    <form method="post" asp-page-handler="Publish" asp-route-id="@course.Id">
+                        <button type="submit" class="btn btn-outline-success w-100 mb-2">
+                            @(course.IsPublished ? "Unpublish" : "Publish")
+                        </button>
+                    </form>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@course.Id"
+                          onsubmit="return confirm('Delete this course and all of its content?');">
+                        <button type="submit" class="btn btn-outline-danger w-100">Delete course</button>
+                    </form>
+                }
+                else if (Model.IsAdmin)
+                {
+                    <hr />
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@course.Id"
+                          onsubmit="return confirm('Delete this course and all of its content?');">
+                        <button type="submit" class="btn btn-outline-danger w-100">Delete course</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,47 @@
+@page
+@model OpenLearning.Web.Pages.IndexModel
+@{
+    ViewData["Title"] = "Course Catalog";
+}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <h1 class="display-6 fw-bold mb-1">Course Catalog</h1>
+        <p class="text-muted mb-4">Browse published courses and start learning today.</p>
+    </div>
+</div>
+
+@if (Model.Courses.Count == 0)
+{
+    <div class="alert alert-info">
+        No published courses yet. When an instructor publishes a course it will appear here.
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var course in Model.Courses)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@course.Title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            @course.Category
+                            @if (course.Instructor is not null)
+                            {
+                                <span>· by @course.Instructor.DisplayName</span>
+                            }
+                        </h6>
+                        <p class="card-text">
+                            @(course.Description.Length > 140 ? course.Description[..140] + "…" : course.Description)
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">View course</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

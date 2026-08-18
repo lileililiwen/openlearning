@@ -1,0 +1,88 @@
+@page
+@model OpenLearning.Web.Pages.Courses.EditModel
+@{
+    ViewData["Title"] = "Edit Course";
+    var course = Model.Course!;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Edit course</h1>
+    <a class="btn btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">View course page</a>
+</div>
+
+<form method="post" class="card shadow-sm mb-4">
+    <div class="card-body p-4">
+        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Input.Title" class="form-label"></label>
+            <input asp-for="Input.Title" class="form-control" autofocus />
+            <span asp-validation-for="Input.Title" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.Category" class="form-label"></label>
+            <input asp-for="Input.Category" class="form-control" />
+            <span asp-validation-for="Input.Category" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.Description" class="form-label"></label>
+            <textarea asp-for="Input.Description" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Input.Description" class="text-danger small"></span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save changes</button>
+            <a class="btn btn-outline-secondary" asp-page="/Courses/Manage">Back to my courses</a>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>Course structure</strong>
+        <a class="btn btn-sm btn-primary" asp-page="/Courses/Modules/Create" asp-route-courseId="@course.Id">Add module</a>
+    </div>
+    <ul class="list-group list-group-flush">
+        @if (course.Modules.Count == 0)
+        {
+            <li class="list-group-item text-muted">
+                No modules yet. Add a module to start organizing lessons.
+            </li>
+        }
+        else
+        {
+            foreach (var module in course.Modules)
+            {
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong>@module.Title</strong>
+                        <span class="d-inline-flex gap-2">
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Lessons/Create" asp-route-moduleId="@module.Id">Add lesson</a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Modules/Edit" asp-route-id="@module.Id">Edit</a>
+                            <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Modules/Delete" asp-route-id="@module.Id">Delete</a>
+                        </span>
+                    </div>
+                    @if (module.Lessons.Count > 0)
+                    {
+                        <ul class="list-unstyled ms-3 mt-2 mb-0 small">
+                            @foreach (var lesson in module.Lessons)
+                            {
+                                <li class="d-flex justify-content-between align-items-center py-1">
+                                    <span>@lesson.Title</span>
+                                    <span class="d-inline-flex gap-2">
+                                        <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Lessons/Edit" asp-route-id="@lesson.Id">Edit</a>
+                                        <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Lessons/Delete" asp-route-id="@lesson.Id">Delete</a>
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </li>
+            }
+        }
+    </ul>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,57 @@
+@page
+@model OpenLearning.Web.Pages.MyCoursesModel
+@{
+    ViewData["Title"] = "My Courses";
+}
+
+<h1 class="h3 mb-4">My Courses</h1>
+
+@if (Model.Courses.Count == 0)
+{
+    <div class="alert alert-info">
+        You are not enrolled in any courses yet.
+        <a asp-page="/Index">Browse the catalog</a> to find something to learn.
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var item in Model.Courses)
+        {
+            var course = item.Enrollment.Course!;
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a class="text-decoration-none" asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a>
+                        </h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            @course.Category
+                            @if (course.Instructor is not null)
+                            {
+                                <span>· by @course.Instructor.DisplayName</span>
+                            }
+                        </h6>
+                        <p class="text-muted small mb-2">Enrolled @item.Enrollment.EnrolledAt.ToString("yyyy-MM-dd")</p>
+
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Progress</span>
+                            <span>@item.ProgressPercent%</span>
+                        </div>
+                        <div class="progress progress-thin mb-3">
+                            <div class="progress-bar" role="progressbar" style="width: @item.ProgressPercent%"></div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent d-flex gap-2">
+                        <a class="btn btn-sm btn-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">Continue</a>
+                        <form method="post" asp-page-handler="Withdraw" asp-route-id="@course.Id"
+                              class="ms-auto"
+                              onsubmit="return confirm('Withdraw from this course? Your progress will be lost.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Withdraw</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

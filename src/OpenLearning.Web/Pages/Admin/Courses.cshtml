@@ -1,0 +1,57 @@
+@page
+@model OpenLearning.Web.Pages.Admin.CoursesModel
+@{
+    ViewData["Title"] = "Admin · Courses";
+}
+
+<h1 class="h3 mb-4">Admin — All Courses</h1>
+
+@if (Model.Courses.Count == 0)
+{
+    <div class="alert alert-info">No courses exist yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Instructor</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var course in Model.Courses)
+                {
+                    <tr>
+                        <td>
+                            <a asp-page="/Courses/Details" asp-route-id="@course.Id" class="fw-semibold">@course.Title</a>
+                        </td>
+                        <td>@(course.Instructor?.DisplayName ?? course.InstructorId)</td>
+                        <td>
+                            @if (course.IsPublished)
+                            {
+                                <span class="badge badge-published">Published</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-draft">Draft</span>
+                            }
+                        </td>
+                        <td>@course.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td class="text-end d-flex justify-content-end gap-2">
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">View</a>
+                            <form method="post" asp-page-handler="Delete" asp-route-id="@course.Id"
+                                  onsubmit="return confirm('Delete this course and all of its content?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
