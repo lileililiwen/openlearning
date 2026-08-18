@@ -101,4 +101,21 @@ public class EnrollmentService
 
         return (enrollments, totalLessons);
     }
+
+    /// <summary>Enrollment count per course id, for a set of course ids.</summary>
+    public async Task<Dictionary<int, int>> GetEnrollmentCountsAsync(IEnumerable<int> courseIds)
+    {
+        var ids = courseIds.ToList();
+        if (ids.Count == 0)
+        {
+            return new Dictionary<int, int>();
+        }
+
+        var grouped = await _db.Set<EnrollmentEntity>().AsNoTracking()
+            .Where(e => ids.Contains(e.CourseId))
+            .GroupBy(e => e.CourseId)
+            .Select(g => new { CourseId = g.Key, Count = g.Count() })
+            .ToListAsync();
+        return grouped.ToDictionary(g => g.CourseId, g => g.Count);
+    }
 }

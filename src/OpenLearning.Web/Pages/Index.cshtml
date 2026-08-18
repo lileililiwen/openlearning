@@ -2,6 +2,10 @@
 @model OpenLearning.Web.Pages.IndexModel
 @{
     ViewData["Title"] = "Course Catalog";
+    var search = Model.Search ?? string.Empty;
+    var category = Model.Category ?? string.Empty;
+    var sort = Model.ActiveSort;
+    bool HasQuery = !string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(category) || (sort != "newest") || Model.CurrentPage > 1;
 }
 
 @if (!User.Identity?.IsAuthenticated == true)
@@ -15,28 +19,70 @@
     </div>
 }
 
-<div class="row g-4">
-    <div class="col-lg-8">
+<div class="d-flex justify-content-between align-items-end mb-3">
+    <div>
         <h1 class="display-6 fw-bold mb-1">Course Catalog</h1>
-        <p class="text-muted mb-4">Browse published courses and start learning today.</p>
+        <p class="text-muted mb-0">@(Model.Results!.TotalCount) published course@(Model.Results!.TotalCount == 1 ? "" : "s")</p>
     </div>
 </div>
 
-@if (Model.Courses.Count == 0)
+<form method="get" class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label small text-muted mb-1">Search</label>
+                <input type="text" name="search" value="@search" class="form-control" placeholder="Search title, description, or category" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Category</label>
+                <select name="category" class="form-select">
+                    <option value="">All categories</option>
+                    @foreach (var c in Model.Categories)
+                    {
+                        <option value="@c" selected="@(c == category)">@c</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Sort</label>
+                <div class="d-flex gap-2">
+                    <select name="sort" class="form-select">
+                        <option value="newest" selected="@(sort == "newest")">Newest</option>
+                        <option value="popular" selected="@(sort == "popular")">Most popular</option>
+                        <option value="price-asc" selected="@(sort == "price-asc")">Price: low to high</option>
+                        <option value="price-desc" selected="@(sort == "price-desc")">Price: high to low</option>
+                        <option value="rating" selected="@(sort == "rating")">Top rated</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Apply</button>
+                </div>
+            </div>
+        </div>
+        @if (HasQuery)
+        {
+            <div class="mt-2">
+                <a class="btn btn-sm btn-outline-secondary" asp-page="/Index">Clear filters</a>
+            </div>
+        }
+    </div>
+</form>
+
+@if (Model.Results!.Courses.Count == 0)
 {
     <div class="alert alert-info">
-        No published courses yet. When an instructor publishes a course it will appear here.
+        No published courses match your search.
     </div>
 }
 else
 {
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        @foreach (var course in Model.Courses)
+        @foreach (var course in Model.Results!.Courses)
         {
             <div class="col">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
-                        <h5 class="card-title">@course.Title</h5>
+                        <h5 class="card-title">
+                            <a class="text-decoration-none" asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a>
+                        </h5>
                         <h6 class="card-subtitle mb-2 text-muted">
                             @course.Category
                             @if (course.Instructor is not null)
@@ -47,12 +93,53 @@ else
                         <p class="card-text">
                             @(course.Description.Length > 140 ? course.Description[..140] + "…" : course.Description)
                         </p>
+                        <div class="d-flex flex-wrap gap-2 small text-muted mb-2">
+                            @if (course.Level is not null)
+                            {
+                                <span class="badge bg-info">@course.Level</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(course.Duration))
+                            {
+                                <span class="badge bg-light text-dark border">@course.Duration</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(course.Language))
+                            {
+                                <span class="badge bg-light text-dark border">@course.Language</span>
+                            }
+                        </div>
                     </div>
-                    <div class="card-footer bg-transparent">
+                    <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
                         <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">View course</a>
+                        @if (course.IsFree)
+                        {
+                            <span class="badge badge-published">Free</span>
+                        }
+                        else
+                        {
+                            <span class="fw-semibold">@course.Price!.Value.ToString("C")</span>
+                        }
                     </div>
                 </div>
             </div>
         }
     </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="mt-4" aria-label="Catalog pagination">
+            <ul class="pagination justify-content-center">
+                @for (var p = 1; p <= Model.TotalPages; p++)
+                {
+                    <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link"
+                           asp-page="/Index"
+                           asp-route-search="@search"
+                           asp-route-category="@category"
+                           asp-route-sort="@sort"
+                           asp-route-page="@p">@p</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
 }

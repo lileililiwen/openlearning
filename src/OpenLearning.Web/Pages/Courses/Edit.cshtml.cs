@@ -47,6 +47,27 @@ public class EditModel : PageModel
         [Range(0, 99999, ErrorMessage = "Price must be between 0 and 99999.")]
         [Display(Name = "Price (leave blank for free)")]
         public decimal? Price { get; set; }
+
+        [Display(Name = "Level")]
+        public CourseLevel? Level { get; set; }
+
+        [StringLength(50)]
+        [Display(Name = "Duration (e.g. \"6 hours\")")]
+        public string Duration { get; set; } = string.Empty;
+
+        [StringLength(50)]
+        [Display(Name = "Language")]
+        public string Language { get; set; } = string.Empty;
+
+        [DataType(DataType.MultilineText)]
+        [StringLength(2000)]
+        [Display(Name = "Prerequisites")]
+        public string Prerequisites { get; set; } = string.Empty;
+
+        [DataType(DataType.MultilineText)]
+        [StringLength(2000)]
+        [Display(Name = "What students will learn")]
+        public string LearningOutcomes { get; set; } = string.Empty;
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -69,6 +90,11 @@ public class EditModel : PageModel
         Input.Description = course.Description;
         Input.Category = course.Category;
         Input.Price = course.Price;
+        Input.Level = course.Level;
+        Input.Duration = course.Duration;
+        Input.Language = course.Language;
+        Input.Prerequisites = course.Prerequisites;
+        Input.LearningOutcomes = course.LearningOutcomes;
         return Page();
     }
 
@@ -88,7 +114,18 @@ public class EditModel : PageModel
             return Page();
         }
 
-        var updated = await _courses.UpdateAsync(id, userId, Input.Title, Input.Description, Input.Category, Input.Price);
+        var updated = await _courses.UpdateAsync(
+            id,
+            userId,
+            Input.Title,
+            Input.Description,
+            Input.Category,
+            Input.Price,
+            Input.Level,
+            Input.Duration,
+            Input.Language,
+            Input.Prerequisites,
+            Input.LearningOutcomes);
         if (!updated)
         {
             return Forbid();

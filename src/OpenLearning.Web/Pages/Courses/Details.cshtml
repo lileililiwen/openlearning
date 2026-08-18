@@ -58,6 +58,32 @@
             · @course.Modules.Sum(m => m.Lessons.Count) lesson(s)
         </p>
 
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            @if (course.Level is not null)
+            {
+                <span class="badge bg-info">@course.Level</span>
+            }
+            @if (!string.IsNullOrWhiteSpace(course.Duration))
+            {
+                <span class="badge bg-light text-dark border">@course.Duration</span>
+            }
+            @if (!string.IsNullOrWhiteSpace(course.Language))
+            {
+                <span class="badge bg-light text-dark border">@course.Language</span>
+            }
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(course.Prerequisites))
+        {
+            <h2 class="h5 mt-4">Prerequisites</h2>
+            <p>@course.Prerequisites</p>
+        }
+        @if (!string.IsNullOrWhiteSpace(course.LearningOutcomes))
+        {
+            <h2 class="h5 mt-4">What you will learn</h2>
+            <p>@course.LearningOutcomes</p>
+        }
+
         <p class="lead mt-3">@course.Description</p>
 
         <hr />

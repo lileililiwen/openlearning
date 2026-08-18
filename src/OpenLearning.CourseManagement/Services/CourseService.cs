@@ -3,6 +3,18 @@ using OpenLearning.CourseManagement.Models;
 
 namespace OpenLearning.CourseManagement.Services;
 
+/// <summary>One page of catalog results plus the total for pagination.</summary>
+public sealed record CourseSearchResult(IReadOnlyList<Course> Courses, int TotalCount);
+
+public enum CourseSort
+{
+    Newest = 0,
+    Popular = 1,
+    PriceAsc = 2,
+    PriceDesc = 3,
+    Rating = 4,
+}
+
 public class CourseService
 {
     private readonly DbContext _db;
@@ -43,7 +55,16 @@ public class CourseService
         => _db.Set<Course>().AnyAsync(c => c.Id == courseId && c.InstructorId == userId);
 
     public async Task<Course?> CreateAsync(
-        string instructorId, string title, string description, string category, decimal? price)
+        string instructorId,
+        string title,
+        string description,
+        string category,
+        decimal? price,
+        CourseLevel? level,
+        string duration,
+        string language,
+        string prerequisites,
+        string learningOutcomes)
     {
         var course = new Course
         {
@@ -51,6 +72,11 @@ public class CourseService
             Description = description,
             Category = category,
             Price = price,
+            Level = level,
+            Duration = duration,
+            Language = language,
+            Prerequisites = prerequisites,
+            LearningOutcomes = learningOutcomes,
             InstructorId = instructorId,
         };
 
@@ -60,7 +86,17 @@ public class CourseService
     }
 
     public async Task<bool> UpdateAsync(
-        int courseId, string ownerId, string title, string description, string category, decimal? price)
+        int courseId,
+        string ownerId,
+        string title,
+        string description,
+        string category,
+        decimal? price,
+        CourseLevel? level,
+        string duration,
+        string language,
+        string prerequisites,
+        string learningOutcomes)
     {
         var course = await _db.Set<Course>()
             .FirstOrDefaultAsync(c => c.Id == courseId && c.InstructorId == ownerId);
@@ -73,6 +109,11 @@ public class CourseService
         course.Description = description;
         course.Category = category;
         course.Price = price;
+        course.Level = level;
+        course.Duration = duration;
+        course.Language = language;
+        course.Prerequisites = prerequisites;
+        course.LearningOutcomes = learningOutcomes;
         course.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return true;
@@ -163,4 +204,68 @@ public class CourseService
             .OrderByDescending(c => c.CreatedAt)
             .Take(count)
             .ToListAsync();
+
+    /// <summary>
+    /// Paginated catalog search over published courses. Returns the page and
+    /// the total count for the matched set (not the entire page).
+    /// </summary>
+    public async Task<CourseSearchResult> SearchAsync(
+        string? search,
+        string? category,
+        CourseSort sort,
+        int page,
+        int pageSize)
+    {
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 48);
+
+        IQueryable<Course> query = _db.Set<Course>().AsNoTracking()
+            .Where(c => c.Status == CourseStatus.Published);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(c =>
+                c.Title.ToLower().Contains(term)
+                || c.Description.ToLower().Contains(term)
+                || c.Category.ToLower().Contains(term));
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            var cat = category.Trim();
+            query = query.Where(c => c.Category == cat);
+        }
+
+        var total = await query.CountAsync();
+
+        query = sort switch
+        {
+            CourseSort.PriceAsc => query
+                .OrderBy(c => c.Price ?? 0m)
+                .ThenByDescending(c => c.CreatedAt),
+            CourseSort.PriceDesc => query
+                .OrderByDescending(c => c.Price ?? 0m)
+                .ThenByDescending(c => c.CreatedAt),
+            _ => query.OrderByDescending(c => c.CreatedAt),
+        };
+
+        var courses = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Include(c => c.Instructor)
+            .ToListAsync();
+
+        return new CourseSearchResult(courses, total);
+    }
+
+    public async Task<List<string>> GetCategoriesAsync()
+    {
+        return await _db.Set<Course>().AsNoTracking()
+            .Where(c => c.Status == CourseStatus.Published && c.Category != string.Empty)
+            .Select(c => c.Category)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToListAsync();
+    }
 }
