@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.UserManagement
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Ratings", "src\OpenLearning.Ratings\OpenLearning.Ratings.csproj", "{32ED8CA4-0C23-4CE4-BFB8-C36E214754DD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Certificates", "src\OpenLearning.Certificates\OpenLearning.Certificates.csproj", "{96F847A4-1016-4B2B-B9AD-2B5D8369442C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,6 +88,10 @@ Global
 		{32ED8CA4-0C23-4CE4-BFB8-C36E214754DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32ED8CA4-0C23-4CE4-BFB8-C36E214754DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32ED8CA4-0C23-4CE4-BFB8-C36E214754DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96F847A4-1016-4B2B-B9AD-2B5D8369442C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96F847A4-1016-4B2B-B9AD-2B5D8369442C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96F847A4-1016-4B2B-B9AD-2B5D8369442C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96F847A4-1016-4B2B-B9AD-2B5D8369442C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{59266E3F-A056-48B6-A2EC-CBBAFD1AB326} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
@@ -100,5 +106,6 @@ Global
 		{117E443F-1783-49E3-A628-83AECE716B0D} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
 		{06D36A36-6123-445E-A4CD-08DF86C985ED} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
 		{32ED8CA4-0C23-4CE4-BFB8-C36E214754DD} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
+		{96F847A4-1016-4B2B-B9AD-2B5D8369442C} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
 	EndGlobalSection
 EndGlobal

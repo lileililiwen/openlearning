@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Assessments.Models;
 using OpenLearning.Assessments.Services;
 using OpenLearning.Auth;
+using OpenLearning.Certificates.Models;
+using OpenLearning.Certificates.Services;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Ecommerce.Services;
@@ -23,6 +25,7 @@ public class DetailsModel : PageModel
     private readonly QuizService _quizzes;
     private readonly OrderService _orders;
     private readonly ReviewService _reviews;
+    private readonly CertificateService _certificates;
 
     public DetailsModel(
         CourseService courses,
@@ -30,7 +33,8 @@ public class DetailsModel : PageModel
         ProgressService progress,
         QuizService quizzes,
         OrderService orders,
-        ReviewService reviews)
+        ReviewService reviews,
+        CertificateService certificates)
     {
         _courses = courses;
         _enrollments = enrollments;
@@ -38,6 +42,7 @@ public class DetailsModel : PageModel
         _quizzes = quizzes;
         _orders = orders;
         _reviews = reviews;
+        _certificates = certificates;
     }
 
     public class ReviewInputModel
@@ -70,6 +75,8 @@ public class DetailsModel : PageModel
     public List<ReviewWithAuthor> PublicReviews { get; set; } = new();
 
     public Review? UserReview { get; set; }
+
+    public Certificate? Certificate { get; set; }
 
     [BindProperty]
     public ReviewInputModel ReviewInput { get; set; } = new();
@@ -107,6 +114,7 @@ public class DetailsModel : PageModel
             {
                 CompletedLessonIds = await _progress.GetCompletedLessonIdsAsync(userId, id);
                 ProgressPercent = await _progress.GetProgressPercentAsync(userId, id);
+                Certificate = await _certificates.EnsureIssuedAsync(userId, id);
                 UserReview = await _reviews.GetUserReviewAsync(userId, id);
                 if (UserReview is not null)
                 {

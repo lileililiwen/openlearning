@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assessments.Models;
 using OpenLearning.Auth.Models;
+using OpenLearning.Certificates.Models;
 using OpenLearning.Chat.Models;
 using OpenLearning.CourseManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
@@ -54,6 +55,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Review> Reviews => Set<Review>();
 
+    public DbSet<Certificate> Certificates => Set<Certificate>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -71,5 +74,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(ChatMessage).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(InstructorApplication).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Review).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Certificate).Assembly);
     }
 }

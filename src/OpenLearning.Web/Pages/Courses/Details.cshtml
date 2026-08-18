@@ -283,6 +283,12 @@
                         <div class="progress-bar" role="progressbar" style="width: @Model.ProgressPercent%"></div>
                     </div>
                     <a class="btn btn-primary w-100 mb-2" asp-page="/Courses/Details" asp-route-id="@course.Id">Continue learning</a>
+                    @if (Model.Certificate is not null)
+                    {
+                        <a class="btn btn-success w-100 mb-2" asp-page="/Certificates/View" asp-route-id="@Model.Certificate.Id">
+                            &#127891; View certificate
+                        </a>
+                    }
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Chat" asp-route-id="@course.Id">Course chat</a>
                     <form method="post" asp-page-handler="Withdraw" asp-route-id="@course.Id"
                           onsubmit="return confirm('Withdraw from this course?');">

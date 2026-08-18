@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
 using OpenLearning.Assessments.Services;
+using OpenLearning.Certificates.Models;
+using OpenLearning.Certificates.Services;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Enrollment.Services;
@@ -34,19 +36,22 @@ public class IndexModel : PageModel
     private readonly AttemptService _attempts;
     private readonly CourseService _courses;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly CertificateService _certificates;
 
     public IndexModel(
         EnrollmentService enrollments,
         ProgressService progress,
         AttemptService attempts,
         CourseService courses,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        CertificateService certificates)
     {
         _enrollments = enrollments;
         _progress = progress;
         _attempts = attempts;
         _courses = courses;
         _userManager = userManager;
+        _certificates = certificates;
     }
 
     public string DisplayName { get; set; } = string.Empty;
@@ -56,6 +61,8 @@ public class IndexModel : PageModel
     public List<ContinueLearningItem> ContinueLearning { get; set; } = new();
 
     public List<Course> Recommendations { get; set; } = new();
+
+    public List<Certificate> Certificates { get; set; } = new();
 
     public async Task OnGetAsync()
     {
@@ -70,6 +77,7 @@ public class IndexModel : PageModel
             var totalLessons = await _courses.GetLessonCountAsync(course.Id);
             var completed = await _progress.GetCompletedLessonIdsAsync(userId, course.Id);
             var (totalQuizzes, attemptedQuizzes) = await _attempts.GetQuizStatusAsync(userId, course.Id);
+            var percent = totalLessons > 0 ? (int)Math.Round(completed.Count * 100.0 / totalLessons) : 0;
 
             CourseItems.Add(new EnrolledCourseItem(
                 course.Id,
@@ -77,14 +85,18 @@ public class IndexModel : PageModel
                 course.Category,
                 course.IsFree,
                 enrollment.EnrolledAt,
-                totalLessons > 0 ? (int)Math.Round(completed.Count * 100.0 / totalLessons) : 0,
+                percent,
                 completed.Count,
                 totalLessons,
                 totalQuizzes,
                 attemptedQuizzes,
                 course.Instructor?.DisplayName ?? string.Empty));
+
+            // Issuance is idempotent; completed courses get a certificate now.
+            await _certificates.EnsureIssuedAsync(userId, course.Id);
         }
 
+        Certificates = await _certificates.GetForUserAsync(userId);
         ContinueLearning = await _progress.GetContinueLearningItemsAsync(userId);
 
         var enrolledCourseIds = enrollments.Select(e => e.CourseId).ToList();

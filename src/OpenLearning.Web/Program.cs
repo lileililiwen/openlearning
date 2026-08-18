@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assessments;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
+using OpenLearning.Certificates;
 using OpenLearning.Chat;
 using OpenLearning.Chat.Hubs;
 using OpenLearning.CourseManagement;
@@ -44,6 +45,7 @@ builder.Services.AddScormModule();
 builder.Services.AddChatModule();
 builder.Services.AddUserManagementModule();
 builder.Services.AddRatingsModule();
+builder.Services.AddCertificatesModule();
 builder.Services.AddSignalR();
 
 var app = builder.Build();

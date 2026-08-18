@@ -70,7 +70,7 @@ else
                     </div>
                     <div class="d-flex justify-content-between">
                         <span class="text-muted">Certificates earned</span>
-                        <strong>0</strong>
+                        <strong>@Model.Certificates.Count</strong>
                     </div>
                     <hr />
                     <p class="small text-muted mb-0">
@@ -80,6 +80,32 @@ else
             </div>
         </div>
     </div>
+
+    @if (Model.Certificates.Count > 0)
+    {
+        <h2 class="h4 mb-3">My certificates</h2>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+            @foreach (var cert in Model.Certificates)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="text-muted small text-uppercase mb-1">Certificate of completion</div>
+                            <h5 class="card-title mb-1">
+                                <a class="text-decoration-none" asp-page="/Certificates/View" asp-route-id="@cert.Id">@cert.Course?.Title</a>
+                            </h5>
+                            <div class="text-muted small">
+                                Issued @cert.IssuedAt.ToString("yyyy-MM-dd") &middot; <span class="font-monospace">@cert.Code</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Certificates/View" asp-route-id="@cert.Id">View / print</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 
     <h2 class="h4 mb-3">My courses</h2>
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
