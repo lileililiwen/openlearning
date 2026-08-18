@@ -1,0 +1,110 @@
+@page
+@using System.Security.Claims
+@model OpenLearning.Web.Pages.Courses.ChatModel
+@{
+    ViewData["Title"] = "Course Chat";
+    var course = Model.Course!;
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item">
+            <a asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Chat</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <strong>@course.Title — Chat</strong>
+                <span class="text-muted small ms-2" id="connection-state">connecting…</span>
+            </div>
+            <div class="card-body">
+                <div id="messages" style="max-height: 420px; overflow-y: auto">
+                    @if (Model.Messages.Count == 0)
+                    {
+                        <p class="text-muted small mb-3">No messages yet. Say hello!</p>
+                    }
+                    else
+                    {
+                        foreach (var message in Model.Messages)
+                        {
+                            <div class="mb-2" data-sent-at="@message.SentAt.ToString("o")">
+                                <strong>@(message.User?.DisplayName ?? message.UserId)</strong>
+                                <span class="text-muted small ms-2">@message.SentAt.ToLocalTime().ToString("HH:mm")</span>
+                                <div>@message.Body</div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <form id="chat-form" class="d-flex gap-2">
+                    <input id="message-input" type="text" class="form-control" maxlength="2000"
+                           placeholder="Type a message…" autocomplete="off" />
+                    <button id="send-button" type="submit" class="btn btn-primary">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@@8.0.7/dist/browser/signalr.min.js"></script>
+    <script>
+        (function () {
+            "use strict";
+            var courseId = @course.Id;
+            var currentUserId = "@currentUserId";
+            var messagesEl = document.getElementById("messages");
+            var stateEl = document.getElementById("connection-state");
+            var form = document.getElementById("chat-form");
+            var input = document.getElementById("message-input");
+
+            function appendMessage(userName, body, sentAt) {
+                var empty = messagesEl.querySelector(".text-muted");
+                if (empty) { empty.remove(); }
+                var time = sentAt ? new Date(sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+                var div = document.createElement("div");
+                div.className = "mb-2";
+                div.innerHTML = "<strong></strong><span class='text-muted small ms-2'></span><div></div>";
+                div.querySelector("strong").textContent = userName;
+                div.querySelector("span").textContent = time;
+                div.querySelector("div").textContent = body;
+                messagesEl.appendChild(div);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
+
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/course-chat")
+                .build();
+
+            connection.on("ReceiveMessage", function (userName, body, sentAt) {
+                appendMessage(userName, body, sentAt);
+            });
+
+            connection.start().then(function () {
+                stateEl.textContent = "connected";
+                return connection.invoke("JoinCourse", courseId);
+            }).catch(function (err) {
+                stateEl.textContent = "connection failed";
+                console.error(err);
+            });
+
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                var body = input.value.trim();
+                if (!body) { return; }
+                connection.invoke("SendMessage", courseId, body).catch(function (err) {
+                    console.error(err);
+                });
+                input.value = "";
+            });
+        })();
+    </script>
+}

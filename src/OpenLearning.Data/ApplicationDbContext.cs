@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assessments.Models;
 using OpenLearning.Auth.Models;
+using OpenLearning.Chat.Models;
 using OpenLearning.CourseManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 using OpenLearning.Ecommerce.Models;
@@ -43,6 +44,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<ScormRecord> ScormRecords => Set<ScormRecord>();
 
+    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -56,5 +59,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Quiz).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Order).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(ScormPackage).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(ChatMessage).Assembly);
     }
 }

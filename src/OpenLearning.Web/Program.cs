@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assessments;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
+using OpenLearning.Chat;
+using OpenLearning.Chat.Hubs;
 using OpenLearning.CourseManagement;
 using OpenLearning.Data;
 using OpenLearning.Ecommerce;
@@ -37,6 +39,8 @@ builder.Services.AddProgressModule();
 builder.Services.AddAssessmentsModule();
 builder.Services.AddEcommerceModule();
 builder.Services.AddScormModule();
+builder.Services.AddChatModule();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -52,6 +56,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapHub<CourseChatHub>("/hubs/course-chat");
 
 // SCORM 1.2 runtime API endpoints (called by scorm-api.js).
 app.MapPost("/scorm/runtime/init", async (ScormInitRequest request, HttpContext http, ScormRuntimeService runtime) =>
