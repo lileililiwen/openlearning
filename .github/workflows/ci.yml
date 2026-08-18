@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history so diff-based tooling (Sonar, coverage) can work later.
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Format verify
+        # Fails on any drift from the .editorconfig (deterministic formatting).
+        run: dotnet format OpenLearning.sln --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build OpenLearning.sln -c Release --no-restore /warnaserror -bl:build.binlog
+
+      - name: Test
+        run: dotnet test OpenLearning.sln -c Release --no-build
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            build.binlog
+            **/TestResults/
+          if-no-files-found: ignore

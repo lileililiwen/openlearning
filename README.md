@@ -1,5 +1,7 @@
 # OpenLearning
 
+[![CI](https://github.com/your-org/openlearning/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/openlearning/actions/workflows/ci.yml)
+
 An open-source, MIT-licensed online learning management system (LMS) built with C# / ASP.NET Core 8 and PostgreSQL.
 
 ## Overview
@@ -63,6 +65,10 @@ The application will apply migrations and seed demo users on first startup.
 | Student    | student@openlearning.dev | Student123!  |
 
 > **Security note:** seeded credentials are for local development only. Change them before any production use.
+
+## Contributing
+
+Every change is verified automatically by the CI pipeline (`.github/workflows/ci.yml`): formatting is checked with `dotnet format --verify-no-changes`, the solution must build with zero warnings/errors under `/warnaserror`, and the unit test suite must pass. The pipeline runs on every push to `main` and on every pull request, and is a required check for merges.
 
 ## Project Structure
 
