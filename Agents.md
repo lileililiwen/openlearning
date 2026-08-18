@@ -123,9 +123,10 @@ openspec/changes/<name>/
 
 When **two or more changes are pending, implement them one at a time,
 in the order listed in [§7 Roadmap](#7-current-state--roadmap).** A
-change is finished only when it is implemented AND archived AND
-committed. Only then may the next change be started. Never interleave
-or partially complete multiple changes.
+change is finished only when it is implemented AND archived AND merged
+to `main` via a reviewed pull request (`main` is protected; see
+`CONTRIBUTING.md`). Only then may the next change be started. Never
+interleave or partially complete multiple changes.
 
 ### 3.4 "Serious code" standard
 
@@ -213,9 +214,13 @@ When asked to implement a feature or spec:
 9. **Archive** — `openspec archive <name> -y` (folds deltas into
    `openspec/specs/`, moves the change to
    `openspec/changes/archive/`).
-10. **Commit** with a conventional message (short title, blank line,
-    detailed body explaining *why* and *what*), on branch `main`, as
-    `lileililiwen <lileililiwen@gmail.com>`.
+10. **Commit & land via PR** — commit with a conventional message (short
+    title, blank line, detailed body explaining *why* and *what*), on a
+    **feature branch** named after the change, then open a pull request
+    that passes the required CI checks and one approving review before
+    merging into `main` (see `CONTRIBUTING.md`). The author identity is
+    `lileililiwen <lileililiwen@gmail.com>`. `main` is protected: direct
+    pushes are rejected.
 
 > **Global-view rule:** if you cannot point at the existing module or
 > utility your change depends on, stop and explore before writing

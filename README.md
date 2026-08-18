@@ -68,6 +68,8 @@ The application will apply migrations and seed demo users on first startup.
 
 ## Contributing
 
+`main` is protected: changes land only through reviewed pull requests that pass the required CI checks. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full workflow (branch naming, commits, CI behavior, review checklist) and [`PULL_REQUEST_TEMPLATE.md`](PULL_REQUEST_TEMPLATE.md) for the PR checklist.
+
 Every change is verified automatically by the CI pipeline (`.github/workflows/ci.yml`): formatting is checked with `dotnet format --verify-no-changes`, the solution must build with zero warnings/errors under `/warnaserror`, and the unit test suite must pass. The pipeline runs on every push to `main` and on every pull request, and is a required check for merges.
 
 ## Project Structure
