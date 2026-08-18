@@ -44,6 +44,7 @@ public class RegisterModel : PageModel
 
     public void OnGet()
     {
+        // GET renders the empty registration form; the model is bound and validated on POST.
     }
 
     public async Task<IActionResult> OnPostAsync()

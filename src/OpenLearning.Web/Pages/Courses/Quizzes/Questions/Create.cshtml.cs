@@ -3,8 +3,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using OpenLearning.Auth;
 using OpenLearning.Assessments.Services;
+using OpenLearning.Auth;
 
 namespace OpenLearning.Web.Pages.Courses.Quizzes.Questions;
 
@@ -78,7 +78,7 @@ public class CreateModel : PageModel
             options.Add(new AnswerOptionInput(text, i == Input.CorrectIndex));
         }
 
-        var (question, error) = await _questions.AddAsync(
+        var (_, error) = await _questions.AddAsync(
             QuizId, userId, Input.Text, Input.Points, options);
 
         if (error is not null)

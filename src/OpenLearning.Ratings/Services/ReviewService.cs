@@ -128,7 +128,7 @@ public class ReviewService
                 r.Id,
                 r.UserId,
                 r.User!.DisplayName,
-                r.User!.Email,
+                r.User.Email,
                 r.Rating,
                 r.Comment,
                 r.CreatedAt))
@@ -137,8 +137,10 @@ public class ReviewService
 
     /// <summary>The current user's review (if any) for a course — to pre-fill the form.</summary>
     public Task<Review?> GetUserReviewAsync(string userId, int courseId)
-        => _db.Set<Review>().AsNoTracking()
-            .FirstOrDefaultAsync(r => r.CourseId == courseId && r.UserId == userId);
+    {
+        return _db.Set<Review>().AsNoTracking()
+                .FirstOrDefaultAsync(r => r.CourseId == courseId && r.UserId == userId);
+    }
 
     /// <summary>Admin-only moderation: delete a review by id.</summary>
     public async Task<bool> DeleteAsync(int reviewId)

@@ -4,8 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
 using OpenLearning.CourseManagement.Models;
-using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 using OpenLearning.Progress.Models;
+using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 
 namespace OpenLearning.Data;
 
@@ -25,7 +25,7 @@ public static class DbSeeder
             }
         }
 
-        var admin = await EnsureUserAsync(userManager, "admin@openlearning.dev", "Admin123!", "Admin", Roles.Admin);
+        await EnsureUserAsync(userManager, "admin@openlearning.dev", "Admin123!", "Admin", Roles.Admin);
         var instructor = await EnsureUserAsync(userManager, "instructor@openlearning.dev", "Instructor123!", "Instructor", Roles.Instructor);
         var student = await EnsureUserAsync(userManager, "student@openlearning.dev", "Student123!", "Student", Roles.Student);
 

@@ -2,8 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- S8970: the compiler requires null-forgiving operators in Razor views
+         (the generated page Model is nullable-annotated), so Sonar's rule that
+         they are redundant can never be satisfied here. Suppressed project-wide. -->
+    <NoWarn>$(NoWarn);S8970</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

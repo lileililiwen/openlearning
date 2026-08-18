@@ -31,8 +31,10 @@ public class ChatService
     }
 
     public async Task<bool> IsParticipantAsync(string userId, int courseId)
-        => await _db.Set<EnrollmentEntity>().AnyAsync(e => e.StudentId == userId && e.CourseId == courseId)
-            || await _db.Set<Course>().AnyAsync(c => c.Id == courseId && c.InstructorId == userId);
+    {
+        return await _db.Set<EnrollmentEntity>().AnyAsync(e => e.StudentId == userId && e.CourseId == courseId)
+                || await _db.Set<Course>().AnyAsync(c => c.Id == courseId && c.InstructorId == userId);
+    }
 
     public async Task<ChatMessage?> AddMessageAsync(int courseId, string userId, string body)
     {

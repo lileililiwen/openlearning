@@ -70,7 +70,7 @@ public class InstructorApplicationsModel : PageModel
         return Flash(ok, error);
     }
 
-    private IActionResult Flash(bool ok, string? error)
+    private RedirectToPageResult Flash(bool ok, string? error)
     {
         if (!ok)
         {

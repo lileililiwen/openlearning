@@ -64,6 +64,7 @@ public class CreateModel : PageModel
 
     public void OnGet()
     {
+        // GET renders the empty course-creation form; the model is bound and validated on POST.
     }
 
     public async Task<IActionResult> OnPostAsync()

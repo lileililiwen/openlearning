@@ -29,18 +29,22 @@ public sealed class SmtpEmailSender : IEmailSender
         _useSsl = useSsl;
     }
 
-    public async Task SendAsync(string to, string subject, string body)
+    public async Task SendAsync(string toAddress, string subject, string body)
     {
+        // S5332: SSL support depends on the configured SMTP server (local dev servers
+        // often run without TLS); the flag is driven by the Email:UseSsl config value.
+#pragma warning disable S5332
         using var client = new SmtpClient(_host, _port)
         {
             EnableSsl = _useSsl,
         };
+#pragma warning restore S5332
         if (!string.IsNullOrWhiteSpace(_user))
         {
             client.Credentials = new NetworkCredential(_user, _password);
         }
 
-        var message = new MailMessage(_from, to, subject, body);
+        var message = new MailMessage(_from, toAddress, subject, body);
         try
         {
             await client.SendMailAsync(message);

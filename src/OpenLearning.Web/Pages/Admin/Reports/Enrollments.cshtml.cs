@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -33,6 +34,8 @@ public class EnrollmentsModel : PageModel
 
     public int MaxDayCount => OverTime.Count == 0 ? 0 : OverTime.Max(x => x.Count);
 
+    private static readonly string[] _csvHeaders = new[] { "Id", "EnrolledAt", "Course", "Student", "Email" };
+
     public async Task OnGetAsync()
     {
         OverTime = await _enrollments.GetEnrollmentsOverTimeAsync(From, To);
@@ -44,14 +47,14 @@ public class EnrollmentsModel : PageModel
         var enrollments = await _enrollments.GetEnrollmentsForExportAsync(From, To);
         var rows = enrollments.Select(e => new string?[]
         {
-            e.Id.ToString(),
-            e.EnrolledAt.ToString("yyyy-MM-dd HH:mm"),
+            e.Id.ToString(CultureInfo.InvariantCulture),
+            e.EnrolledAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
             e.Course?.Title ?? string.Empty,
             e.Student?.DisplayName ?? string.Empty,
             e.Student?.Email ?? string.Empty,
         });
         var csv = CsvHelper.Build(
-            new[] { "Id", "EnrolledAt", "Course", "Student", "Email" },
+            _csvHeaders,
             rows);
         return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", "enrollments.csv");
     }

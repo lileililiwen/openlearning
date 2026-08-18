@@ -94,26 +94,34 @@ public class OrderService
     }
 
     public Task<bool> HasPaidOrderAsync(string studentId, int courseId)
-        => _db.Set<Order>().AnyAsync(o =>
-            o.StudentId == studentId && o.CourseId == courseId && o.Status == OrderStatus.Paid);
+    {
+        return _db.Set<Order>().AnyAsync(o =>
+                o.StudentId == studentId && o.CourseId == courseId && o.Status == OrderStatus.Paid);
+    }
 
     public Task<Order?> GetPendingOrderAsync(string studentId, int courseId)
-        => _db.Set<Order>().AsNoTracking()
-            .Include(o => o.Course)
-            .FirstOrDefaultAsync(o =>
-                o.StudentId == studentId && o.CourseId == courseId && o.Status == OrderStatus.Pending);
+    {
+        return _db.Set<Order>().AsNoTracking()
+                .Include(o => o.Course)
+                .FirstOrDefaultAsync(o =>
+                    o.StudentId == studentId && o.CourseId == courseId && o.Status == OrderStatus.Pending);
+    }
 
     public Task<Order?> GetByIdAsync(int orderId, string studentId)
-        => _db.Set<Order>().AsNoTracking()
-            .Include(o => o.Course)
-            .FirstOrDefaultAsync(o => o.Id == orderId && o.StudentId == studentId);
+    {
+        return _db.Set<Order>().AsNoTracking()
+                .Include(o => o.Course)
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.StudentId == studentId);
+    }
 
     public Task<List<Order>> GetOrdersForCourseAsync(int courseId, string ownerId)
-        => _db.Set<Order>().AsNoTracking()
-            .Where(o => o.CourseId == courseId && o.Course!.InstructorId == ownerId)
-            .Include(o => o.Student)
-            .OrderByDescending(o => o.CreatedAt)
-            .ToListAsync();
+    {
+        return _db.Set<Order>().AsNoTracking()
+                .Where(o => o.CourseId == courseId && o.Course!.InstructorId == ownerId)
+                .Include(o => o.Student)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+    }
 
     public async Task<decimal> GetPaidRevenueForCourseAsync(int courseId)
     {
@@ -132,13 +140,15 @@ public class OrderService
     }
 
     public Task<List<Order>> GetRecentOrdersAsync(int count)
-        => _db.Set<Order>().AsNoTracking()
-            .Where(o => o.Status == OrderStatus.Paid)
-            .Include(o => o.Course)
-            .Include(o => o.Student)
-            .OrderByDescending(o => o.PaidAt ?? o.CreatedAt)
-            .Take(count)
-            .ToListAsync();
+    {
+        return _db.Set<Order>().AsNoTracking()
+                .Where(o => o.Status == OrderStatus.Paid)
+                .Include(o => o.Course)
+                .Include(o => o.Student)
+                .OrderByDescending(o => o.PaidAt ?? o.CreatedAt)
+                .Take(count)
+                .ToListAsync();
+    }
 
     // ===== Platform analytics (admin reports) =====
 
@@ -222,7 +232,9 @@ public class OrderService
     /// timestamptz columns. Treat an Unspecified value as UTC.
     /// </summary>
     private static DateTime? NormalizeUtc(DateTime? value)
-        => value is null
-            ? null
-            : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
+    {
+        return value is null
+                ? null
+                : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
+    }
 }

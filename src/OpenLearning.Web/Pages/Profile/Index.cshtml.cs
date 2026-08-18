@@ -77,9 +77,12 @@ public class IndexModel : PageModel
     public IEnumerable<string> UserClaims()
     {
         var roles = new List<string>();
-        if (User.IsInRole(Roles.Student)) roles.Add("Student");
-        if (User.IsInRole(Roles.Instructor)) roles.Add("Instructor");
-        if (User.IsInRole(Roles.Admin)) roles.Add("Admin");
+        if (User.IsInRole(Roles.Student))
+            roles.Add("Student");
+        if (User.IsInRole(Roles.Instructor))
+            roles.Add("Instructor");
+        if (User.IsInRole(Roles.Admin))
+            roles.Add("Admin");
         return roles;
     }
 

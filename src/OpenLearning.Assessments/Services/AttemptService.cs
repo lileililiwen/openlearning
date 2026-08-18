@@ -16,11 +16,13 @@ public class AttemptService
     }
 
     public Task<Quiz?> GetQuizForTakeAsync(int quizId)
-        => _db.Set<Quiz>().AsNoTracking()
-            .Include(q => q.Course)
-            .Include(q => q.Questions.OrderBy(x => x.OrderIndex))
-                .ThenInclude(x => x.AnswerOptions.OrderBy(o => o.OrderIndex))
-            .FirstOrDefaultAsync(q => q.Id == quizId);
+    {
+        return _db.Set<Quiz>().AsNoTracking()
+                .Include(q => q.Course)
+                .Include(q => q.Questions.OrderBy(x => x.OrderIndex))
+                    .ThenInclude(x => x.AnswerOptions.OrderBy(o => o.OrderIndex))
+                .FirstOrDefaultAsync(q => q.Id == quizId);
+    }
 
     public async Task<(int? AttemptId, string? Error)> SubmitAsync(
         string studentId, int quizId, Dictionary<int, int> answers)
@@ -46,12 +48,9 @@ public class AttemptService
             return (null, "This quiz has no questions yet.");
         }
 
-        foreach (var question in questions)
+        if (questions.Any(q => !answers.ContainsKey(q.Id)))
         {
-            if (!answers.ContainsKey(question.Id))
-            {
-                return (null, "Please answer every question before submitting.");
-            }
+            return (null, "Please answer every question before submitting.");
         }
 
         var maxScore = questions.Sum(q => q.Points);
@@ -90,17 +89,21 @@ public class AttemptService
     }
 
     public Task<List<QuizAttempt>> GetAttemptsForQuizAsync(int quizId, string ownerId)
-        => _db.Set<QuizAttempt>().AsNoTracking()
-            .Where(a => a.QuizId == quizId && a.Quiz!.Course!.InstructorId == ownerId)
-            .Include(a => a.Student)
-            .OrderByDescending(a => a.CompletedAt)
-            .ToListAsync();
+    {
+        return _db.Set<QuizAttempt>().AsNoTracking()
+                .Where(a => a.QuizId == quizId && a.Quiz!.Course!.InstructorId == ownerId)
+                .Include(a => a.Student)
+                .OrderByDescending(a => a.CompletedAt)
+                .ToListAsync();
+    }
 
     public Task<List<QuizAttempt>> GetAttemptsForStudentAsync(string studentId, int quizId)
-        => _db.Set<QuizAttempt>().AsNoTracking()
-            .Where(a => a.StudentId == studentId && a.QuizId == quizId)
-            .OrderByDescending(a => a.CompletedAt)
-            .ToListAsync();
+    {
+        return _db.Set<QuizAttempt>().AsNoTracking()
+                .Where(a => a.StudentId == studentId && a.QuizId == quizId)
+                .OrderByDescending(a => a.CompletedAt)
+                .ToListAsync();
+    }
 
     /// <summary>For each quiz in a course, the attempt count and best score of one student.</summary>
     public async Task<List<(int Id, string Title, int Attempts, int BestPercent)>> GetQuizzesWithAttemptsForStudentAsync(
@@ -134,11 +137,13 @@ public class AttemptService
     }
 
     public Task<QuizAttempt?> GetAttemptAsync(int attemptId, string viewerId)
-        => _db.Set<QuizAttempt>().AsNoTracking()
-            .Include(a => a.Quiz).ThenInclude(q => q!.Course)
-            .Include(a => a.Answers).ThenInclude(x => x.Question).ThenInclude(q => q!.AnswerOptions)
-            .FirstOrDefaultAsync(a => a.Id == attemptId
-                && (a.StudentId == viewerId || a.Quiz!.Course!.InstructorId == viewerId));
+    {
+        return _db.Set<QuizAttempt>().AsNoTracking()
+                .Include(a => a.Quiz).ThenInclude(q => q!.Course)
+                .Include(a => a.Answers).ThenInclude(x => x.Question).ThenInclude(q => q!.AnswerOptions)
+                .FirstOrDefaultAsync(a => a.Id == attemptId
+                    && (a.StudentId == viewerId || a.Quiz!.Course!.InstructorId == viewerId));
+    }
 
     /// <summary>
     /// Number of quizzes in a course vs how many distinct quizzes the Student

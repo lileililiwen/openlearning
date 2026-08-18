@@ -5,13 +5,13 @@ using OpenLearning.Auth.Models;
 using OpenLearning.Certificates.Models;
 using OpenLearning.Chat.Models;
 using OpenLearning.CourseManagement.Models;
-using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Progress.Models;
 using OpenLearning.Ratings.Models;
 using OpenLearning.Scorm.Models;
 using OpenLearning.UserManagement.Models;
+using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 
 namespace OpenLearning.Data;
 

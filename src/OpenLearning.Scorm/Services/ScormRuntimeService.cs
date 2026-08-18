@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.CourseManagement.Models;
-using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 using OpenLearning.Enrollment.Services;
 using OpenLearning.Progress.Services;
 using OpenLearning.Scorm.Models;
+using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 
 namespace OpenLearning.Scorm.Services;
 

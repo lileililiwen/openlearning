@@ -14,25 +14,33 @@ public class QuizService
     }
 
     public Task<List<Quiz>> GetForCourseAsync(int courseId)
-        => _db.Set<Quiz>().AsNoTracking()
-            .Where(q => q.CourseId == courseId)
-            .OrderBy(q => q.OrderIndex)
-            .Include(q => q.Questions)
-            .ToListAsync();
+    {
+        return _db.Set<Quiz>().AsNoTracking()
+                .Where(q => q.CourseId == courseId)
+                .OrderBy(q => q.OrderIndex)
+                .Include(q => q.Questions)
+                .ToListAsync();
+    }
 
     public Task<Quiz?> GetByIdAsync(int id)
-        => _db.Set<Quiz>().AsNoTracking()
-            .Include(q => q.Course)
-            .Include(q => q.Questions.OrderBy(x => x.OrderIndex))
-                .ThenInclude(x => x.AnswerOptions.OrderBy(o => o.OrderIndex))
-            .FirstOrDefaultAsync(q => q.Id == id);
+    {
+        return _db.Set<Quiz>().AsNoTracking()
+                .Include(q => q.Course)
+                .Include(q => q.Questions.OrderBy(x => x.OrderIndex))
+                    .ThenInclude(x => x.AnswerOptions.OrderBy(o => o.OrderIndex))
+                .FirstOrDefaultAsync(q => q.Id == id);
+    }
 
     public Task<bool> IsOwnerAsync(int quizId, string userId)
-        => _db.Set<Quiz>().AsNoTracking()
-            .AnyAsync(q => q.Id == quizId && q.Course!.InstructorId == userId);
+    {
+        return _db.Set<Quiz>().AsNoTracking()
+                .AnyAsync(q => q.Id == quizId && q.Course!.InstructorId == userId);
+    }
 
     public Task<bool> IsCourseOwnerAsync(int courseId, string userId)
-        => _db.Set<Course>().AnyAsync(c => c.Id == courseId && c.InstructorId == userId);
+    {
+        return _db.Set<Course>().AnyAsync(c => c.Id == courseId && c.InstructorId == userId);
+    }
 
     public async Task<Quiz?> CreateAsync(int courseId, string ownerId, string title, string description)
     {

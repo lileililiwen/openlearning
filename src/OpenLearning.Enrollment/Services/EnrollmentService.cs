@@ -30,20 +30,28 @@ public class EnrollmentService
     }
 
     public Task<List<EnrollmentEntity>> GetStudentEnrollmentsAsync(string studentId)
-        => _db.Set<EnrollmentEntity>().AsNoTracking()
-            .Where(e => e.StudentId == studentId)
-            .Include(e => e.Course)!.ThenInclude(c => c!.Instructor)
-            .OrderByDescending(e => e.EnrolledAt)
-            .ToListAsync();
+    {
+        return _db.Set<EnrollmentEntity>().AsNoTracking()
+                .Where(e => e.StudentId == studentId)
+                .Include(e => e.Course)!.ThenInclude(c => c!.Instructor)
+                .OrderByDescending(e => e.EnrolledAt)
+                .ToListAsync();
+    }
 
     public Task<bool> IsEnrolledAsync(string studentId, int courseId)
-        => _db.Set<EnrollmentEntity>().AnyAsync(e => e.StudentId == studentId && e.CourseId == courseId);
+    {
+        return _db.Set<EnrollmentEntity>().AnyAsync(e => e.StudentId == studentId && e.CourseId == courseId);
+    }
 
     public Task<int> GetEnrollmentCountAsync(int courseId)
-        => _db.Set<EnrollmentEntity>().CountAsync(e => e.CourseId == courseId);
+    {
+        return _db.Set<EnrollmentEntity>().CountAsync(e => e.CourseId == courseId);
+    }
 
     public Task<int> GetTotalEnrollmentsAsync()
-        => _db.Set<EnrollmentEntity>().CountAsync();
+    {
+        return _db.Set<EnrollmentEntity>().CountAsync();
+    }
 
     public async Task<(bool Ok, string? Error)> EnrollAsync(string studentId, int courseId)
     {
@@ -202,7 +210,9 @@ public class EnrollmentService
 
     /// <summary>Date-only inputs bind with Kind=Unspecified, which Npgsql rejects for timestamptz.</summary>
     private static DateTime? NormalizeUtc(DateTime? value)
-        => value is null
-            ? null
-            : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
+    {
+        return value is null
+                ? null
+                : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
+    }
 }

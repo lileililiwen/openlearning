@@ -13,13 +13,17 @@ public class LessonService
     }
 
     public Task<Lesson?> GetByIdAsync(int id)
-        => _db.Set<Lesson>().AsNoTracking()
-            .Include(l => l.Module!).ThenInclude(m => m!.Course)
-            .FirstOrDefaultAsync(l => l.Id == id);
+    {
+        return _db.Set<Lesson>().AsNoTracking()
+                .Include(l => l.Module!).ThenInclude(m => m.Course)
+                .FirstOrDefaultAsync(l => l.Id == id);
+    }
 
     public Task<bool> IsOwnerAsync(int lessonId, string userId)
-        => _db.Set<Lesson>().AsNoTracking()
-            .AnyAsync(l => l.Id == lessonId && l.Module!.Course!.InstructorId == userId);
+    {
+        return _db.Set<Lesson>().AsNoTracking()
+                .AnyAsync(l => l.Id == lessonId && l.Module!.Course!.InstructorId == userId);
+    }
 
     public async Task<Lesson?> AddAsync(int moduleId, string ownerId, string title, string content)
     {

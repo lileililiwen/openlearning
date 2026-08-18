@@ -51,7 +51,7 @@ public class UserDetailModel : PageModel
         return Flash(ok, error, userId);
     }
 
-    private IActionResult Flash(bool ok, string? error, string userId)
+    private RedirectToPageResult Flash(bool ok, string? error, string userId)
     {
         if (!ok)
         {

@@ -12,12 +12,13 @@ using OpenLearning.Data;
 using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
 using OpenLearning.Notifications;
+using OpenLearning.Notifications.Email;
 using OpenLearning.Progress;
 using OpenLearning.Ratings;
-using OpenLearning.Notifications.Email;
 using OpenLearning.Scorm;
 using OpenLearning.Scorm.Services;
 using OpenLearning.UserManagement;
+using OpenLearning.Web.Scorm;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -132,18 +133,8 @@ app.MapPost("/scorm/runtime/commit", async (ScormCommitRequest request, HttpCont
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
     await DbSeeder.SeedAsync(scope.ServiceProvider);
 }
 
-app.Run();
-
-record ScormInitRequest(int PackageId);
-
-record ScormCommitRequest(
-    int PackageId,
-    string? LessonLocation,
-    string? SuspendData,
-    string? LessonStatus,
-    string? ScoreRaw,
-    string? SessionTime);
+await app.RunAsync();

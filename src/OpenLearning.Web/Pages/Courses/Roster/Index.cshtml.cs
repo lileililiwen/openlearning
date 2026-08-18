@@ -104,7 +104,7 @@ public class IndexModel : PageModel
         }
 
         var ok = await _enrollments.WithdrawAsync(studentId, id);
-        TempData[ok ? "Message" : "Message"] = ok ? "Student withdrawn." : "Could not withdraw the student.";
+        TempData["Message"] = ok ? "Student withdrawn." : "Could not withdraw the student.";
         TempData["MessageType"] = ok ? "success" : "danger";
         return RedirectToPage(new { id });
     }

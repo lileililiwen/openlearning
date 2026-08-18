@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.CourseManagement.Models;
-using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 using OpenLearning.Progress.Models;
+using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 
 namespace OpenLearning.Progress.Services;
 
@@ -23,8 +23,10 @@ public class ProgressService
     }
 
     private Task<EnrollmentEntity?> GetEnrollmentAsync(string studentId, int courseId)
-        => _db.Set<EnrollmentEntity>()
-            .FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId);
+    {
+        return _db.Set<EnrollmentEntity>()
+                .FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId);
+    }
 
     public async Task<(bool Ok, string? Error)> MarkCompleteAsync(string studentId, int courseId, int lessonId)
     {
@@ -161,7 +163,7 @@ public class ProgressService
             {
                 la.EnrollmentId,
                 CourseId = la.Enrollment!.CourseId,
-                CourseTitle = la.Enrollment!.Course!.Title,
+                CourseTitle = la.Enrollment.Course!.Title,
                 la.LessonId,
                 LessonTitle = la.Lesson!.Title,
                 la.LastAccessedAt,
@@ -273,7 +275,7 @@ public class ProgressService
     public async Task<DateTime?> GetLastAccessAsync(string studentId, int courseId)
     {
         var access = await _db.Set<LessonAccess>().AsNoTracking()
-            .Where(la => la.Enrollment!.StudentId == studentId && la.Enrollment!.CourseId == courseId)
+            .Where(la => la.Enrollment!.StudentId == studentId && la.Enrollment.CourseId == courseId)
             .OrderByDescending(la => la.LastAccessedAt)
             .FirstOrDefaultAsync();
         return access?.LastAccessedAt;

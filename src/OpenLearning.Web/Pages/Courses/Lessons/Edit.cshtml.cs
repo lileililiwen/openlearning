@@ -104,7 +104,7 @@ public class EditModel : PageModel
         }
 
         await using var stream = ScormFile.OpenReadStream();
-        var (package, error) = await _scorm.UploadAsync(
+        var (_, error) = await _scorm.UploadAsync(
             id, userId, _environment.WebRootPath, stream, ScormFile.FileName);
 
         if (error is not null)

@@ -16,7 +16,9 @@ public class LogoutModel : PageModel
     }
 
     public IActionResult OnGet()
-        => RedirectToPage("/Index");
+    {
+        return RedirectToPage("/Index");
+    }
 
     public async Task<IActionResult> OnPostAsync()
     {

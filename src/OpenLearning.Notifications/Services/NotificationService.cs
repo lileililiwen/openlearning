@@ -92,14 +92,18 @@ public class NotificationService
     }
 
     public Task<List<Notification>> GetRecentAsync(string userId, int count = 30)
-        => _db.Set<Notification>().AsNoTracking()
-            .Where(n => n.UserId == userId)
-            .OrderByDescending(n => n.CreatedAt)
-            .Take(count)
-            .ToListAsync();
+    {
+        return _db.Set<Notification>().AsNoTracking()
+                .Where(n => n.UserId == userId)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(count)
+                .ToListAsync();
+    }
 
     public Task<int> GetUnreadCountAsync(string userId)
-        => _db.Set<Notification>().CountAsync(n => n.UserId == userId && !n.IsRead);
+    {
+        return _db.Set<Notification>().CountAsync(n => n.UserId == userId && !n.IsRead);
+    }
 
     /// <summary>Marks a single notification read; only its owner may do so.</summary>
     public async Task<bool> MarkReadAsync(int notificationId, string userId)

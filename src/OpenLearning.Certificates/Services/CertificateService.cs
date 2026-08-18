@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Certificates.Models;
 using OpenLearning.CourseManagement.Models;
-using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 using OpenLearning.Progress.Services;
+using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 
 namespace OpenLearning.Certificates.Services;
 
@@ -13,7 +13,7 @@ namespace OpenLearning.Certificates.Services;
 /// </summary>
 public class CertificateService
 {
-    private const string Alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
+    private const string _alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
 
     private readonly DbContext _db;
     private readonly ProgressService _progress;
@@ -65,16 +65,20 @@ public class CertificateService
     }
 
     public Task<Certificate?> GetForEnrollmentAsync(int enrollmentId)
-        => _db.Set<Certificate>().AsNoTracking()
-            .FirstOrDefaultAsync(c => c.EnrollmentId == enrollmentId);
+    {
+        return _db.Set<Certificate>().AsNoTracking()
+                .FirstOrDefaultAsync(c => c.EnrollmentId == enrollmentId);
+    }
 
     /// <summary>All certificates earned by a student, newest first.</summary>
     public Task<List<Certificate>> GetForUserAsync(string userId)
-        => _db.Set<Certificate>().AsNoTracking()
-            .Include(c => c.Course)!.ThenInclude(c => c!.Instructor)
-            .Where(c => c.UserId == userId)
-            .OrderByDescending(c => c.IssuedAt)
-            .ToListAsync();
+    {
+        return _db.Set<Certificate>().AsNoTracking()
+                .Include(c => c.Course)!.ThenInclude(c => c!.Instructor)
+                .Where(c => c.UserId == userId)
+                .OrderByDescending(c => c.IssuedAt)
+                .ToListAsync();
+    }
 
     /// <summary>Course ids the student has already earned a certificate for.</summary>
     public async Task<HashSet<int>> GetEarnedCourseIdsAsync(string userId)
@@ -88,17 +92,19 @@ public class CertificateService
 
     /// <summary>Full certificate with student, course, and instructor for the print page.</summary>
     public Task<Certificate?> GetByIdAsync(int id)
-        => _db.Set<Certificate>().AsNoTracking()
-            .Include(c => c.User)
-            .Include(c => c.Course)!.ThenInclude(c => c!.Instructor)
-            .FirstOrDefaultAsync(c => c.Id == id);
+    {
+        return _db.Set<Certificate>().AsNoTracking()
+                .Include(c => c.User)
+                .Include(c => c.Course)!.ThenInclude(c => c!.Instructor)
+                .FirstOrDefaultAsync(c => c.Id == id);
+    }
 
     private static string GenerateCode()
     {
         var chars = new char[6];
         for (var i = 0; i < chars.Length; i++)
         {
-            chars[i] = Alphabet[Random.Shared.Next(Alphabet.Length)];
+            chars[i] = _alphabet[Random.Shared.Next(_alphabet.Length)];
         }
         return $"CRT-{new string(chars)}";
     }

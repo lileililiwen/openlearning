@@ -48,27 +48,35 @@ public class InstructorApplicationService
     }
 
     public Task<InstructorApplication?> GetForUserAsync(string userId)
-        => _db.Set<InstructorApplication>().AsNoTracking()
-            .FirstOrDefaultAsync(a => a.UserId == userId);
+    {
+        return _db.Set<InstructorApplication>().AsNoTracking()
+                .FirstOrDefaultAsync(a => a.UserId == userId);
+    }
 
     public Task<InstructorApplication?> GetByIdAsync(int applicationId)
-        => _db.Set<InstructorApplication>().AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Id == applicationId);
+    {
+        return _db.Set<InstructorApplication>().AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Id == applicationId);
+    }
 
     public Task<List<InstructorApplication>> GetPendingAsync()
-        => _db.Set<InstructorApplication>().AsNoTracking()
-            .Include(a => a.User)
-            .Where(a => a.Status == InstructorApplicationStatus.Pending)
-            .OrderByDescending(a => a.SubmittedAt)
-            .ToListAsync();
+    {
+        return _db.Set<InstructorApplication>().AsNoTracking()
+                .Include(a => a.User)
+                .Where(a => a.Status == InstructorApplicationStatus.Pending)
+                .OrderByDescending(a => a.SubmittedAt)
+                .ToListAsync();
+    }
 
     public Task<List<InstructorApplication>> GetReviewedAsync(int count)
-        => _db.Set<InstructorApplication>().AsNoTracking()
-            .Include(a => a.User)
-            .Where(a => a.Status != InstructorApplicationStatus.Pending)
-            .OrderByDescending(a => a.ReviewedAt)
-            .Take(count)
-            .ToListAsync();
+    {
+        return _db.Set<InstructorApplication>().AsNoTracking()
+                .Include(a => a.User)
+                .Where(a => a.Status != InstructorApplicationStatus.Pending)
+                .OrderByDescending(a => a.ReviewedAt)
+                .Take(count)
+                .ToListAsync();
+    }
 
     public async Task<(bool Ok, string? Error)> ApproveAsync(int applicationId, string reviewerId)
     {

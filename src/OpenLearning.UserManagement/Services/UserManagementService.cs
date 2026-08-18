@@ -40,9 +40,13 @@ public class UserManagementService
         IQueryable<ApplicationUser> query = _userManager.Users.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var term = search.Trim().ToLower();
-            query = query.Where(u => u.DisplayName.ToLower().Contains(term)
-                || (u.Email != null && u.Email.ToLower().Contains(term)));
+            var term = search.Trim().ToLowerInvariant();
+            // CA1862 wants the StringComparison overload, but EF Core cannot translate it
+            // to SQL; lowercasing both sides is the provider-agnostic translatable form.
+#pragma warning disable CA1862
+            query = query.Where(u => u.DisplayName.ToLowerInvariant().Contains(term)
+                || (u.Email != null && u.Email.ToLowerInvariant().Contains(term)));
+#pragma warning restore CA1862
         }
 
         var users = await query

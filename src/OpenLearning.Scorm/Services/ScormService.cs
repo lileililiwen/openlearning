@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
@@ -16,12 +17,16 @@ public class ScormService
     }
 
     public Task<ScormPackage?> GetForLessonAsync(int lessonId)
-        => _db.Set<ScormPackage>().AsNoTracking()
-            .FirstOrDefaultAsync(p => p.LessonId == lessonId);
+    {
+        return _db.Set<ScormPackage>().AsNoTracking()
+                .FirstOrDefaultAsync(p => p.LessonId == lessonId);
+    }
 
     public Task<bool> IsLessonOwnerAsync(int lessonId, string userId)
-        => _db.Set<Lesson>().AsNoTracking()
-            .AnyAsync(l => l.Id == lessonId && l.Module!.Course!.InstructorId == userId);
+    {
+        return _db.Set<Lesson>().AsNoTracking()
+                .AnyAsync(l => l.Id == lessonId && l.Module!.Course!.InstructorId == userId);
+    }
 
     public async Task<(ScormPackage? Package, string? Error)> UploadAsync(
         int lessonId, string ownerId, string webRootPath, Stream zipStream, string fileName)
@@ -63,7 +68,7 @@ public class ScormService
             await _db.SaveChangesAsync();
 
             // Extract to wwwroot/scorm/<id>/ (path-traversal safe).
-            var targetRoot = Path.Combine(webRootPath, "scorm", package.Id.ToString());
+            var targetRoot = Path.Combine(webRootPath, "scorm", package.Id.ToString(CultureInfo.InvariantCulture));
             Directory.CreateDirectory(targetRoot);
             foreach (var entry in archive.Entries)
             {
@@ -73,7 +78,7 @@ public class ScormService
                     continue;
                 }
 
-                if (entry.FullName.EndsWith("/"))
+                if (entry.FullName.EndsWith('/'))
                 {
                     Directory.CreateDirectory(targetPath);
                     continue;
@@ -85,7 +90,7 @@ public class ScormService
                 await source.CopyToAsync(destination);
             }
 
-            package.PackagePath = Path.Combine("scorm", package.Id.ToString()).Replace('\\', '/');
+            package.PackagePath = Path.Combine("scorm", package.Id.ToString(CultureInfo.InvariantCulture)).Replace('\\', '/');
             await _db.SaveChangesAsync();
             return (package, null);
         }
@@ -109,7 +114,7 @@ public class ScormService
             return false;
         }
 
-        var folder = Path.Combine(webRootPath, "scorm", package.Id.ToString());
+        var folder = Path.Combine(webRootPath, "scorm", package.Id.ToString(CultureInfo.InvariantCulture));
         if (Directory.Exists(folder))
         {
             Directory.Delete(folder, recursive: true);

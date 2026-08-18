@@ -15,14 +15,18 @@ public class QuestionService
     }
 
     public Task<Question?> GetByIdAsync(int id)
-        => _db.Set<Question>().AsNoTracking()
-            .Include(q => q.Quiz).ThenInclude(q => q!.Course)
-            .Include(q => q.AnswerOptions.OrderBy(o => o.OrderIndex))
-            .FirstOrDefaultAsync(q => q.Id == id);
+    {
+        return _db.Set<Question>().AsNoTracking()
+                .Include(q => q.Quiz).ThenInclude(q => q!.Course)
+                .Include(q => q.AnswerOptions.OrderBy(o => o.OrderIndex))
+                .FirstOrDefaultAsync(q => q.Id == id);
+    }
 
     public Task<bool> IsOwnerAsync(int questionId, string userId)
-        => _db.Set<Question>().AsNoTracking()
-            .AnyAsync(q => q.Id == questionId && q.Quiz!.Course!.InstructorId == userId);
+    {
+        return _db.Set<Question>().AsNoTracking()
+                .AnyAsync(q => q.Id == questionId && q.Quiz!.Course!.InstructorId == userId);
+    }
 
     public async Task<(Question? Question, string? Error)> AddAsync(
         int quizId, string ownerId, string text, int points, List<AnswerOptionInput> options)

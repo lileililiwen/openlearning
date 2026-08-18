@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -32,6 +33,8 @@ public class RevenueModel : PageModel
 
     public int TotalOrders { get; set; }
 
+    private static readonly string[] _csvHeaders = new[] { "Id", "PaidAt", "Course", "Student", "Amount", "Status", "Reference" };
+
     public async Task OnGetAsync()
     {
         var (rows, totalRevenue, totalOrders) = await _orders.GetRevenueReportAsync(From, To);
@@ -45,16 +48,16 @@ public class RevenueModel : PageModel
         var orders = await _orders.GetPaidOrdersForExportAsync(From, To);
         var rows = orders.Select(o => new string?[]
         {
-            o.Id.ToString(),
-            (o.PaidAt ?? o.CreatedAt).ToString("yyyy-MM-dd HH:mm"),
+            o.Id.ToString(CultureInfo.InvariantCulture),
+            (o.PaidAt ?? o.CreatedAt).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
             o.Course?.Title ?? string.Empty,
             o.Student?.DisplayName ?? string.Empty,
-            o.Amount.ToString("0.00"),
+            o.Amount.ToString("0.00", CultureInfo.InvariantCulture),
             o.Status.ToString(),
             o.PaymentReference,
         });
         var csv = CsvHelper.Build(
-            new[] { "Id", "PaidAt", "Course", "Student", "Amount", "Status", "Reference" },
+            _csvHeaders,
             rows);
         return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", "orders.csv");
     }

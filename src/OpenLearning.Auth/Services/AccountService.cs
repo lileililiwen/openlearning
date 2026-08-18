@@ -39,19 +39,27 @@ public class AccountService
     }
 
     public Task<SignInResult> LoginAsync(string email, string password, bool rememberMe)
-        => _signInManager.PasswordSignInAsync(email, password, rememberMe, lockoutOnFailure: false);
+    {
+        return _signInManager.PasswordSignInAsync(email, password, rememberMe, lockoutOnFailure: false);
+    }
 
     public Task SignOutAsync()
-        => _signInManager.SignOutAsync();
+    {
+        return _signInManager.SignOutAsync();
+    }
 
     /// <summary>Number of users holding the given role (used for admin KPIs).</summary>
     public async Task<int> CountUsersInRoleAsync(string role)
-        => (await _userManager.GetUsersInRoleAsync(role)).Count;
+    {
+        return (await _userManager.GetUsersInRoleAsync(role)).Count;
+    }
 
     public async Task<List<ApplicationUser>> GetRecentSignupsAsync(int count)
-        => await _userManager.Users
-            .AsNoTracking()
-            .OrderByDescending(u => u.CreatedAt)
-            .Take(count)
-            .ToListAsync();
+    {
+        return await _userManager.Users
+                .AsNoTracking()
+                .OrderByDescending(u => u.CreatedAt)
+                .Take(count)
+                .ToListAsync();
+    }
 }

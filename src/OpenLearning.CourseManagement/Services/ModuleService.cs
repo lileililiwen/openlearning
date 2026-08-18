@@ -13,30 +13,40 @@ public class ModuleService
     }
 
     public Task<List<Module>> GetForCourseAsync(int courseId)
-        => _db.Set<Module>().AsNoTracking()
-            .Where(m => m.CourseId == courseId)
-            .OrderBy(m => m.OrderIndex)
-            .Include(m => m.Lessons.OrderBy(l => l.OrderIndex))
-            .ToListAsync();
+    {
+        return _db.Set<Module>().AsNoTracking()
+                .Where(m => m.CourseId == courseId)
+                .OrderBy(m => m.OrderIndex)
+                .Include(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                .ToListAsync();
+    }
 
     public Task<Module?> GetByIdAsync(int id)
-        => _db.Set<Module>().AsNoTracking()
-            .Include(m => m.Course)
-            .Include(m => m.Lessons.OrderBy(l => l.OrderIndex))
-            .FirstOrDefaultAsync(m => m.Id == id);
+    {
+        return _db.Set<Module>().AsNoTracking()
+                .Include(m => m.Course)
+                .Include(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                .FirstOrDefaultAsync(m => m.Id == id);
+    }
 
     public Task<List<Lesson>> GetLessonsAsync(int moduleId)
-        => _db.Set<Lesson>().AsNoTracking()
-            .Where(l => l.ModuleId == moduleId)
-            .OrderBy(l => l.OrderIndex)
-            .ToListAsync();
+    {
+        return _db.Set<Lesson>().AsNoTracking()
+                .Where(l => l.ModuleId == moduleId)
+                .OrderBy(l => l.OrderIndex)
+                .ToListAsync();
+    }
 
     public Task<Course?> GetCourseAsync(int courseId)
-        => _db.Set<Course>().AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == courseId);
+    {
+        return _db.Set<Course>().AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == courseId);
+    }
 
     public Task<bool> IsOwnerAsync(int courseId, string userId)
-        => _db.Set<Course>().AnyAsync(c => c.Id == courseId && c.InstructorId == userId);
+    {
+        return _db.Set<Course>().AnyAsync(c => c.Id == courseId && c.InstructorId == userId);
+    }
 
     public async Task<Module?> AddAsync(int courseId, string ownerId, string title)
     {

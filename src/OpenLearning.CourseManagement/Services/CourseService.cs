@@ -25,34 +25,44 @@ public class CourseService
     }
 
     public Task<List<Course>> GetPublishedCoursesAsync()
-        => _db.Set<Course>().AsNoTracking()
-            .Include(c => c.Instructor)
-            .Where(c => c.Status == CourseStatus.Published)
-            .OrderByDescending(c => c.CreatedAt)
-            .ToListAsync();
+    {
+        return _db.Set<Course>().AsNoTracking()
+                .Include(c => c.Instructor)
+                .Where(c => c.Status == CourseStatus.Published)
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync();
+    }
 
     public Task<List<Course>> GetByInstructorAsync(string instructorId)
-        => _db.Set<Course>().AsNoTracking()
-            .Include(c => c.Modules).ThenInclude(m => m.Lessons)
-            .Where(c => c.InstructorId == instructorId)
-            .OrderByDescending(c => c.CreatedAt)
-            .ToListAsync();
+    {
+        return _db.Set<Course>().AsNoTracking()
+                .Include(c => c.Modules).ThenInclude(m => m.Lessons)
+                .Where(c => c.InstructorId == instructorId)
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync();
+    }
 
     public Task<List<Course>> GetAllAsync()
-        => _db.Set<Course>().AsNoTracking()
-            .Include(c => c.Instructor)
-            .OrderByDescending(c => c.CreatedAt)
-            .ToListAsync();
+    {
+        return _db.Set<Course>().AsNoTracking()
+                .Include(c => c.Instructor)
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync();
+    }
 
     public Task<Course?> GetByIdAsync(int id)
-        => _db.Set<Course>().AsNoTracking()
-            .Include(c => c.Instructor)
-            .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
-                .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
-            .FirstOrDefaultAsync(c => c.Id == id);
+    {
+        return _db.Set<Course>().AsNoTracking()
+                .Include(c => c.Instructor)
+                .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
+                    .ThenInclude(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                .FirstOrDefaultAsync(c => c.Id == id);
+    }
 
     public Task<bool> IsOwnerAsync(int courseId, string userId)
-        => _db.Set<Course>().AnyAsync(c => c.Id == courseId && c.InstructorId == userId);
+    {
+        return _db.Set<Course>().AnyAsync(c => c.Id == courseId && c.InstructorId == userId);
+    }
 
     public async Task<Course?> CreateAsync(
         string instructorId,
@@ -163,10 +173,12 @@ public class CourseService
     }
 
     public Task<int> GetLessonCountAsync(int courseId)
-        => _db.Set<Module>().AsNoTracking()
-            .Where(m => m.CourseId == courseId)
-            .SelectMany(m => m.Lessons)
-            .CountAsync();
+    {
+        return _db.Set<Module>().AsNoTracking()
+                .Where(m => m.CourseId == courseId)
+                .SelectMany(m => m.Lessons)
+                .CountAsync();
+    }
 
     /// <summary>
     /// Published courses matching any of the given categories, newest first,
@@ -199,11 +211,13 @@ public class CourseService
     }
 
     public Task<List<Course>> GetRecentCoursesAsync(int count)
-        => _db.Set<Course>().AsNoTracking()
-            .Include(c => c.Instructor)
-            .OrderByDescending(c => c.CreatedAt)
-            .Take(count)
-            .ToListAsync();
+    {
+        return _db.Set<Course>().AsNoTracking()
+                .Include(c => c.Instructor)
+                .OrderByDescending(c => c.CreatedAt)
+                .Take(count)
+                .ToListAsync();
+    }
 
     /// <summary>
     /// Paginated catalog search over published courses. Returns the page and
@@ -224,11 +238,15 @@ public class CourseService
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var term = search.Trim().ToLower();
+            var term = search.Trim().ToLowerInvariant();
+            // CA1862 wants the StringComparison overload, but EF Core cannot translate it
+            // to SQL; lowercasing both sides is the provider-agnostic translatable form.
+#pragma warning disable CA1862
             query = query.Where(c =>
-                c.Title.ToLower().Contains(term)
-                || c.Description.ToLower().Contains(term)
-                || c.Category.ToLower().Contains(term));
+                c.Title.ToLowerInvariant().Contains(term)
+                || c.Description.ToLowerInvariant().Contains(term)
+                || c.Category.ToLowerInvariant().Contains(term));
+#pragma warning restore CA1862
         }
 
         if (!string.IsNullOrWhiteSpace(category))

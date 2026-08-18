@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -35,6 +36,8 @@ public class UsersModel : PageModel
 
     public int MaxDayCount => SignupsOverTime.Count == 0 ? 0 : SignupsOverTime.Max(x => x.Count);
 
+    private static readonly string[] _csvHeaders = new[] { "Id", "CreatedAt", "Email", "DisplayName", "Roles", "Suspended" };
+
     public async Task OnGetAsync()
     {
         SignupsOverTime = await _users.GetSignupsOverTimeAsync(From, To);
@@ -49,14 +52,14 @@ public class UsersModel : PageModel
         var rows = users.Select(u => new string?[]
         {
             u.User.Id,
-            u.User.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+            u.User.CreatedAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
             u.User.Email,
             u.User.DisplayName,
             u.Roles,
             u.User.IsSuspended ? "Yes" : "No",
         });
         var csv = CsvHelper.Build(
-            new[] { "Id", "CreatedAt", "Email", "DisplayName", "Roles", "Suspended" },
+            _csvHeaders,
             rows);
         return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", "users.csv");
     }

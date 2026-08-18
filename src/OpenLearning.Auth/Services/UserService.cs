@@ -12,12 +12,10 @@ namespace OpenLearning.Auth.Services;
 public class UserService
 {
     private readonly DbContext _db;
-    private readonly UserManager<ApplicationUser> _userManager;
 
-    public UserService(DbContext db, UserManager<ApplicationUser> userManager)
+    public UserService(DbContext db)
     {
         _db = db;
-        _userManager = userManager;
     }
 
     /// <summary>Signups per day in the range.</summary>
@@ -76,12 +74,9 @@ public class UserService
                 (ur, r) => new { UserId = ur.UserId, Role = r.Name ?? string.Empty })
             .ToListAsync();
 
-        var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var row in roleRows)
-        {
-            counts.TryGetValue(row.Role, out var current);
-            counts[row.Role] = current + 1;
-        }
+        var counts = roleRows
+            .GroupBy(row => row.Role, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Count());
         return counts
             .Select(kv => (kv.Key, kv.Value))
             .OrderByDescending(kv => kv.Item2)
@@ -167,7 +162,9 @@ public class UserService
 
     /// <summary>Date-only inputs bind with Kind=Unspecified, which Npgsql rejects for timestamptz.</summary>
     private static DateTime? NormalizeUtc(DateTime? value)
-        => value is null
-            ? null
-            : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
+    {
+        return value is null
+                ? null
+                : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
+    }
 }

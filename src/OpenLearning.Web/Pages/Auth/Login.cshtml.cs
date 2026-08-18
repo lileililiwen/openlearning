@@ -36,7 +36,9 @@ public class LoginModel : PageModel
     }
 
     public void OnGet(string? returnUrl = null)
-        => ReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Content("~/");
+    {
+        ReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Content("~/");
+    }
 
     public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
     {

@@ -68,5 +68,7 @@ public class CourseChatHub : Hub
     }
 
     private static string GroupName(int courseId)
-        => $"course-{courseId}";
+    {
+        return $"course-{courseId}";
+    }
 }

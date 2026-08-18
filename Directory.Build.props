@@ -1,0 +1,20 @@
+<Project>
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Keep the allowlist as small as possible; each entry must be justified. -->
+    <WarningsNotAsErrors></WarningsNotAsErrors>
+    <!-- Make bin/obj outputs deterministic across machines. -->
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Roslyn analyzers that fail the build on violations (see design D3). -->
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.32.0.713" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

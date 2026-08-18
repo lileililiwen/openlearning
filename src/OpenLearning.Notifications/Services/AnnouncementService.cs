@@ -66,14 +66,18 @@ public class AnnouncementService
     }
 
     public Task<List<CourseAnnouncement>> ListForCourseAsync(int courseId, int count = 20)
-        => _db.Set<CourseAnnouncement>().AsNoTracking()
-            .Where(a => a.CourseId == courseId)
-            .OrderByDescending(a => a.CreatedAt)
-            .Take(count)
-            .ToListAsync();
+    {
+        return _db.Set<CourseAnnouncement>().AsNoTracking()
+                .Where(a => a.CourseId == courseId)
+                .OrderByDescending(a => a.CreatedAt)
+                .Take(count)
+                .ToListAsync();
+    }
 
     public Task<CourseAnnouncement?> GetByIdAsync(int id)
-        => _db.Set<CourseAnnouncement>().AsNoTracking()
-            .Include(a => a.Course)
-            .FirstOrDefaultAsync(a => a.Id == id);
+    {
+        return _db.Set<CourseAnnouncement>().AsNoTracking()
+                .Include(a => a.Course)
+                .FirstOrDefaultAsync(a => a.Id == id);
+    }
 }
