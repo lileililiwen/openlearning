@@ -11,6 +11,7 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
         builder.Property(c => c.Title).HasMaxLength(200).IsRequired();
         builder.Property(c => c.Description).HasMaxLength(4000);
         builder.Property(c => c.Category).HasMaxLength(100);
+        builder.Property(c => c.Price).HasPrecision(10, 2);
         builder.HasIndex(c => c.Status);
         builder.HasOne(c => c.Instructor)
                .WithMany()

@@ -20,6 +20,9 @@ public class Course
 
     public CourseStatus Status { get; set; } = CourseStatus.Draft;
 
+    /// <summary>Purchase price; null or zero means the course is free.</summary>
+    public decimal? Price { get; set; }
+
     public string InstructorId { get; set; } = string.Empty;
 
     public ApplicationUser? Instructor { get; set; }
@@ -31,4 +34,6 @@ public class Course
     public ICollection<Module> Modules { get; set; } = new List<Module>();
 
     public bool IsPublished => Status == CourseStatus.Published;
+
+    public bool IsFree => Price is null or <= 0;
 }

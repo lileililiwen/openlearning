@@ -5,6 +5,7 @@ using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
 using OpenLearning.CourseManagement;
 using OpenLearning.Data;
+using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
 using OpenLearning.Progress;
 
@@ -31,6 +32,7 @@ builder.Services.AddCourseManagementModule();
 builder.Services.AddEnrollmentModule();
 builder.Services.AddProgressModule();
 builder.Services.AddAssessmentsModule();
+builder.Services.AddEcommerceModule();
 
 var app = builder.Build();
 

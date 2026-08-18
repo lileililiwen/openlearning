@@ -33,6 +33,11 @@ public class CreateModel : PageModel
 
         [StringLength(100)]
         public string Category { get; set; } = string.Empty;
+
+        [DataType(DataType.Currency)]
+        [Range(0, 99999, ErrorMessage = "Price must be between 0 and 99999.")]
+        [Display(Name = "Price (leave blank for free)")]
+        public decimal? Price { get; set; }
     }
 
     public void OnGet()
@@ -47,7 +52,7 @@ public class CreateModel : PageModel
         }
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var course = await _courses.CreateAsync(userId, Input.Title, Input.Description, Input.Category);
+        var course = await _courses.CreateAsync(userId, Input.Title, Input.Description, Input.Category, Input.Price);
         return RedirectToPage("/Courses/Edit", new { id = course!.Id });
     }
 }

@@ -4,6 +4,7 @@ using OpenLearning.Assessments.Models;
 using OpenLearning.Auth.Models;
 using OpenLearning.CourseManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
+using OpenLearning.Ecommerce.Models;
 using OpenLearning.Progress.Models;
 
 namespace OpenLearning.Data;
@@ -35,6 +36,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<QuizAttemptAnswer> QuizAttemptAnswers => Set<QuizAttemptAnswer>();
 
+    public DbSet<Order> Orders => Set<Order>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -46,5 +49,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(EnrollmentEntity).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LessonCompletion).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Quiz).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Order).Assembly);
     }
 }

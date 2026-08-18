@@ -42,13 +42,15 @@ public class CourseService
     public Task<bool> IsOwnerAsync(int courseId, string userId)
         => _db.Set<Course>().AnyAsync(c => c.Id == courseId && c.InstructorId == userId);
 
-    public async Task<Course?> CreateAsync(string instructorId, string title, string description, string category)
+    public async Task<Course?> CreateAsync(
+        string instructorId, string title, string description, string category, decimal? price)
     {
         var course = new Course
         {
             Title = title,
             Description = description,
             Category = category,
+            Price = price,
             InstructorId = instructorId,
         };
 
@@ -57,7 +59,8 @@ public class CourseService
         return course;
     }
 
-    public async Task<bool> UpdateAsync(int courseId, string ownerId, string title, string description, string category)
+    public async Task<bool> UpdateAsync(
+        int courseId, string ownerId, string title, string description, string category, decimal? price)
     {
         var course = await _db.Set<Course>()
             .FirstOrDefaultAsync(c => c.Id == courseId && c.InstructorId == ownerId);
@@ -69,6 +72,7 @@ public class CourseService
         course.Title = title;
         course.Description = description;
         course.Category = category;
+        course.Price = price;
         course.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return true;

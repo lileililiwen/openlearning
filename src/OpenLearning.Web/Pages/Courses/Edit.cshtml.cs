@@ -42,6 +42,11 @@ public class EditModel : PageModel
 
         [StringLength(100)]
         public string Category { get; set; } = string.Empty;
+
+        [DataType(DataType.Currency)]
+        [Range(0, 99999, ErrorMessage = "Price must be between 0 and 99999.")]
+        [Display(Name = "Price (leave blank for free)")]
+        public decimal? Price { get; set; }
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -63,6 +68,7 @@ public class EditModel : PageModel
         Input.Title = course.Title;
         Input.Description = course.Description;
         Input.Category = course.Category;
+        Input.Price = course.Price;
         return Page();
     }
 
@@ -82,7 +88,7 @@ public class EditModel : PageModel
             return Page();
         }
 
-        var updated = await _courses.UpdateAsync(id, userId, Input.Title, Input.Description, Input.Category);
+        var updated = await _courses.UpdateAsync(id, userId, Input.Title, Input.Description, Input.Category, Input.Price);
         if (!updated)
         {
             return Forbid();

@@ -37,6 +37,14 @@
             {
                 <span class="badge bg-secondary">@course.Category</span>
             }
+            @if (!course.IsFree)
+            {
+                <span class="badge bg-warning text-dark">@course.Price!.Value.ToString("C")</span>
+            }
+            else
+            {
+                <span class="badge bg-success">Free</span>
+            }
         </div>
         <p class="text-muted mb-1">
             @if (course.Instructor is not null)
@@ -173,19 +181,31 @@
                 }
                 else if (course.IsPublished && User.Identity?.IsAuthenticated == true && !Model.IsOwner)
                 {
-                    <form method="post" asp-page-handler="Enroll" asp-route-id="@course.Id">
-                        <button type="submit" class="btn btn-primary w-100">Enroll</button>
-                    </form>
+                    @if (course.IsFree)
+                    {
+                        <form method="post" asp-page-handler="Enroll" asp-route-id="@course.Id">
+                            <button type="submit" class="btn btn-primary w-100">Enroll</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a class="btn btn-primary w-100" asp-page="/Courses/Checkout" asp-route-courseId="@course.Id">
+                            Buy for @course.Price!.Value.ToString("C")
+                        </a>
+                    }
                 }
                 else if (course.IsPublished && User.Identity?.IsAuthenticated != true)
                 {
-                    <a class="btn btn-primary w-100" asp-page="/Auth/Login">Sign in to enroll</a>
+                    <a class="btn btn-primary w-100" asp-page="/Auth/Login">
+                        @(course.IsFree ? "Sign in to enroll" : "Sign in to buy")
+                    </a>
                 }
 
                 @if (Model.IsOwner)
                 {
                     <hr />
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Edit" asp-route-id="@course.Id">Edit course</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Orders" asp-route-id="@course.Id">Orders</a>
                     <form method="post" asp-page-handler="Publish" asp-route-id="@course.Id">
                         <button type="submit" class="btn btn-outline-success w-100 mb-2">
                             @(course.IsPublished ? "Unpublish" : "Publish")

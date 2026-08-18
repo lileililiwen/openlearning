@@ -1,8 +1,5 @@
-# course-management Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change initial-lms-mvp. Update Purpose after archive.
-## Requirements
 ### Requirement: Instructor can create a course
 
 The system SHALL allow an Instructor to create a course with a title, description, category, and an optional price, and set it to draft state.
@@ -27,26 +24,3 @@ The system SHALL allow an Instructor to edit the title, description, category, a
 #### Scenario: Non-owner edit is denied
 - **WHEN** an Instructor who does not own the course attempts to edit it
 - **THEN** the system SHALL deny access
-
-### Requirement: Course publish lifecycle
-
-The system SHALL track course state as Draft or Published. Only Published courses are visible to Students in the catalog. Instructors can publish and unpublish their own courses.
-
-#### Scenario: Publish course
-- **WHEN** an Instructor publishes their draft course
-- **THEN** the course state becomes Published
-- **THEN** the course appears in the public catalog
-
-#### Scenario: Unpublish course
-- **WHEN** an Instructor unpublishes their published course
-- **THEN** the course state becomes Draft
-- **THEN** the course disappears from the public catalog
-
-### Requirement: Admin can manage all courses
-
-The system SHALL allow an Admin to view and delete any course regardless of ownership.
-
-#### Scenario: Admin deletes any course
-- **WHEN** an Admin deletes a course
-- **THEN** the course and its modules, lessons, and enrollments are removed
-

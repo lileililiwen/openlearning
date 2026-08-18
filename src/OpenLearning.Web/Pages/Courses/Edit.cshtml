@@ -24,6 +24,12 @@
             <input asp-for="Input.Category" class="form-control" />
             <span asp-validation-for="Input.Category" class="text-danger small"></span>
         </div>
+        <div class="mb-3" style="max-width: 220px">
+            <label asp-for="Input.Price" class="form-label"></label>
+            <input asp-for="Input.Price" class="form-control" placeholder="Free" />
+            <span asp-validation-for="Input.Price" class="text-danger small"></span>
+            <div class="form-text">Set a price to sell this course. Leave blank for a free course.</div>
+        </div>
         <div class="mb-3">
             <label asp-for="Input.Description" class="form-label"></label>
             <textarea asp-for="Input.Description" class="form-control" rows="5"></textarea>
