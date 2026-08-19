@@ -1,0 +1,41 @@
+@page
+@model OpenLearning.Web.Pages.AsyncIO.DetailModel
+@{
+    ViewData["Title"] = "Async Job";
+    var job = Model.Job!;
+}
+
+<h1 class="h3 mb-4">Async Job — @job.Kind</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Status</dt>
+            <dd class="col-sm-9">@job.Status</dd>
+            <dt class="col-sm-3">Rows</dt>
+            <dd class="col-sm-9">@job.SuccessRows success / @job.ErrorRows errors / @job.TotalRows total</dd>
+            <dt class="col-sm-3">Created</dt>
+            <dd class="col-sm-9">@job.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</dd>
+            <dt class="col-sm-3">Finished</dt>
+            <dd class="col-sm-9">@(job.FinishedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") ?? "—")</dd>
+            @if (!string.IsNullOrEmpty(job.ErrorMessage))
+            {
+                <dt class="col-sm-3">Error</dt>
+                <dd class="col-sm-9 text-danger">@job.ErrorMessage</dd>
+            }
+        </dl>
+        <hr />
+        @if (!string.IsNullOrEmpty(job.ResultFileKey))
+        {
+            <a class="btn btn-sm btn-primary" href="/files/@job.ResultFileKey">Download result</a>
+        }
+        @if (!string.IsNullOrEmpty(job.ErrorFileKey))
+        {
+            <a class="btn btn-sm btn-outline-danger" href="/files/@job.ErrorFileKey">Download error file</a>
+        }
+        @if (string.IsNullOrEmpty(job.ResultFileKey) && string.IsNullOrEmpty(job.ErrorFileKey))
+        {
+            <span class="text-muted small">No downloadable files.</span>
+        }
+    </div>
+</div>

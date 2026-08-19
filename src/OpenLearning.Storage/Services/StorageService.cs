@@ -19,6 +19,7 @@ public class StorageService
             [FilePurpose.Courseware] = (100L * 1024 * 1024, new[] { ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".zip" }),
             [FilePurpose.Assignment] = (50L * 1024 * 1024, new[] { ".pdf", ".doc", ".docx", ".zip" }),
             [FilePurpose.Answer] = (25L * 1024 * 1024, new[] { ".pdf", ".doc", ".docx", ".zip", ".jpg", ".jpeg", ".png" }),
+            [FilePurpose.AsyncIO] = (100L * 1024 * 1024, new[] { ".csv", ".xlsx", ".xls", ".json", ".txt", ".zip", ".pdf", ".doc", ".docx" }),
         };
 
     private readonly DbContext _db;

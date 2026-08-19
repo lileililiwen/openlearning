@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assessments;
 using OpenLearning.Assignments;
+using OpenLearning.AsyncIO;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
 using OpenLearning.Certificates;
@@ -146,6 +147,9 @@ builder.Services.AddLiveModule();
 builder.Services.AddJobsModule();
 builder.Services.AddDistributionModule();
 builder.Services.AddInvoicingModule();
+builder.Services.AddAsyncIOModule();
+builder.Services.AddJob<OpenLearning.AsyncIO.Jobs.AsyncIOJobDispatcher>();
+builder.Services.AddJob<OpenLearning.AsyncIO.Jobs.AsyncIOCleanupJob>();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();

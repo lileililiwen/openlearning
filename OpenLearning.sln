@@ -73,6 +73,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Distribution",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Invoicing", "src\OpenLearning.Invoicing\OpenLearning.Invoicing.csproj", "{853C9DFD-620A-4477-A2D7-00499E644F88}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.AsyncIO", "src\OpenLearning.AsyncIO\OpenLearning.AsyncIO.csproj", "{739D5CD8-E3FE-4628-8DD6-35119EAE23E3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

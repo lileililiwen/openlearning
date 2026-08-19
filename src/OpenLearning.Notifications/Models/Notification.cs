@@ -17,6 +17,7 @@ public enum NotificationType
     Assignment = 9,
     Exam = 10,
     Class = 11,
+    AsyncIO = 12,
 }
 
 /// <summary>One in-app notification for a user.</summary>

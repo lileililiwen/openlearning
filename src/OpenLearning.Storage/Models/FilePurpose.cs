@@ -8,6 +8,7 @@ public enum FilePurpose
     Courseware,
     Assignment,
     Answer,
+    AsyncIO,
 }
 
 /// <summary>State of a media asset's rendition pipeline.</summary>

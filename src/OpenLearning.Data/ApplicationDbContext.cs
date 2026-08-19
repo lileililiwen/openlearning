@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assessments.Models;
 using OpenLearning.Assignments.Models;
+using OpenLearning.AsyncIO.Models;
 using OpenLearning.Auth.Models;
 using OpenLearning.Certificates.Models;
 using OpenLearning.Chat.Models;
@@ -185,5 +186,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Job).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(DistributorProfile).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Invoice).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(AsyncIOJob).Assembly);
     }
 }
