@@ -1,0 +1,80 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Menu.IndexModel
+@{
+    ViewData["Title"] = "导航菜单";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">导航菜单</h1>
+    <a class="btn btn-outline-secondary" asp-page="/Admin/System">返回系统设置</a>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<p class="text-muted small">
+    编辑侧边栏的分组与菜单项。排序值小的在前；勾选"隐藏"后该菜单项对所有角色隐藏；
+    角色留空表示所有已登录角色可见，否则填写逗号分隔的角色名（如 <code>Student,Instructor</code>）。
+</p>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+    @for (var g = 0; g < Model.Input.Groups.Count; g++)
+    {
+        var group = Model.Input.Groups[g];
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex align-items-center gap-3 flex-wrap">
+                <strong>分组</strong>
+                <input class="form-control form-control-sm" style="max-width: 200px"
+                       asp-for="Input.Groups[g].Key" placeholder="Key" />
+                <input class="form-control form-control-sm" style="max-width: 200px"
+                       asp-for="Input.Groups[g].Label" placeholder="显示名称" />
+                <input class="form-control form-control-sm" style="max-width: 90px" type="number"
+                       asp-for="Input.Groups[g].SortOrder" placeholder="排序" />
+                <input class="form-control form-control-sm" style="max-width: 200px"
+                       asp-for="Input.Groups[g].AllowedRoles" placeholder="允许角色（留空=全部）" />
+            </div>
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 60px">隐藏</th>
+                        <th style="width: 180px">Key</th>
+                        <th>名称</th>
+                        <th>路由</th>
+                        <th style="width: 120px">图标</th>
+                        <th style="width: 80px">排序</th>
+                        <th style="width: 200px">允许角色</th>
+                        <th style="width: 160px">角标Key</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < group.Items.Count; i++)
+                    {
+                        <tr>
+                            <td><input class="form-check-input" type="checkbox" asp-for="Input.Groups[g].Items[i].Hidden" /></td>
+                            <td><input class="form-control form-control-sm" asp-for="Input.Groups[g].Items[i].Key" /></td>
+                            <td><input class="form-control form-control-sm" asp-for="Input.Groups[g].Items[i].Label" /></td>
+                            <td><input class="form-control form-control-sm" asp-for="Input.Groups[g].Items[i].Route" /></td>
+                            <td><input class="form-control form-control-sm" asp-for="Input.Groups[g].Items[i].IconKey" placeholder="bi-xxx" /></td>
+                            <td><input class="form-control form-control-sm" type="number" asp-for="Input.Groups[g].Items[i].SortOrder" /></td>
+                            <td><input class="form-control form-control-sm" asp-for="Input.Groups[g].Items[i].AllowedRoles" /></td>
+                            <td><input class="form-control form-control-sm" asp-for="Input.Groups[g].Items[i].CounterKey" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <button type="submit" class="btn btn-primary">保存菜单</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

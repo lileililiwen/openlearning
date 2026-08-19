@@ -11,6 +11,7 @@ using OpenLearning.Logging.Services;
 namespace OpenLearning.Web.Pages.Courses;
 
 [Authorize(Policy = Policies.RequireInstructor)]
+[OpenLearning.Navigation.Models.Breadcrumb("首页:/", "教师工作台:/Dashboard/Teacher", "课程管理")]
 public class ManageModel : PageModel
 {
     private readonly CourseService _courses;

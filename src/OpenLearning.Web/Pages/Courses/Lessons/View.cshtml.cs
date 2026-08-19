@@ -17,6 +17,7 @@ using OpenLearning.StudyTools.Services;
 
 namespace OpenLearning.Web.Pages.Courses.Lessons;
 
+[OpenLearning.Navigation.Models.Breadcrumb("首页:/", "我的课程:/MyCourses", "课程内容")]
 public class ViewModel : PageModel
 {
     private readonly LessonService _lessons;

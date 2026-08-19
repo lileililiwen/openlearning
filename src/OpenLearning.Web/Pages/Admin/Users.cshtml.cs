@@ -9,6 +9,7 @@ using OpenLearning.UserManagement.Services;
 namespace OpenLearning.Web.Pages.Admin;
 
 [Authorize(Policy = Policies.RequireAdmin)]
+[OpenLearning.Navigation.Models.Breadcrumb("首页:/", "后台:/Admin/Index", "用户管理")]
 public class UsersModel : PageModel
 {
     private readonly UserManagementService _users;

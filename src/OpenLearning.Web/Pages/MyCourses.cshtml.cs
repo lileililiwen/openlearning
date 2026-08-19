@@ -10,6 +10,7 @@ using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 namespace OpenLearning.Web.Pages;
 
 [Authorize(Policy = Policies.RequireStudent)]
+[OpenLearning.Navigation.Models.Breadcrumb("首页:/", "我的课程")]
 public class MyCoursesModel : PageModel
 {
     private readonly EnrollmentService _enrollments;

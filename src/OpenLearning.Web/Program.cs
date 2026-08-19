@@ -18,6 +18,7 @@ using OpenLearning.Exams;
 using OpenLearning.Logging;
 using OpenLearning.Logging.Middleware;
 using OpenLearning.Memberships;
+using OpenLearning.Navigation;
 using OpenLearning.Notifications;
 using OpenLearning.Notifications.Channels;
 using OpenLearning.Notifications.Email;
@@ -111,6 +112,8 @@ builder.Services.AddProgressModule();
 builder.Services.AddAssessmentsModule();
 builder.Services.AddExamsModule();
 builder.Services.AddEcommerceModule();
+builder.Services.AddNavigationModule();
+builder.Services.AddScoped<OpenLearning.Navigation.Services.INavCounterProvider, OpenLearning.Web.Navigation.NotificationsNavCounter>();
 builder.Services.AddScormModule();
 builder.Services.AddChatModule();
 builder.Services.AddUserManagementModule();
@@ -355,6 +358,13 @@ app.MapGet("/files/{id:int}/renditions", async (int id, StorageService storage) 
         high = asset.HighUrl,
         error = asset.Error,
     });
+});
+
+// Sidebar group collapse toggle (persisted via a signed cookie).
+app.MapPost("/nav/toggle", (string group, OpenLearning.Navigation.Services.NavPreferencesService prefs) =>
+{
+    prefs.ToggleCollapsed(group);
+    return Results.Ok();
 });
 
 // Apply migrations and seed demo data on first run (dev-friendly).

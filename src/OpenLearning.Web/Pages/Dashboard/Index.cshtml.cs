@@ -36,6 +36,7 @@ public sealed record EnrolledCourseItem(
     string InstructorName);
 
 [Authorize(Policy = Policies.RequireStudent)]
+[OpenLearning.Navigation.Models.Breadcrumb("首页:/", "学习中心")]
 public class IndexModel : PageModel
 {
     private readonly EnrollmentService _enrollments;

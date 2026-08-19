@@ -1,8 +1,5 @@
-# lms-core Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change initial-lms-mvp. Update Purpose after archive.
-## Requirements
 ### Requirement: Application provides shared navigation
 
 The system SHALL render a layout shell consisting of a top-bar, a collapsible sidebar with grouped menu items, and a main content area for every authenticated page. The sidebar's items SHALL be filtered server-side to the user's roles so entries the user is not entitled to are never rendered.
@@ -35,22 +32,7 @@ The system SHALL render a layout shell consisting of a top-bar, a collapsible si
 - **THEN** the sidebar shows the admin menu groups (后台首页, 用户管理, 课程管理, 资源管理, 考试题库管理, 系统配置)
 - **THEN** the user-management submenu (学员, 教师, 角色) is grouped under "用户管理"
 
-### Requirement: Seed data on first run
-
-The system SHALL seed an admin account and a sample published course with modules and lessons on first startup so the MVP is immediately demonstrable.
-
-#### Scenario: First-run seeding
-- **WHEN** the application starts with an empty database
-- **THEN** an Admin user and one sample published course with at least one module and lesson are created
-- **THEN** an Instructor user exists to manage the sample course
-
-### Requirement: MIT license and attribution
-
-The system SHALL be released under the MIT license and SHALL credit MIT-licensed open-source reference projects in the README in accordance with open-source spirit.
-
-#### Scenario: README includes credits
-- **WHEN** a developer reads the README
-- **THEN** it includes an Acknowledgments section listing CoreLMS, SmartLearning, and LearnNest with their sources
+## ADDED Requirements
 
 ### Requirement: Sidebar groups can be collapsed and expanded
 
@@ -140,4 +122,3 @@ The system SHALL render a top-bar above the sidebar with: the site logo (left), 
 
 - **WHEN** the user clicks the avatar
 - **THEN** a dropdown shows 个人设置, 修改密码, 退出登录
-

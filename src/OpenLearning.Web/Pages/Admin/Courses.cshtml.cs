@@ -11,6 +11,7 @@ using OpenLearning.Logging.Services;
 namespace OpenLearning.Web.Pages.Admin;
 
 [Authorize(Policy = Policies.RequireAdmin)]
+[OpenLearning.Navigation.Models.Breadcrumb("首页:/", "后台:/Admin/Index", "课程管理")]
 public class CoursesModel : PageModel
 {
     private readonly CourseService _courses;
