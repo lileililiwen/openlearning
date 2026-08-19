@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenLearning.AsyncIO\OpenLearning.AsyncIO.csproj" />
+    <ProjectReference Include="..\OpenLearning.Auth\OpenLearning.Auth.csproj" />
+    <ProjectReference Include="..\OpenLearning.Classes\OpenLearning.Classes.csproj" />
+    <ProjectReference Include="..\OpenLearning.CourseManagement\OpenLearning.CourseManagement.csproj" />
+    <ProjectReference Include="..\OpenLearning.Ecommerce\OpenLearning.Ecommerce.csproj" />
+    <ProjectReference Include="..\OpenLearning.Enrollment\OpenLearning.Enrollment.csproj" />
+    <ProjectReference Include="..\OpenLearning.Jobs\OpenLearning.Jobs.csproj" />
+    <ProjectReference Include="..\OpenLearning.Logging\OpenLearning.Logging.csproj" />
+    <ProjectReference Include="..\OpenLearning.Notifications\OpenLearning.Notifications.csproj" />
+    <ProjectReference Include="..\OpenLearning.Storage\OpenLearning.Storage.csproj" />
+  </ItemGroup>
+
+</Project>

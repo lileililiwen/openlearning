@@ -1,0 +1,94 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Students.ImportModel
+@using OpenLearning.StudentIO.Models
+@{
+    ViewData["Title"] = "学生批量导入";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">学生批量导入</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-page="/Admin/Users">返回用户管理</a>
+</div>
+
+<p class="text-muted small">每行支持三种操作：<strong>Create</strong>（仅创建账号）、<strong>CreateAndEnroll</strong>（创建并选课）、<strong>EnrollExisting</strong>（为已有账号选课）。文件不超过 200 行时同步导入，超过后自动转为异步。</p>
+
+@if (Model.Outcome?.Kind == OpenLearning.StudentIO.Services.StudentImportOutcomeKind.Error)
+{
+    <div class="alert alert-danger">@Model.Outcome.Error</div>
+}
+
+@if (Model.Outcome?.Kind == OpenLearning.StudentIO.Services.StudentImportOutcomeKind.Submitted)
+{
+    <div class="alert alert-success">
+        任务已提交，完成后将通过站内信通知。
+        <a asp-page="/AsyncIO/Detail" asp-route-id="@Model.Outcome.JobId">查看任务进度</a>
+    </div>
+}
+
+@if (Model.Outcome?.Kind == OpenLearning.StudentIO.Services.StudentImportOutcomeKind.Completed)
+{
+    <div class="alert @(Model.Outcome.Errors.Count == 0 ? "alert-success" : "alert-warning")">
+        导入完成：成功 @Model.Outcome.SuccessCount 行，失败 @Model.Outcome.Errors.Count 行（共 @Model.Outcome.TotalRows 行）。
+    </div>
+
+    @if (Model.Outcome.Errors.Count > 0)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-white"><strong>错误明细</strong></div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>行号</th>
+                            <th>字段</th>
+                            <th>原因</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in Model.Outcome.Errors)
+                        {
+                            <tr>
+                                <td>@e.RowIndex</td>
+                                <td>@e.Field</td>
+                                <td>@e.Message</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>上传 Excel 导入学生</strong>
+        <a asp-page="/Admin/Students/Template" class="btn btn-sm btn-outline-primary">下载模板</a>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label asp-for="ExcelFile" class="form-label">Excel 文件（.xlsx，最大 10 MB）</label>
+                <input asp-for="ExcelFile" type="file" class="form-control" accept=".xlsx" />
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">默认操作（Action 列为空时使用）</label>
+                    <select asp-for="DefaultAction" class="form-select">
+                        <option value="@StudentRowAction.Create">仅创建账号</option>
+                        <option value="@StudentRowAction.CreateAndEnroll">创建并选课</option>
+                        <option value="@StudentRowAction.EnrollExisting">为已有账号选课</option>
+                    </select>
+                </div>
+                <div class="col-md-4 align-self-end">
+                    <div class="form-check">
+                        <input asp-for="ForceAsync" class="form-check-input" type="checkbox" id="ForceAsync" />
+                        <label class="form-check-label" for="ForceAsync">强制异步导入（大文件）</label>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">导入</button>
+            <a class="btn btn-outline-secondary" asp-page="/Admin/Students/ImportJobs">导入任务</a>
+        </form>
+    </div>
+</div>

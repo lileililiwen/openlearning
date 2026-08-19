@@ -1,0 +1,91 @@
+@page "/TA/Class/{classId}/Import"
+@model OpenLearning.Web.Pages.TA.ClassImportModel
+@using OpenLearning.StudentIO.Models
+@{
+    ViewData["Title"] = "班级学生导入";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">班级学生导入</h1>
+    @if (Model.Class is not null)
+    {
+        <a class="btn btn-outline-secondary btn-sm" asp-page="/TA/Index">返回助教工作台</a>
+    }
+</div>
+
+@if (Model.Class is not null)
+{
+    <p class="text-muted small">班级：<strong>@Model.Class.Name</strong>。TA 只能使用 <strong>CreateAndEnroll</strong> 或 <strong>EnrollExisting</strong>，且 <strong>ClassGroupIds</strong> 必须是您被分配的班级。</p>
+}
+
+@if (Model.Outcome?.Kind == OpenLearning.StudentIO.Services.StudentImportOutcomeKind.Error)
+{
+    <div class="alert alert-danger">@Model.Outcome.Error</div>
+}
+
+@if (Model.Outcome?.Kind == OpenLearning.StudentIO.Services.StudentImportOutcomeKind.Submitted)
+{
+    <div class="alert alert-success">
+        任务已提交，完成后将通过站内信通知。
+        <a asp-page="/AsyncIO/Detail" asp-route-id="@Model.Outcome.JobId">查看任务进度</a>
+    </div>
+}
+
+@if (Model.Outcome?.Kind == OpenLearning.StudentIO.Services.StudentImportOutcomeKind.Completed)
+{
+    <div class="alert @(Model.Outcome.Errors.Count == 0 ? "alert-success" : "alert-warning")">
+        导入完成：成功 @Model.Outcome.SuccessCount 行，失败 @Model.Outcome.Errors.Count 行（共 @Model.Outcome.TotalRows 行）。
+    </div>
+
+    @if (Model.Outcome.Errors.Count > 0)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-white"><strong>错误明细</strong></div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>行号</th>
+                            <th>字段</th>
+                            <th>原因</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in Model.Outcome.Errors)
+                        {
+                            <tr>
+                                <td>@e.RowIndex</td>
+                                <td>@e.Field</td>
+                                <td>@e.Message</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>上传 Excel 导入班级学生</strong>
+        <a asp-page="/Admin/Students/Template" class="btn btn-sm btn-outline-primary">下载模板</a>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="classId" value="@Model.ClassId" />
+            <div class="mb-3">
+                <label asp-for="ExcelFile" class="form-label">Excel 文件（.xlsx，最大 10 MB）</label>
+                <input asp-for="ExcelFile" type="file" class="form-control" accept=".xlsx" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">默认操作（Action 列为空时使用）</label>
+                <select asp-for="DefaultAction" class="form-select">
+                    <option value="@StudentRowAction.CreateAndEnroll">创建并选课</option>
+                    <option value="@StudentRowAction.EnrollExisting">为已有账号选课</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">导入</button>
+        </form>
+    </div>
+</div>

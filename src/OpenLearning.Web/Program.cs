@@ -41,6 +41,7 @@ using OpenLearning.Scorm.Services;
 using OpenLearning.Settlement;
 using OpenLearning.Storage;
 using OpenLearning.Storage.Services;
+using OpenLearning.StudentIO;
 using OpenLearning.StudyTools;
 using OpenLearning.SystemConfig;
 using OpenLearning.UserManagement;
@@ -152,6 +153,7 @@ builder.Services.AddAsyncIOModule();
 builder.Services.AddJob<OpenLearning.AsyncIO.Jobs.AsyncIOJobDispatcher>();
 builder.Services.AddJob<OpenLearning.AsyncIO.Jobs.AsyncIOCleanupJob>();
 builder.Services.AddQuestionIOModule();
+builder.Services.AddStudentIOModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();

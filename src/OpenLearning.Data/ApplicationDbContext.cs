@@ -25,6 +25,7 @@ using OpenLearning.Ratings.Models;
 using OpenLearning.Scorm.Models;
 using OpenLearning.Settlement.Models;
 using OpenLearning.Storage.Models;
+using OpenLearning.StudentIO.Models;
 using OpenLearning.StudyTools.Models;
 using OpenLearning.SystemConfig.Models;
 using OpenLearning.UserManagement.Models;
@@ -156,6 +157,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<QuestionRowError> QuestionRowErrors => Set<QuestionRowError>();
 
+    public DbSet<StudentImportJob> StudentImportJobs => Set<StudentImportJob>();
+
+    public DbSet<StudentImportRowError> StudentImportRowErrors => Set<StudentImportRowError>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -193,5 +198,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Invoice).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(AsyncIOJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(QuestionImportJob).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(StudentImportJob).Assembly);
     }
 }
