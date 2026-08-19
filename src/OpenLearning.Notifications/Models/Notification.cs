@@ -13,6 +13,7 @@ public enum NotificationType
     Application = 5,
     Membership = 6,
     Order = 7,
+    Enrollment = 8,
 }
 
 /// <summary>One in-app notification for a user.</summary>

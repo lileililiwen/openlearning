@@ -167,6 +167,13 @@ public class ViewModel : PageModel
             return NotFound();
         }
 
+        if (await _enrollments.IsAccessExpiredAsync(userId, lesson.Module.CourseId))
+        {
+            TempData["Message"] = "Your access to this course has expired. Please renew to continue learning.";
+            TempData["MessageType"] = "danger";
+            return RedirectToPage(new { id });
+        }
+
         await _progress.MarkCompleteAsync(userId, lesson.Module.CourseId, id);
         return RedirectToPage(new { id });
     }
@@ -188,6 +195,13 @@ public class ViewModel : PageModel
         if (lesson?.Module?.Course is null)
         {
             return NotFound();
+        }
+
+        if (await _enrollments.IsAccessExpiredAsync(userId, lesson.Module.CourseId))
+        {
+            TempData["Message"] = "Your access to this course has expired. Please renew to continue learning.";
+            TempData["MessageType"] = "danger";
+            return RedirectToPage(new { id });
         }
 
         await _progress.UnmarkAsync(userId, lesson.Module.CourseId, id);

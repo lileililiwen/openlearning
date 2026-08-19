@@ -90,6 +90,13 @@ public class DetailModel : PageModel
             return Forbid();
         }
 
+        if (await _enrollments.IsAccessExpiredAsync(userId, assignment.CourseId))
+        {
+            TempData["Message"] = "Your access to this course has expired. Please renew to continue learning.";
+            TempData["MessageType"] = "danger";
+            return RedirectToPage(new { id });
+        }
+
         Assignment = assignment;
         Submission = await _assignments.GetSubmissionAsync(id, userId);
 

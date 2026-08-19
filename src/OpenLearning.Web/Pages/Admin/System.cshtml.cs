@@ -46,6 +46,7 @@ public class SystemModel : PageModel
     {
         new() { Key = "Site.Name", Label = "Site name", Description = "Shown in the header, page titles, and footer." },
         new() { Key = "Catalog.PageSize", Label = "Catalog page size", Description = "Courses per page on the public catalog (1–50)." },
+        new() { Key = "enrollment.expiry.graceDays", Label = "Enrollment expiry grace days", Description = "Days a learner keeps read-only access after a course's access period expires (0–365)." },
     };
 
     public List<SettingItem> Settings { get; set; } = new();
@@ -68,6 +69,12 @@ public class SystemModel : PageModel
             if (key == "Catalog.PageSize" && (!int.TryParse(value, out var pageSize) || pageSize < 1 || pageSize > 50))
             {
                 return Flash("Catalog page size must be a whole number between 1 and 50.", "danger");
+            }
+
+            if (key == "enrollment.expiry.graceDays" &&
+                (!int.TryParse(value, out var graceDays) || graceDays < 0 || graceDays > 365))
+            {
+                return Flash("Enrollment expiry grace days must be a whole number between 0 and 365.", "danger");
             }
 
             valid[key] = value;

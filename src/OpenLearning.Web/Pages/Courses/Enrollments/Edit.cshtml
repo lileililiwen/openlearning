@@ -1,0 +1,90 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Enrollments.EditModel
+@{
+    ViewData["Title"] = "Enrollment Access Period";
+    var course = Model.Course!;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Access Period</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-4">Enrollment Access Period — @course.Title</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Enrollments.Count == 0)
+{
+    <div class="alert alert-info">No students are enrolled yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Enrolled</th>
+                    <th>Expires</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var enrollment in Model.Enrollments)
+                {
+                    <tr class="@(enrollment.RevokedAt is not null ? "table-secondary" : "")">
+                        <td>
+                            @(enrollment.Student?.DisplayName ?? enrollment.StudentId)
+                            <div class="text-muted small">@enrollment.Student?.Email</div>
+                        </td>
+                        <td>@enrollment.EnrolledAt.ToLocalTime().ToString("yyyy-MM-dd")</td>
+                        <td>@(enrollment.AccessExpiresAt?.ToLocalTime().ToString("yyyy-MM-dd") ?? "Unlimited")</td>
+                        <td>
+                            @if (enrollment.RevokedAt is not null)
+                            {
+                                <span class="badge bg-danger">Revoked</span>
+                            }
+                            else if (enrollment.AccessExpiresAt is DateTime expiresAt && expiresAt < DateTime.UtcNow)
+                            {
+                                <span class="badge bg-warning text-dark">Expired</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            @if (enrollment.RevokedAt is null)
+                            {
+                                <form method="post" asp-page-handler="SetExpiry" asp-route-id="@course.Id" asp-route-enrollmentId="@enrollment.Id" class="d-flex gap-2 justify-content-end">
+                                    <input name="expiresAt" type="datetime-local" class="form-control form-control-sm"
+                                           value="@(enrollment.AccessExpiresAt?.ToLocalTime().ToString("yyyy-MM-ddTHH:mm"))" />
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Set</button>
+                                </form>
+                                <form method="post" asp-page-handler="Revoke" asp-route-id="@course.Id" asp-route-enrollmentId="@enrollment.Id" class="d-inline ms-2"
+                                      onsubmit="return confirm('Revoke this student\\'s access? History is preserved.');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Revoke</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">@enrollment.RevokedReason · @enrollment.RevokedAt?.ToLocalTime().ToString("yyyy-MM-dd")</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

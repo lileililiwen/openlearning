@@ -6,6 +6,35 @@
 
 <h1 class="h3 mb-4">My Courses</h1>
 
+@{
+    var expiring = Model.Courses
+        .Where(c => !c.IsRevoked && c.Enrollment.AccessExpiresAt is not null && c.DaysRemaining <= Model.GraceDays)
+        .OrderBy(c => c.DaysRemaining)
+        .ToList();
+}
+@if (expiring.Count > 0)
+{
+    <div class="alert alert-warning">
+        <strong>访问即将到期：</strong>
+        @foreach (var item in expiring)
+        {
+            var course = item.Enrollment.Course!;
+            if (item.IsExpired)
+            {
+                <div>您的课程「@course.Title」访问权限已到期，将在 @Model.GraceDays 天后收回，请及时续费。
+                    <a asp-page="/Courses/Details" asp-route-id="@course.Id">续费</a>
+                </div>
+            }
+            else
+            {
+                <div>您的课程「@course.Title」将在 @item.DaysRemaining 天后收回访问权限，请及时续费。
+                    <a asp-page="/Courses/Details" asp-route-id="@course.Id">续费</a>
+                </div>
+            }
+        }
+    </div>
+}
+
 @if (Model.Courses.Count == 0)
 {
     <div class="alert alert-info">
@@ -20,7 +49,7 @@ else
         {
             var course = item.Enrollment.Course!;
             <div class="col">
-                <div class="card h-100 shadow-sm">
+                <div class="card h-100 shadow-sm @(item.IsRevoked ? "opacity-75" : "")">
                     <div class="card-body">
                         <h5 class="card-title">
                             <a class="text-decoration-none" asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a>
@@ -34,6 +63,19 @@ else
                         </h6>
                         <p class="text-muted small mb-2">Enrolled @item.Enrollment.EnrolledAt.ToString("yyyy-MM-dd")</p>
 
+                        @if (item.IsRevoked)
+                        {
+                            <span class="badge bg-danger mb-2">Access revoked</span>
+                        }
+                        else if (item.IsExpired)
+                        {
+                            <span class="badge bg-warning text-dark mb-2">Access expired — renew to continue</span>
+                        }
+                        else if (item.Enrollment.AccessExpiresAt is not null)
+                        {
+                            <span class="badge bg-info mb-2">Access until @item.Enrollment.AccessExpiresAt.Value.ToLocalTime().ToString("yyyy-MM-dd")</span>
+                        }
+
                         <div class="d-flex justify-content-between small mb-1">
                             <span>Progress</span>
                             <span>@item.ProgressPercent%</span>
@@ -43,7 +85,14 @@ else
                         </div>
                     </div>
                     <div class="card-footer bg-transparent d-flex gap-2">
-                        <a class="btn btn-sm btn-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">Continue</a>
+                        @if (item.IsRevoked || item.IsExpired)
+                        {
+                            <a class="btn btn-sm btn-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">Renew access</a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-sm btn-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">Continue</a>
+                        }
                         <form method="post" asp-page-handler="Withdraw" asp-route-id="@course.Id"
                               class="ms-auto"
                               onsubmit="return confirm('Withdraw from this course? Your progress will be lost.');">

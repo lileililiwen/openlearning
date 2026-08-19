@@ -19,4 +19,13 @@ public class Enrollment
     public int? ClassGroupId { get; set; }
 
     public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>When access expires; null = no expiry (unlimited access).</summary>
+    public DateTime? AccessExpiresAt { get; set; }
+
+    /// <summary>When access was revoked (expiry job, refund, or admin action); null = active.</summary>
+    public DateTime? RevokedAt { get; set; }
+
+    /// <summary>Why access was revoked: "expired", "refund", "admin", etc.</summary>
+    public string? RevokedReason { get; set; }
 }

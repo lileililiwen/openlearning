@@ -85,6 +85,13 @@ public class TakeModel : PageModel
             return Forbid();
         }
 
+        if (await _enrollments.IsAccessExpiredAsync(userId, quiz.CourseId))
+        {
+            TempData["Message"] = "Your access to this course has expired. Please renew to continue learning.";
+            TempData["MessageType"] = "danger";
+            return RedirectToPage("/Courses/Details", new { id = quiz.CourseId });
+        }
+
         Quiz = quiz;
         QuizId = id;
         Attempts = await _attempts.GetAttemptsForStudentAsync(userId, id);
@@ -111,6 +118,13 @@ public class TakeModel : PageModel
         if (quiz is null)
         {
             return NotFound();
+        }
+
+        if (await _enrollments.IsAccessExpiredAsync(userId, quiz.CourseId))
+        {
+            TempData["Message"] = "Your access to this course has expired. Please renew to continue learning.";
+            TempData["MessageType"] = "danger";
+            return RedirectToPage("/Courses/Details", new { id = quiz.CourseId });
         }
 
         var answerInputs = new Dictionary<int, AttemptService.QuizAnswerInput>();

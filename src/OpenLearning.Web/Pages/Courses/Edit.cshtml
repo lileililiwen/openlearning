@@ -83,6 +83,13 @@
         </div>
 
         <div class="mb-3">
+            <label asp-for="Input.DefaultAccessDays" class="form-label"></label>
+            <input asp-for="Input.DefaultAccessDays" type="number" min="1" class="form-control" />
+            <span asp-validation-for="Input.DefaultAccessDays" class="text-danger small"></span>
+            <div class="form-text">New enrollments expire after this many days. Leave blank for unlimited access.</div>
+        </div>
+
+        <div class="mb-3">
             <label asp-for="Input.Tags" class="form-label"></label>
             <input asp-for="Input.Tags" class="form-control" placeholder="csharp, beginner, web" />
             <span asp-validation-for="Input.Tags" class="text-danger small"></span>

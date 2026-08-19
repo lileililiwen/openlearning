@@ -126,6 +126,7 @@ public class CourseService
         string language,
         string prerequisites,
         string learningOutcomes,
+        int? defaultAccessDays = null,
         IEnumerable<string>? tagNames = null)
     {
         var course = await _db.Set<Course>()
@@ -144,6 +145,7 @@ public class CourseService
         course.Language = language;
         course.Prerequisites = prerequisites;
         course.LearningOutcomes = learningOutcomes;
+        course.DefaultAccessDays = defaultAccessDays;
         course.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         await SetTagsAsync(courseId, tagNames);

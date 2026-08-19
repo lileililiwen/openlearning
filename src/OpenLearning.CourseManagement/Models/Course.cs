@@ -44,6 +44,9 @@ public class Course
     /// <summary>Admin note attached when a course is rejected during content review.</summary>
     public string? ReviewNote { get; set; }
 
+    /// <summary>Default access period in days for new enrollments; null = unlimited.</summary>
+    public int? DefaultAccessDays { get; set; }
+
     // ===== Course discovery metadata =====
 
     public CourseLevel? Level { get; set; }

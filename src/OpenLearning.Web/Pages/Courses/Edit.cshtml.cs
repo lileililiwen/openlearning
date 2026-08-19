@@ -89,6 +89,10 @@ public class EditModel : PageModel
         [StringLength(500)]
         [Display(Name = "Tags (comma-separated)")]
         public string Tags { get; set; } = string.Empty;
+
+        [Range(1, 3650, ErrorMessage = "Access period must be between 1 and 3650 days.")]
+        [Display(Name = "Default access period (days; blank = unlimited)")]
+        public int? DefaultAccessDays { get; set; }
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -119,6 +123,7 @@ public class EditModel : PageModel
         Input.Prerequisites = course.Prerequisites;
         Input.LearningOutcomes = course.LearningOutcomes;
         Input.Tags = string.Join(", ", course.Tags.Select(ct => ct.Tag.Name));
+        Input.DefaultAccessDays = course.DefaultAccessDays;
         return Page();
     }
 
@@ -152,6 +157,7 @@ public class EditModel : PageModel
             Input.Language,
             Input.Prerequisites,
             Input.LearningOutcomes,
+            Input.DefaultAccessDays,
             SplitTags(Input.Tags));
         if (!updated)
         {

@@ -197,18 +197,21 @@ public class DetailsModel : PageModel
 
         // Paid courses cannot be enrolled directly without a paid order,
         // unless the student has an active membership (free-enrollment benefit).
+        DateTime? membershipExpiresAt = null;
         if (course.Price is > 0 && !await _orders.HasPaidOrderAsync(userId, id))
         {
-            var isMember = await _memberships.IsActiveAsync(userId);
-            if (!isMember)
+            var membership = await _memberships.GetActiveAsync(userId);
+            if (membership is null)
             {
                 TempData["Message"] = "This course requires purchase before enrollment.";
                 TempData["MessageType"] = "danger";
                 return RedirectToPage(new { id });
             }
+
+            membershipExpiresAt = membership.ExpiresAt;
         }
 
-        var (ok, error) = await _enrollments.EnrollAsync(userId, id);
+        var (ok, error) = await _enrollments.EnrollAsync(userId, id, membershipExpiresAt);
         if (!ok)
         {
             TempData["Message"] = error;

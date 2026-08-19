@@ -70,7 +70,7 @@ public sealed class CourseTaggingTests
 
         var updated = await service.UpdateAsync(
             course.Id, "instructor-1", "C# Basics", "Desc", "Programming", null,
-            CourseLevel.Beginner, "6 hours", "English", "", "", _blazorTags);
+            CourseLevel.Beginner, "6 hours", "English", "", "", tagNames: _blazorTags);
 
         Assert.True(updated);
         var loaded = await db.Set<Course>()

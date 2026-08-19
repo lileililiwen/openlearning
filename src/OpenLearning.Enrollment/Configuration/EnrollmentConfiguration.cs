@@ -8,7 +8,9 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<EnrollmentEntity
 {
     public void Configure(EntityTypeBuilder<EnrollmentEntity> builder)
     {
-        builder.HasIndex(e => new { e.StudentId, e.CourseId }).IsUnique();
+        // Not unique: a revoked/expired enrollment is re-enrollable, so the
+        // same (student, course) pair may legitimately have multiple rows.
+        builder.HasIndex(e => new { e.StudentId, e.CourseId });
         builder.HasIndex(e => e.ClassGroupId);
         builder.HasOne(e => e.Student)
                .WithMany()
