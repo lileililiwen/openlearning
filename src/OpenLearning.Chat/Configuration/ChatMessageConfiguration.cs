@@ -9,7 +9,9 @@ public class ChatMessageConfiguration : IEntityTypeConfiguration<ChatMessage>
     public void Configure(EntityTypeBuilder<ChatMessage> builder)
     {
         builder.Property(m => m.Body).HasMaxLength(2000).IsRequired();
+        builder.Property(m => m.Type).HasMaxLength(20).IsRequired();
         builder.HasIndex(m => new { m.CourseId, m.SentAt });
+        builder.HasIndex(m => new { m.LessonId, m.SentAt });
         builder.HasOne(m => m.Course)
                .WithMany()
                .HasForeignKey(m => m.CourseId)

@@ -26,6 +26,30 @@
                     <span asp-validation-for="Input.Content" class="text-danger small"></span>
                 </div>
 
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h2 class="h6">Video (optional)</h2>
+                        <p class="text-muted small mb-3">
+                            Paste URLs for a stored video (<code>/files/video/...</code>), a poster image, and an optional WebVTT subtitle track. When a video URL is set, students see the player instead of the text content.
+                        </p>
+                        <div class="mb-3">
+                            <label asp-for="Input.VideoUrl" class="form-label"></label>
+                            <input asp-for="Input.VideoUrl" class="form-control" placeholder="/files/video/..." />
+                            <span asp-validation-for="Input.VideoUrl" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Input.VideoPosterUrl" class="form-label"></label>
+                            <input asp-for="Input.VideoPosterUrl" class="form-control" placeholder="/files/image/..." />
+                            <span asp-validation-for="Input.VideoPosterUrl" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-0">
+                            <label asp-for="Input.SubtitleUrl" class="form-label"></label>
+                            <input asp-for="Input.SubtitleUrl" class="form-control" placeholder="/files/subtitles/en.vtt" />
+                            <span asp-validation-for="Input.SubtitleUrl" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">Save changes</button>
                     <a class="btn btn-outline-secondary"

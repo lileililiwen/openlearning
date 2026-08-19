@@ -12,5 +12,14 @@ public class Lesson
 
     public string Content { get; set; } = string.Empty;
 
+    /// <summary>Stored video URL; when set the lesson renders through the video player.</summary>
+    public string? VideoUrl { get; set; }
+
+    /// <summary>Optional poster image URL for the video player.</summary>
+    public string? VideoPosterUrl { get; set; }
+
+    /// <summary>Optional WebVTT subtitle track URL.</summary>
+    public string? SubtitleUrl { get; set; }
+
     public int OrderIndex { get; set; }
 }

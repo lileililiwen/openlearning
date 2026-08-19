@@ -17,5 +17,11 @@ public class ChatMessage
 
     public string Body { get; set; } = string.Empty;
 
+    /// <summary>Message kind: "chat" (course chat) or "danmu" (video bullet comments).</summary>
+    public string Type { get; set; } = "chat";
+
+    /// <summary>Lesson the message belongs to (danmu only; null for course chat).</summary>
+    public int? LessonId { get; set; }
+
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
 }

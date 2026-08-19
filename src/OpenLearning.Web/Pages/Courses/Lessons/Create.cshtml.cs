@@ -48,6 +48,18 @@ public class CreateModel : PageModel
 
         [DataType(DataType.MultilineText)]
         public string Content { get; set; } = string.Empty;
+
+        [Display(Name = "Video URL")]
+        [StringLength(1000)]
+        public string? VideoUrl { get; set; }
+
+        [Display(Name = "Poster URL (optional)")]
+        [StringLength(1000)]
+        public string? VideoPosterUrl { get; set; }
+
+        [Display(Name = "Subtitles URL (.vtt, optional)")]
+        [StringLength(1000)]
+        public string? SubtitleUrl { get; set; }
     }
 
     public async Task<IActionResult> OnGetAsync(int moduleId)
@@ -78,7 +90,8 @@ public class CreateModel : PageModel
             return Page();
         }
 
-        var lesson = await _lessons.AddAsync(ModuleId, userId, Input.Title, Input.Content);
+        var lesson = await _lessons.AddAsync(
+            ModuleId, userId, Input.Title, Input.Content, Input.VideoUrl, Input.VideoPosterUrl, Input.SubtitleUrl);
         if (lesson is null)
         {
             return Forbid();

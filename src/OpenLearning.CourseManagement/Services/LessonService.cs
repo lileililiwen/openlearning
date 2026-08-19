@@ -25,7 +25,14 @@ public class LessonService
                 .AnyAsync(l => l.Id == lessonId && l.Module!.Course!.InstructorId == userId);
     }
 
-    public async Task<Lesson?> AddAsync(int moduleId, string ownerId, string title, string content)
+    public async Task<Lesson?> AddAsync(
+        int moduleId,
+        string ownerId,
+        string title,
+        string content,
+        string? videoUrl = null,
+        string? videoPosterUrl = null,
+        string? subtitleUrl = null)
     {
         var module = await _db.Set<Module>()
             .Include(m => m.Course)
@@ -40,13 +47,29 @@ public class LessonService
             .Select(l => (int?)l.OrderIndex)
             .MaxAsync() ?? 0;
 
-        var lesson = new Lesson { ModuleId = moduleId, Title = title, Content = content, OrderIndex = nextOrder + 1 };
+        var lesson = new Lesson
+        {
+            ModuleId = moduleId,
+            Title = title,
+            Content = content,
+            VideoUrl = NullIfBlank(videoUrl),
+            VideoPosterUrl = NullIfBlank(videoPosterUrl),
+            SubtitleUrl = NullIfBlank(subtitleUrl),
+            OrderIndex = nextOrder + 1,
+        };
         _db.Set<Lesson>().Add(lesson);
         await _db.SaveChangesAsync();
         return lesson;
     }
 
-    public async Task<bool> UpdateAsync(int lessonId, string ownerId, string title, string content)
+    public async Task<bool> UpdateAsync(
+        int lessonId,
+        string ownerId,
+        string title,
+        string content,
+        string? videoUrl = null,
+        string? videoPosterUrl = null,
+        string? subtitleUrl = null)
     {
         var lesson = await _db.Set<Lesson>()
             .Include(l => l.Module).ThenInclude(m => m!.Course)
@@ -58,8 +81,16 @@ public class LessonService
 
         lesson.Title = title;
         lesson.Content = content;
+        lesson.VideoUrl = NullIfBlank(videoUrl);
+        lesson.VideoPosterUrl = NullIfBlank(videoPosterUrl);
+        lesson.SubtitleUrl = NullIfBlank(subtitleUrl);
         await _db.SaveChangesAsync();
         return true;
+    }
+
+    private static string? NullIfBlank(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
     public async Task<bool> DeleteAsync(int lessonId, string ownerId)

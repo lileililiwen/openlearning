@@ -383,4 +383,26 @@ public sealed class ProgressServiceTests
         Assert.Equal(90, daily[today.AddDays(-1)]);
         Assert.False(daily.ContainsKey(today.AddDays(1)));
     }
+
+    [Fact]
+    public async Task SavePosition_and_GetPosition_require_access_row_and_clamp_negative()
+    {
+        var seeded = SeedCourseWithTwoLessons();
+        var service = new ProgressService(seeded.Db);
+
+        // No LessonAccess row yet -> position stays 0 and save is ignored.
+        Assert.Equal(0, await service.GetPositionAsync("s1", seeded.CourseId, seeded.Lesson1Id));
+        await service.SavePositionAsync("s1", seeded.CourseId, seeded.Lesson1Id, 42);
+        Assert.Equal(0, await service.GetPositionAsync("s1", seeded.CourseId, seeded.Lesson1Id));
+
+        // After RecordAccessAsync the position persists.
+        await service.RecordAccessAsync("s1", seeded.CourseId, seeded.Lesson1Id);
+        await service.SavePositionAsync("s1", seeded.CourseId, seeded.Lesson1Id, 42);
+        Assert.Equal(42, await service.GetPositionAsync("s1", seeded.CourseId, seeded.Lesson1Id));
+
+        // Negative seconds clamp to 0; non-enrolled users always read 0.
+        await service.SavePositionAsync("s1", seeded.CourseId, seeded.Lesson1Id, -5);
+        Assert.Equal(0, await service.GetPositionAsync("s1", seeded.CourseId, seeded.Lesson1Id));
+        Assert.Equal(0, await service.GetPositionAsync("other", seeded.CourseId, seeded.Lesson1Id));
+    }
 }

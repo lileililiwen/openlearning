@@ -46,6 +46,18 @@ public class EditModel : PageModel
 
         [DataType(DataType.MultilineText)]
         public string Content { get; set; } = string.Empty;
+
+        [Display(Name = "Video URL")]
+        [StringLength(1000)]
+        public string? VideoUrl { get; set; }
+
+        [Display(Name = "Poster URL (optional)")]
+        [StringLength(1000)]
+        public string? VideoPosterUrl { get; set; }
+
+        [Display(Name = "Subtitles URL (.vtt, optional)")]
+        [StringLength(1000)]
+        public string? SubtitleUrl { get; set; }
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -66,6 +78,9 @@ public class EditModel : PageModel
         Id = id;
         Input.Title = lesson.Title;
         Input.Content = lesson.Content;
+        Input.VideoUrl = lesson.VideoUrl;
+        Input.VideoPosterUrl = lesson.VideoPosterUrl;
+        Input.SubtitleUrl = lesson.SubtitleUrl;
         ScormPackage = await _scorm.GetForLessonAsync(id);
         return Page();
     }
@@ -81,7 +96,8 @@ public class EditModel : PageModel
             return Page();
         }
 
-        var updated = await _lessons.UpdateAsync(Id, userId, Input.Title, Input.Content);
+        var updated = await _lessons.UpdateAsync(
+            Id, userId, Input.Title, Input.Content, Input.VideoUrl, Input.VideoPosterUrl, Input.SubtitleUrl);
         if (!updated)
         {
             return Forbid();

@@ -264,6 +264,31 @@ app.MapPost("/progress/session/end", async (SessionHeartbeatRequest request, Htt
     return ok ? Results.Json(new { ok = true }) : Results.Json(new { ok = false, error });
 });
 
+// Video playback position: the player saves every few seconds and restores on load.
+app.MapPost("/progress/position", async (PositionSaveRequest request, HttpContext http, ProgressService progress) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    await progress.SavePositionAsync(userId, request.CourseId, request.LessonId, request.Seconds);
+    return Results.Json(new { ok = true });
+});
+
+app.MapGet("/progress/position", async (int courseId, int lessonId, HttpContext http, ProgressService progress) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var seconds = await progress.GetPositionAsync(userId, courseId, lessonId);
+    return Results.Json(new { seconds });
+});
+
 // File storage serving. Private files (e.g. assignment answers) require the
 // owner or an admin; public purposes stream to anyone. Keys contain slashes
 // ({purpose}/{guid}{ext}) so the route is a catch-all.

@@ -494,4 +494,40 @@ public class ProgressService
             .GroupBy(r => r.EnrollmentId!.Value)
             .ToDictionary(g => g.Key, g => g.Sum(r => r.DurationSeconds));
     }
+
+    // ===== Video playback position =====
+
+    /// <summary>Persists a video lesson's playback position for the enrollment.</summary>
+    public async Task SavePositionAsync(string studentId, int courseId, int lessonId, int seconds)
+    {
+        var enrollment = await GetEnrollmentAsync(studentId, courseId);
+        if (enrollment is null)
+        {
+            return;
+        }
+
+        var access = await _db.Set<LessonAccess>()
+            .FirstOrDefaultAsync(la => la.EnrollmentId == enrollment.Id && la.LessonId == lessonId);
+        if (access is null)
+        {
+            return; // RecordAccessAsync creates the row when the lesson is opened
+        }
+
+        access.PlaybackPositionSeconds = Math.Max(0, seconds);
+        await _db.SaveChangesAsync();
+    }
+
+    /// <summary>Returns the saved playback position (seconds) for a video lesson, or 0.</summary>
+    public async Task<int> GetPositionAsync(string studentId, int courseId, int lessonId)
+    {
+        var enrollment = await GetEnrollmentAsync(studentId, courseId);
+        if (enrollment is null)
+        {
+            return 0;
+        }
+
+        var access = await _db.Set<LessonAccess>().AsNoTracking()
+            .FirstOrDefaultAsync(la => la.EnrollmentId == enrollment.Id && la.LessonId == lessonId);
+        return access?.PlaybackPositionSeconds ?? 0;
+    }
 }

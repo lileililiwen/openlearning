@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
+using OpenLearning.Chat.Services;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Enrollment.Services;
@@ -25,6 +26,7 @@ public class ViewModel : PageModel
     private readonly ScormService _scorm;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly StudyToolService _studyTools;
+    private readonly ChatService _chat;
 
     public ViewModel(
         LessonService lessons,
@@ -33,7 +35,8 @@ public class ViewModel : PageModel
         ProgressService progress,
         ScormService scorm,
         UserManager<ApplicationUser> userManager,
-        StudyToolService studyTools)
+        StudyToolService studyTools,
+        ChatService chat)
     {
         _lessons = lessons;
         _modules = modules;
@@ -42,6 +45,7 @@ public class ViewModel : PageModel
         _scorm = scorm;
         _userManager = userManager;
         _studyTools = studyTools;
+        _chat = chat;
     }
 
     public Lesson? Lesson { get; set; }
@@ -60,6 +64,15 @@ public class ViewModel : PageModel
     public LessonNote? Note { get; set; }
 
     public List<LessonDownload> Downloads { get; set; } = new();
+
+    /// <summary>Existing danmu (bullet comments) for the lesson, oldest first.</summary>
+    public List<DanmuItem> Danmu { get; set; } = new();
+
+    /// <summary>True when the lesson is a video lesson.</summary>
+    public bool IsVideoLesson => Lesson?.VideoUrl is not null;
+
+    /// <summary>True for enrolled students on a video lesson (playback protections apply).</summary>
+    public bool IsProtected { get; set; }
 
     [BindProperty]
     public string NoteBody { get; set; } = string.Empty;
@@ -123,6 +136,11 @@ public class ViewModel : PageModel
             Note = await _studyTools.GetNoteAsync(userId, id);
             NoteBody = Note?.Body ?? string.Empty;
             Downloads = await _studyTools.GetDownloadsAsync(id);
+            if (!string.IsNullOrWhiteSpace(lesson.VideoUrl))
+            {
+                IsProtected = true;
+                Danmu = await _chat.GetLessonDanmuAsync(id, 200);
+            }
         }
 
         return Page();

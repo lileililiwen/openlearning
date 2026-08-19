@@ -18,4 +18,7 @@ public class LessonAccess
     public Lesson? Lesson { get; set; }
 
     public DateTime LastAccessedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>Last saved playback position in seconds for video lessons.</summary>
+    public int PlaybackPositionSeconds { get; set; }
 }

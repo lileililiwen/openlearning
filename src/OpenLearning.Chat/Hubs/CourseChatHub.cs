@@ -56,6 +56,27 @@ public class CourseChatHub : Hub
             message.SentAt);
     }
 
+    public async Task SendDanmu(int courseId, int lessonId, string body)
+    {
+        var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null || await IsSuspendedAsync())
+        {
+            return;
+        }
+
+        var message = await _chat.AddDanmuAsync(courseId, lessonId, userId, body);
+        if (message is null)
+        {
+            return;
+        }
+
+        await Clients.Group(GroupName(courseId)).SendAsync(
+            "ReceiveDanmu",
+            message.User?.DisplayName ?? userId,
+            message.Body,
+            message.SentAt);
+    }
+
     private async Task<bool> IsSuspendedAsync()
     {
         if (Context.User is null)
