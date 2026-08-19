@@ -15,6 +15,7 @@ using OpenLearning.Progress.Models;
 using OpenLearning.Ratings.Models;
 using OpenLearning.Scorm.Models;
 using OpenLearning.Storage.Models;
+using OpenLearning.StudyTools.Models;
 using OpenLearning.SystemConfig.Models;
 using OpenLearning.UserManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
@@ -108,6 +109,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Assignment> Assignments => Set<Assignment>();
 
+    public DbSet<LessonNote> LessonNotes => Set<LessonNote>();
+
+    public DbSet<StudyCheckIn> StudyCheckIns => Set<StudyCheckIn>();
+
+    public DbSet<LessonDownload> LessonDownloads => Set<LessonDownload>();
+
     public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -135,5 +142,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(MembershipPlan).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Banner).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Assignment).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(LessonNote).Assembly);
     }
 }

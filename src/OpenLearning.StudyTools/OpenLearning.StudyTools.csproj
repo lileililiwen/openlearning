@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.30" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenLearning.CourseManagement\OpenLearning.CourseManagement.csproj" />
+    <ProjectReference Include="..\OpenLearning.Enrollment\OpenLearning.Enrollment.csproj" />
+    <ProjectReference Include="..\OpenLearning.Progress\OpenLearning.Progress.csproj" />
+  </ItemGroup>
+
+</Project>

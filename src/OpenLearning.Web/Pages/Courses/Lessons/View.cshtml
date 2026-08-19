@@ -61,6 +61,29 @@
                 }
             </div>
         }
+
+        @if (Model.CanTrackProgress)
+        {
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">My notes</h2>
+                    <form method="post" asp-page-handler="SaveNote" asp-route-id="@Model.Lesson.Id">
+                        <textarea name="NoteBody" class="form-control mb-2" rows="6" placeholder="Write your study notes here…">@Model.Note?.Body</textarea>
+                        <div class="d-flex gap-2 align-items-center">
+                            <button type="submit" class="btn btn-primary btn-sm">Save note</button>
+                            @if (Model.Note is not null)
+                            {
+                                <a class="btn btn-outline-secondary btn-sm" asp-page-handler="ExportNote" asp-route-id="@Model.Lesson.Id">Export .md</a>
+                            }
+                        </div>
+                    </form>
+                    @if (Model.Note is not null)
+                    {
+                        <p class="text-muted small mb-0 mt-2">Updated @Model.Note.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</p>
+                    }
+                </div>
+            </div>
+        }
     </div>
 
     <div class="col-lg-4">
@@ -87,6 +110,21 @@
                 </a>
             </div>
         </div>
+
+        @if (Model.Downloads.Count > 0)
+        {
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <h2 class="h6">Downloads</h2>
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var download in Model.Downloads)
+                        {
+                            <li class="mb-1"><a href="@download.FileUrl" target="_blank" rel="noopener">@download.Label</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
     </div>
 </div>
 

@@ -1,0 +1,123 @@
+@page
+@model OpenLearning.Web.Pages.Study.IndexModel
+@{
+    ViewData["Title"] = "Study Plan";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Study Plan</h1>
+        <p class="text-muted mb-0">Daily check-ins, your study calendar, and a summary report.</p>
+    </div>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">@OpenLearning.Web.Pages.Study.IndexModel.MonthName(Model.Month) calendar</h2>
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center calendar-grid mb-0">
+                        <thead>
+                            <tr>
+                                @foreach (var dayName in new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" })
+                                {
+                                    <th class="text-muted small fw-normal">@dayName</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var index = 0;
+                                var totalCells = Model.LeadingBlanks + Model.Calendar.Count;
+                            }
+                            @while (index < totalCells)
+                            {
+                                <tr>
+                                    @for (var cell = 0; cell < 7; cell++)
+                                    {
+                                        var current = index;
+                                        index++;
+                                        if (current < Model.LeadingBlanks || current >= Model.LeadingBlanks + Model.Calendar.Count)
+                                        {
+                                            <td class="bg-light">&nbsp;</td>
+                                        }
+                                        else
+                                        {
+                                            var day = Model.Calendar[current - Model.LeadingBlanks];
+                                            var isToday = day.Date == Model.Today;
+                                            <td class="@(isToday ? "table-primary" : "")">
+                                                <div class="fw-semibold">@day.Date.Day</div>
+                                                @if (day.CheckedIn)
+                                                {
+                                                    <span class="text-success" title="Checked in">&#10003;</span>
+                                                }
+                                                @if (day.Seconds > 0)
+                                                {
+                                                    <div class="small text-muted">@OpenLearning.Web.Pages.Study.IndexModel.FormatDuration(day.Seconds)</div>
+                                                }
+                                            </td>
+                                        }
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Daily check-in</h2>
+                @if (Model.TodayCheckIn is null)
+                {
+                    <form method="post" asp-page-handler="CheckIn">
+                        <input name="CheckInNote" class="form-control mb-2" placeholder="Optional note for today" />
+                        <button type="submit" class="btn btn-primary w-100">Check in today</button>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-success mb-0">
+                        Checked in today@(string.IsNullOrWhiteSpace(Model.TodayCheckIn.Note) ? "." : $": \"{Model.TodayCheckIn.Note}\"")
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Report</h2>
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex justify-content-between py-1 border-bottom">
+                        <span>Total study time</span>
+                        <strong>@OpenLearning.Web.Pages.Study.IndexModel.FormatDuration(Model.Report.TotalSeconds)</strong>
+                    </li>
+                    <li class="d-flex justify-content-between py-1 border-bottom">
+                        <span>Check-ins (12 months)</span>
+                        <strong>@Model.Report.CheckInCount</strong>
+                    </li>
+                    <li class="d-flex justify-content-between py-1 border-bottom">
+                        <span>Current streak</span>
+                        <strong>@Model.Report.CurrentStreakDays day@(Model.Report.CurrentStreakDays == 1 ? "" : "s")</strong>
+                    </li>
+                    <li class="d-flex justify-content-between py-1">
+                        <span>Completed lessons</span>
+                        <strong>@Model.Report.CompletedLessons</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

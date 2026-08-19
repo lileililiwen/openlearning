@@ -28,6 +28,7 @@ using OpenLearning.Scorm;
 using OpenLearning.Scorm.Services;
 using OpenLearning.Storage;
 using OpenLearning.Storage.Services;
+using OpenLearning.StudyTools;
 using OpenLearning.SystemConfig;
 using OpenLearning.UserManagement;
 using OpenLearning.Web.Progress;
@@ -120,6 +121,7 @@ builder.Services.AddLoggingModule(builder.Configuration.GetValue("Logging:Retent
 builder.Services.AddMembershipsModule();
 builder.Services.AddOperationsModule();
 builder.Services.AddAssignmentsModule();
+builder.Services.AddStudyToolsModule();
 // After AddNotificationsModule so the template renderer override wins.
 builder.Services.AddSystemConfigModule();
 builder.Services.AddSignalR();

@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -10,6 +11,8 @@ using OpenLearning.Enrollment.Services;
 using OpenLearning.Progress.Services;
 using OpenLearning.Scorm.Models;
 using OpenLearning.Scorm.Services;
+using OpenLearning.StudyTools.Models;
+using OpenLearning.StudyTools.Services;
 
 namespace OpenLearning.Web.Pages.Courses.Lessons;
 
@@ -21,6 +24,7 @@ public class ViewModel : PageModel
     private readonly ProgressService _progress;
     private readonly ScormService _scorm;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly StudyToolService _studyTools;
 
     public ViewModel(
         LessonService lessons,
@@ -28,7 +32,8 @@ public class ViewModel : PageModel
         EnrollmentService enrollments,
         ProgressService progress,
         ScormService scorm,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        StudyToolService studyTools)
     {
         _lessons = lessons;
         _modules = modules;
@@ -36,6 +41,7 @@ public class ViewModel : PageModel
         _progress = progress;
         _scorm = scorm;
         _userManager = userManager;
+        _studyTools = studyTools;
     }
 
     public Lesson? Lesson { get; set; }
@@ -50,6 +56,13 @@ public class ViewModel : PageModel
 
     /// <summary>Total counted study time on this lesson, for the current Student.</summary>
     public int LessonDurationSeconds { get; set; }
+
+    public LessonNote? Note { get; set; }
+
+    public List<LessonDownload> Downloads { get; set; } = new();
+
+    [BindProperty]
+    public string NoteBody { get; set; } = string.Empty;
 
     public static string FormatDuration(int seconds)
     {
@@ -107,6 +120,9 @@ public class ViewModel : PageModel
             IsCompleted = completed.Contains(id);
             await _progress.RecordAccessAsync(userId, course.Id, id);
             LessonDurationSeconds = await _progress.GetLessonDurationAsync(userId, id);
+            Note = await _studyTools.GetNoteAsync(userId, id);
+            NoteBody = Note?.Body ?? string.Empty;
+            Downloads = await _studyTools.GetDownloadsAsync(id);
         }
 
         return Page();
@@ -156,5 +172,56 @@ public class ViewModel : PageModel
 
         await _progress.UnmarkAsync(userId, lesson.Module.CourseId, id);
         return RedirectToPage(new { id });
+    }
+
+    public async Task<IActionResult> OnPostSaveNoteAsync(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return Challenge();
+        }
+
+        if (await IsSuspendedAsync())
+        {
+            return Forbid();
+        }
+
+        var lesson = await _lessons.GetByIdAsync(id);
+        if (lesson?.Module?.Course is null)
+        {
+            return NotFound();
+        }
+
+        if (!await _enrollments.IsEnrolledAsync(userId, lesson.Module.CourseId))
+        {
+            return Forbid();
+        }
+
+        var (ok, error) = await _studyTools.UpsertNoteAsync(userId, id, NoteBody);
+        TempData["Message"] = ok ? "Note saved." : error;
+        TempData["MessageType"] = ok ? "success" : "danger";
+        return RedirectToPage(new { id });
+    }
+
+    public async Task<IActionResult> OnGetExportNoteAsync(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return Challenge();
+        }
+
+        var note = await _studyTools.GetNoteAsync(userId, id);
+        if (note is null)
+        {
+            return NotFound();
+        }
+
+        var lesson = await _lessons.GetByIdAsync(id);
+        var title = lesson?.Title ?? "Lesson note";
+        var fileName = $"{string.Concat(title.Where(c => char.IsLetterOrDigit(c) || c == '-'))}.md";
+        var bytes = Encoding.UTF8.GetBytes(StudyToolService.ToMarkdown(title, note.Body));
+        return File(bytes, "text/markdown", fileName);
     }
 }
