@@ -44,6 +44,7 @@
     <ProjectReference Include="..\..\src\OpenLearning.Community\OpenLearning.Community.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Moderation\OpenLearning.Moderation.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Live\OpenLearning.Live.csproj" />
+    <ProjectReference Include="..\..\src\OpenLearning.Distribution\OpenLearning.Distribution.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Jobs\OpenLearning.Jobs.csproj" />
   </ItemGroup>
 

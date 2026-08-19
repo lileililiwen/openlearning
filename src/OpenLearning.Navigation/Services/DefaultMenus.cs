@@ -11,6 +11,7 @@ public static class DefaultMenus
         var tree = new MenuTree();
         tree.Groups.Add(StudentGroups());
         tree.Groups.Add(StudentCourses());
+        tree.Groups.Add(DistributorGroups());
         tree.Groups.Add(InstructorGroups());
         tree.Groups.Add(InstructorCourses());
         tree.Groups.Add(TaGroups());
@@ -90,6 +91,7 @@ public static class DefaultMenus
         group.Items.Add(new MenuItem { Key = "users", GroupKey = group.Key, Label = "用户列表", Route = "/Admin/Users", SortOrder = 1, IconKey = "bi-people", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "applications", GroupKey = group.Key, Label = "教师申请", Route = "/Admin/InstructorApplications", SortOrder = 2, IconKey = "bi-person-check", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "identities", GroupKey = group.Key, Label = "实名认证", Route = "/Admin/Identities", SortOrder = 3, IconKey = "bi-shield-check", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "distributors", GroupKey = group.Key, Label = "分销管理", Route = "/Admin/Distributors/Index", SortOrder = 5, IconKey = "bi-megaphone", AllowedRoles = Roles.Finance });
         group.Items.Add(new MenuItem { Key = "plans", GroupKey = group.Key, Label = "会员方案", Route = "/Admin/MembershipPlans", SortOrder = 4, IconKey = "bi-award", AllowedRoles = Roles.Admin });
         return group;
     }
@@ -108,6 +110,16 @@ public static class DefaultMenus
         var group = new MenuGroup { Key = "admin.moderation", Label = "内容审核", SortOrder = 35, IconKey = "bi-shield-check", AllowedRoles = Roles.Admin };
         group.Items.Add(new MenuItem { Key = "course-reviews", GroupKey = group.Key, Label = "课程审核", Route = "/Admin/CourseReviews", SortOrder = 1, IconKey = "bi-journal-check", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "content-reports", GroupKey = group.Key, Label = "内容举报", Route = "/Admin/ContentReports", SortOrder = 2, IconKey = "bi-flag", AllowedRoles = Roles.Admin });
+        return group;
+    }
+
+    private static MenuGroup DistributorGroups()
+    {
+        var group = new MenuGroup { Key = "distributor.workbench", Label = "分销工作台", SortOrder = 15, IconKey = "bi-megaphone", AllowedRoles = Roles.Distributor };
+        group.Items.Add(new MenuItem { Key = "dist-dashboard", GroupKey = group.Key, Label = "分销概览", Route = "/Distributor/Index", SortOrder = 1, IconKey = "bi-speedometer2", AllowedRoles = Roles.Distributor });
+        group.Items.Add(new MenuItem { Key = "dist-links", GroupKey = group.Key, Label = "分享链接", Route = "/Distributor/Links", SortOrder = 2, IconKey = "bi-link-45deg", AllowedRoles = Roles.Distributor });
+        group.Items.Add(new MenuItem { Key = "dist-commissions", GroupKey = group.Key, Label = "佣金明细", Route = "/Distributor/Commissions", SortOrder = 3, IconKey = "bi-cash", AllowedRoles = Roles.Distributor });
+        group.Items.Add(new MenuItem { Key = "dist-payouts", GroupKey = group.Key, Label = "提现申请", Route = "/Distributor/Payouts", SortOrder = 4, IconKey = "bi-wallet2", AllowedRoles = Roles.Distributor });
         return group;
     }
 

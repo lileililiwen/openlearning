@@ -7,6 +7,7 @@ using OpenLearning.Certificates.Models;
 using OpenLearning.Chat.Models;
 using OpenLearning.Classes.Models;
 using OpenLearning.CourseManagement.Models;
+using OpenLearning.Distribution.Models;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Exams.Models;
 using OpenLearning.Jobs.Models;
@@ -180,5 +181,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(ContentReport).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LiveSession).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Job).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(DistributorProfile).Assembly);
     }
 }

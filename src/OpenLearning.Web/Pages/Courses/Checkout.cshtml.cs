@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using OpenLearning.Distribution.Services;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Ecommerce.Services;
 using OpenLearning.Settlement.Services;
@@ -13,11 +14,13 @@ public class CheckoutModel : PageModel
 {
     private readonly OrderService _orders;
     private readonly SettlementService _settlement;
+    private readonly DistributionService _distribution;
 
-    public CheckoutModel(OrderService orders, SettlementService settlement)
+    public CheckoutModel(OrderService orders, SettlementService settlement, DistributionService distribution)
     {
         _orders = orders;
         _settlement = settlement;
+        _distribution = distribution;
     }
 
     public Order? Order { get; set; }
@@ -62,6 +65,9 @@ public class CheckoutModel : PageModel
             {
                 await _settlement.CreditAsync(instructorId, order.CourseId, order.Amount, $"Order #{orderId}");
             }
+
+            // Attribute the order to a distributor if it arrived via a share link.
+            await _distribution.RecordPaidAsync(orderId, Request.Cookies["ol_aff"]);
         }
         else
         {

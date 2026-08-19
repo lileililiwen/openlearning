@@ -14,6 +14,7 @@ using OpenLearning.Classes;
 using OpenLearning.Community;
 using OpenLearning.CourseManagement;
 using OpenLearning.Data;
+using OpenLearning.Distribution;
 using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
 using OpenLearning.Exams;
@@ -142,6 +143,10 @@ builder.Services.AddSystemConfigModule();
 builder.Services.AddModerationModule();
 builder.Services.AddLiveModule();
 builder.Services.AddJobsModule();
+builder.Services.AddDistributionModule();
+// Affiliate distribution jobs (registered with the distribution module).
+builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
+builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();
 // Scheduled business jobs (registered per the scheduled-business-jobs change).
 // Deferred until their dependency specs land: settlement.distributor-period-close
 // (affiliate-distribution), async-io.cleanup (async-io-jobs),

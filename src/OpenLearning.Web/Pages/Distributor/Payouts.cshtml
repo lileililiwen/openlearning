@@ -1,0 +1,70 @@
+@page
+@model OpenLearning.Web.Pages.Distributor.PayoutsModel
+@{
+    ViewData["Title"] = "Payouts";
+}
+
+<h1 class="h3 mb-4">Payouts</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <p class="mb-2">Available balance: <strong>@Model.Available.ToString("C")</strong></p>
+        <form method="post" asp-page-handler="Request" class="d-flex gap-2">
+            <input asp-for="Amount" type="number" step="0.01" min="0.01" class="form-control" style="max-width: 200px"
+                   placeholder="Amount" required />
+            <button type="submit" class="btn btn-primary">Request payout</button>
+        </form>
+    </div>
+</div>
+
+@if (Model.Payouts.Count == 0)
+{
+    <div class="alert alert-info">No payout requests yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Requested</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Reviewed</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var payout in Model.Payouts)
+                {
+                    <tr>
+                        <td>@payout.RequestedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@payout.Amount.ToString("C")</td>
+                        <td>
+                            @if (payout.Status == PayoutStatus.Pending)
+                            {
+                                <span class="badge bg-secondary">Pending</span>
+                            }
+                            else if (payout.Status == PayoutStatus.Approved)
+                            {
+                                <span class="badge bg-success">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Rejected</span>
+                            }
+                        </td>
+                        <td>@(payout.ReviewedAt?.ToLocalTime().ToString("yyyy-MM-dd") ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

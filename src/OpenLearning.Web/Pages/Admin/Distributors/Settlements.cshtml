@@ -1,0 +1,41 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Distributors.SettlementsModel
+@{
+    ViewData["Title"] = "Admin · Distributor Settlements";
+}
+
+<h1 class="h3 mb-4">Admin — Distributor Settlements</h1>
+
+@if (Model.Statements.Count == 0)
+{
+    <div class="alert alert-info">No settlement statements have been generated yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Distributor</th>
+                    <th>Total</th>
+                    <th>Closed</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var statement in Model.Statements)
+                {
+                    <tr>
+                        <td>
+                            @statement.PeriodStart.ToLocalTime().ToString("yyyy-MM-dd")
+                            – @statement.PeriodEnd.ToLocalTime().ToString("yyyy-MM-dd")
+                        </td>
+                        <td>@statement.DistributorUserId</td>
+                        <td>@statement.TotalAmount.ToString("C")</td>
+                        <td>@statement.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

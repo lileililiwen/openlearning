@@ -7,6 +7,7 @@ public static class Roles
     public const string Student = "Student";
     public const string Finance = "Finance";
     public const string TeachingAssistant = "TeachingAssistant";
+    public const string Distributor = "Distributor";
 }
 
 public static class Policies
@@ -19,4 +20,5 @@ public static class Policies
     public const string RequireFinance = "RequireFinance";
     public const string RequireTeachingAssistant = "RequireTeachingAssistant";
     public const string RequireFinanceOrAdmin = "RequireFinanceOrAdmin";
+    public const string RequireDistributor = "RequireDistributor";
 }

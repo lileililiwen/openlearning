@@ -1,0 +1,54 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Distributors.PayoutsModel
+@{
+    ViewData["Title"] = "Admin · Distributor Payouts";
+}
+
+<h1 class="h3 mb-4">Admin — Distributor Payout Queue</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Payouts.Count == 0)
+{
+    <div class="alert alert-info">No pending distributor payouts.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Distributor</th>
+                    <th>Amount</th>
+                    <th>Requested</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var payout in Model.Payouts)
+                {
+                    <tr>
+                        <td>@(payout.User?.DisplayName ?? payout.DistributorUserId)</td>
+                        <td>@payout.Amount.ToString("C")</td>
+                        <td>@payout.RequestedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td class="text-end d-flex justify-content-end gap-2">
+                            <form method="post" asp-page-handler="Approve" asp-route-id="@payout.Id">
+                                <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                            </form>
+                            <form method="post" asp-page-handler="Reject" asp-route-id="@payout.Id"
+                                  onsubmit="return confirm('Reject this payout?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,0 +1,62 @@
+@page
+@model OpenLearning.Web.Pages.Distributor.LinksModel
+@{
+    ViewData["Title"] = "Share Links";
+}
+
+<h1 class="h3 mb-4">Share Links</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<form method="post" asp-page-handler="Create" class="card shadow-sm mb-4">
+    <div class="card-header bg-white"><strong>Create a share link</strong></div>
+    <div class="card-body d-flex gap-2">
+        <select asp-for="CourseId" class="form-select" required>
+            <option value="">Select a published course…</option>
+            @foreach (var course in Model.Courses)
+            {
+                <option value="@course.Id">@course.Title</option>
+            }
+        </select>
+        <button type="submit" class="btn btn-primary">Create link</button>
+    </div>
+</form>
+
+@if (Model.Links.Count == 0)
+{
+    <div class="alert alert-info">You have not created any share links yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th>Share link</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var link in Model.Links)
+                {
+                    <tr>
+                        <td>
+                            <a asp-page="/Courses/Details" asp-route-id="@link.CourseId">@link.Course?.Title</a>
+                        </td>
+                        <td>
+                            <code>@(Request.Scheme)://@(Request.Host)/D/C/@link.Slug</code>
+                        </td>
+                        <td>@link.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

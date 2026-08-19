@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth;
+using OpenLearning.Distribution.Services;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Ecommerce.Services;
 using OpenLearning.Notifications.Models;
@@ -16,12 +17,14 @@ public class RefundsModel : PageModel
     private readonly OrderService _orders;
     private readonly SettlementService _settlement;
     private readonly NotificationService _notifications;
+    private readonly DistributionService _distribution;
 
-    public RefundsModel(OrderService orders, SettlementService settlement, NotificationService notifications)
+    public RefundsModel(OrderService orders, SettlementService settlement, NotificationService notifications, DistributionService distribution)
     {
         _orders = orders;
         _settlement = settlement;
         _notifications = notifications;
+        _distribution = distribution;
     }
 
     public List<Order> Requests { get; set; } = new();
@@ -47,6 +50,9 @@ public class RefundsModel : PageModel
             {
                 await _settlement.CreditAsync(instructorId, order.CourseId, -order.Amount, $"Refund order #{id}");
             }
+
+            // Reverse any distributor commission attributed to this order.
+            await _distribution.ReverseForOrderAsync(id);
 
             await _notifications.CreateAsync(
                 order.StudentId,

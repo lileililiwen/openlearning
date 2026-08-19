@@ -59,6 +59,9 @@ public static class AuthModuleExtensions
             options.AddPolicy(Policies.RequireFinanceOrAdmin, p => p
                 .RequireRole(Roles.Finance, Roles.Admin)
                 .AddRequirements(new NotSuspendedRequirement()));
+            options.AddPolicy(Policies.RequireDistributor, p => p
+                .RequireRole(Roles.Distributor)
+                .AddRequirements(new NotSuspendedRequirement()));
         });
 
         services.AddScoped<AccountService>();

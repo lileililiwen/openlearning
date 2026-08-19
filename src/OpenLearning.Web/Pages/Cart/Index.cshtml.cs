@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using OpenLearning.Distribution.Services;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Ecommerce.Services;
 using OpenLearning.Settlement.Services;
@@ -16,13 +17,15 @@ public class IndexModel : PageModel
     private readonly OrderService _orders;
     private readonly LedgerService _ledger;
     private readonly SettlementService _settlement;
+    private readonly DistributionService _distribution;
 
-    public IndexModel(CartService cart, OrderService orders, LedgerService ledger, SettlementService settlement)
+    public IndexModel(CartService cart, OrderService orders, LedgerService ledger, SettlementService settlement, DistributionService distribution)
     {
         _cart = cart;
         _orders = orders;
         _ledger = ledger;
         _settlement = settlement;
+        _distribution = distribution;
     }
 
     public List<CartItem> Items { get; set; } = new();
@@ -76,6 +79,8 @@ public class IndexModel : PageModel
                 {
                     await _settlement.CreditAsync(instructorId, order.CourseId, order.Amount, $"Order #{order.Id}");
                 }
+
+                await _distribution.RecordPaidAsync(order.Id, Request.Cookies["ol_aff"]);
             }
         }
 
