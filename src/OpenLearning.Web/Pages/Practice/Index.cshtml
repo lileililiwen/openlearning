@@ -1,0 +1,78 @@
+@page
+@model OpenLearning.Web.Pages.Practice.IndexModel
+@{
+    ViewData["Title"] = "错题本";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">错题本</h1>
+    @if (Model.Entries.Count > 0)
+    {
+        <a class="btn btn-primary" asp-page="/Practice/Quiz">开始练习</a>
+    }
+</div>
+
+@if (TempData["PracticeResult"] is string result)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @result
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<form method="get" class="mb-3">
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" asp-for="UnresolvedOnly" />
+        <label class="form-check-label" asp-for="UnresolvedOnly">仅看未解决</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" asp-for="BookmarkedOnly" />
+        <label class="form-check-label" asp-for="BookmarkedOnly">仅看已收藏</label>
+    </div>
+    <button type="submit" class="btn btn-sm btn-outline-primary">筛选</button>
+</form>
+
+@if (Model.Entries.Count == 0)
+{
+    <div class="alert alert-info">没有符合条件的错题记录。继续加油！</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <ul class="list-group list-group-flush">
+            @foreach (var entry in Model.Entries)
+            {
+                var q = entry.Question;
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>@(q?.Text ?? $"题目 #{entry.QuestionId}")</strong>
+                            <div class="small mt-1">
+                                <div><span class="text-muted">你的答案：</span><span class="text-danger">@entry.ChosenAnswer</span></div>
+                                @if (!string.IsNullOrEmpty(entry.CorrectAnswer))
+                                {
+                                    <div><span class="text-muted">正确答案：</span><span class="text-success">@entry.CorrectAnswer</span></div>
+                                }
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            @if (entry.ResolvedAt is not null)
+                            {
+                                <span class="badge bg-success">已解决</span>
+                            }
+                            @if (Model.BookmarkedIds.Contains(entry.QuestionId))
+                            {
+                                <span class="badge bg-warning text-dark">已收藏</span>
+                            }
+                            <form method="post" asp-page-handler="ToggleBookmark" asp-route-questionId="@entry.QuestionId" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-warning">
+                                    @(Model.BookmarkedIds.Contains(entry.QuestionId) ? "取消收藏" : "收藏")
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+}

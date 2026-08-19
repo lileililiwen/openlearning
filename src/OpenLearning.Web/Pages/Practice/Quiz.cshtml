@@ -1,0 +1,62 @@
+@page
+@model OpenLearning.Web.Pages.Practice.QuizModel
+@{
+    ViewData["Title"] = "错题练习";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">错题练习</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-page="/Practice/Index">返回错题本</a>
+</div>
+
+@if (Model.Questions.Count == 0)
+{
+    <div class="alert alert-info">当前没有需要练习的错题。答对题目后会自动从练习列表中移除。</div>
+}
+else
+{
+    <form method="post">
+        @for (var i = 0; i < Model.Questions.Count; i++)
+        {
+            var q = Model.Questions[i];
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        @(i + 1). @q.Text
+                        <span class="badge bg-light text-dark border ms-1">@q.QuestionType</span>
+                    </h5>
+
+                    @if (q.QuestionType is QuestionType.SingleChoice or QuestionType.TrueFalse)
+                    {
+                        foreach (var option in q.AnswerOptions.OrderBy(o => o.OrderIndex))
+                        {
+                            <div class="form-check mb-1">
+                                <input class="form-check-input" type="radio" name="Answers[@q.Id]"
+                                       value="@option.Id" id="q@(q.Id)-o@(option.Id)" required />
+                                <label class="form-check-label" for="q@(q.Id)-o@(option.Id)">@option.Text</label>
+                            </div>
+                        }
+                    }
+                    else if (q.QuestionType == QuestionType.MultipleChoice)
+                    {
+                        <p class="text-muted small">选择一个或多个答案。</p>
+                        foreach (var option in q.AnswerOptions.OrderBy(o => o.OrderIndex))
+                        {
+                            <div class="form-check mb-1">
+                                <input class="form-check-input" type="checkbox" name="Multiple[@q.Id]"
+                                       value="@option.Id" id="q@(q.Id)-o@(option.Id)" />
+                                <label class="form-check-label" for="q@(q.Id)-o@(option.Id)">@option.Text</label>
+                            </div>
+                        }
+                    }
+                    else if (q.QuestionType == QuestionType.FillBlank)
+                    {
+                        <input class="form-control" type="text" name="TextAnswers[@q.Id]" placeholder="输入答案" required />
+                    }
+                </div>
+            </div>
+        }
+
+        <button type="submit" class="btn btn-primary">提交练习</button>
+    </form>
+}

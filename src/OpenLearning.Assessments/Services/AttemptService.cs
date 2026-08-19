@@ -8,11 +8,13 @@ public class AttemptService
 {
     private readonly DbContext _db;
     private readonly EnrollmentService _enrollments;
+    private readonly IncorrectAnswerService _incorrect;
 
-    public AttemptService(DbContext db, EnrollmentService enrollments)
+    public AttemptService(DbContext db, EnrollmentService enrollments, IncorrectAnswerService incorrect)
     {
         _db = db;
         _enrollments = enrollments;
+        _incorrect = incorrect;
     }
 
     public Task<Quiz?> GetQuizForTakeAsync(int quizId)
@@ -68,6 +70,20 @@ public class AttemptService
 
         var (score, maxScore) = ComputeScores(attemptAnswers);
 
+        foreach (var answer in attemptAnswers)
+        {
+            var question = answer.Question!;
+            if (QuestionScoring.IsManual(question.QuestionType) || answer.IsCorrect)
+            {
+                continue;
+            }
+
+            var (chosen, correct) = IncorrectAnswerService.FormatAnswer(
+                question, answer.AnswerOptionId, answer.SelectedOptionIds, answer.TextAnswer, answer.FileAnswerUrl);
+            await _incorrect.RecordAsync(
+                studentId, question, quiz.CourseId, chosen, correct, IncorrectAnswerSource.Quiz, quizId);
+        }
+
         var attempt = new QuizAttempt
         {
             QuizId = quizId,
@@ -117,6 +133,15 @@ public class AttemptService
         answer.GradedScore = score;
         answer.GradingFeedback = string.IsNullOrWhiteSpace(feedback) ? null : feedback.Trim();
         await _db.SaveChangesAsync();
+
+        if (score < question.Points)
+        {
+            var (chosen, correct) = IncorrectAnswerService.FormatAnswer(
+                question, answer.AnswerOptionId, answer.SelectedOptionIds, answer.TextAnswer, answer.FileAnswerUrl);
+            await _incorrect.RecordAsync(
+                answer.Attempt.StudentId, question, answer.Attempt.Quiz.CourseId,
+                chosen, correct, IncorrectAnswerSource.Quiz, answer.Attempt.QuizId);
+        }
 
         await RecalculateAsync(answer.AttemptId);
         return (true, null);

@@ -11,6 +11,7 @@ public static class AssessmentsModuleExtensions
         services.AddScoped<QuestionService>();
         services.AddScoped<AttemptService>();
         services.AddScoped<QuestionBankService>();
+        services.AddScoped<IncorrectAnswerService>();
         return services;
     }
 }

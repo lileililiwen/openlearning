@@ -29,11 +29,13 @@ public class ExamService
 
     private readonly DbContext _db;
     private readonly EnrollmentService _enrollments;
+    private readonly IncorrectAnswerService _incorrect;
 
-    public ExamService(DbContext db, EnrollmentService enrollments)
+    public ExamService(DbContext db, EnrollmentService enrollments, IncorrectAnswerService incorrect)
     {
         _db = db;
         _enrollments = enrollments;
+        _incorrect = incorrect;
     }
 
     // ===== CRUD (owner-gated) =====
@@ -392,6 +394,20 @@ public class ExamService
             IsCorrect: a.IsCorrect));
         var (score, maxScore) = QuestionScoring.ComputeScores(scoredAnswers);
 
+        foreach (var answer in attemptAnswers)
+        {
+            var question = answer.Question!;
+            if (QuestionScoring.IsManual(question.QuestionType) || answer.IsCorrect)
+            {
+                continue;
+            }
+
+            var (chosen, correct) = IncorrectAnswerService.FormatAnswer(
+                question, answer.AnswerOptionId, answer.SelectedOptionIds, answer.TextAnswer, answer.FileAnswerUrl);
+            await _incorrect.RecordAsync(
+                studentId, question, exam.CourseId, chosen, correct, IncorrectAnswerSource.Exam, attempt.ExamId);
+        }
+
         attempt.Answers = attemptAnswers;
         attempt.Score = score;
         attempt.MaxScore = maxScore;
@@ -529,6 +545,15 @@ public class ExamService
         answer.GradedScore = score;
         answer.GradingFeedback = string.IsNullOrWhiteSpace(feedback) ? null : feedback.Trim();
         await _db.SaveChangesAsync();
+
+        if (score < question.Points)
+        {
+            var (chosen, correct) = IncorrectAnswerService.FormatAnswer(
+                question, answer.AnswerOptionId, answer.SelectedOptionIds, answer.TextAnswer, answer.FileAnswerUrl);
+            await _incorrect.RecordAsync(
+                answer.Attempt.StudentId, question, answer.Attempt.Exam.CourseId,
+                chosen, correct, IncorrectAnswerSource.Exam, answer.Attempt.ExamId);
+        }
 
         await RecalculateAsync(answer.AttemptId);
         return (true, null);

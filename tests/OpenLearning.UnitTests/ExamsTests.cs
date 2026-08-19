@@ -39,7 +39,7 @@ public sealed class ExamsTests
 
     private static async Task<int> AddQuestionAsync(ApplicationDbContext db, int examId, params (string Text, bool IsCorrect)[] options)
     {
-        var (question, error) = await new ExamService(db, new EnrollmentService(db)).AddQuestionAsync(
+        var (question, error) = await new ExamService(db, new EnrollmentService(db), new IncorrectAnswerService(db)).AddQuestionAsync(
             examId, "i1", "Question", 1, QuestionType.SingleChoice,
             options.Select(o => new AnswerOptionInput(o.Text, o.IsCorrect)).ToList());
         Assert.Null(error);
@@ -61,7 +61,7 @@ public sealed class ExamsTests
     public async Task Submit_scores_marks_passed_and_records_switches()
     {
         var (db, examId) = await SeedAsync(passPercent: 60);
-        var exams = new ExamService(db, new EnrollmentService(db));
+        var exams = new ExamService(db, new EnrollmentService(db), new IncorrectAnswerService(db));
         var q1 = await AddQuestionAsync(db, examId, ("A", true), ("B", false));
         var q2 = await AddQuestionAsync(db, examId, ("C", true), ("D", false));
 
@@ -91,7 +91,7 @@ public sealed class ExamsTests
     public async Task StartAsync_denies_after_using_all_attempts()
     {
         var (db, examId) = await SeedAsync(maxAttempts: 1);
-        var exams = new ExamService(db, new EnrollmentService(db));
+        var exams = new ExamService(db, new EnrollmentService(db), new IncorrectAnswerService(db));
         var q1 = await AddQuestionAsync(db, examId, ("A", true), ("B", false));
 
         var firstStart = await exams.StartAsync(examId, "s1");
@@ -119,7 +119,7 @@ public sealed class ExamsTests
         exam.OpensAt = DateTime.UtcNow.AddHours(1);
         await db.SaveChangesAsync();
 
-        var exams = new ExamService(db, new EnrollmentService(db));
+        var exams = new ExamService(db, new EnrollmentService(db), new IncorrectAnswerService(db));
         var (attempt, error) = await exams.StartAsync(examId, "s1");
         Assert.Null(attempt);
         Assert.NotNull(error);
@@ -130,7 +130,7 @@ public sealed class ExamsTests
     public async Task Non_owner_cannot_create_question()
     {
         var (db, examId) = await SeedAsync();
-        var exams = new ExamService(db, new EnrollmentService(db));
+        var exams = new ExamService(db, new EnrollmentService(db), new IncorrectAnswerService(db));
         var (_, error) = await exams.AddQuestionAsync(
             examId, "other", "Q", 1, QuestionType.SingleChoice,
             new List<AnswerOptionInput> { new("A", true), new("B", false) });

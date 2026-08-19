@@ -71,7 +71,7 @@ public sealed class QuestionTypesTests
         var multiQuestion = await db.Set<Question>().Include(q => q.AnswerOptions).SingleAsync(q => q.Id == multi);
         var correctIds = string.Join(",", multiQuestion.AnswerOptions.Where(o => o.IsCorrect).Select(o => o.Id));
 
-        var attempts = new AttemptService(db, new EnrollmentService(db));
+        var attempts = new AttemptService(db, new EnrollmentService(db), new IncorrectAnswerService(db));
         var (id, error) = await attempts.SubmitAsync("s1", quizId, new Dictionary<int, AttemptService.QuizAnswerInput>
         {
             [single] = Option(await GetCorrectOptionIdAsync(db, single)),
@@ -95,7 +95,7 @@ public sealed class QuestionTypesTests
         var multiQuestion = await db.Set<Question>().Include(q => q.AnswerOptions).SingleAsync(q => q.Id == multi);
         var onlyA = multiQuestion.AnswerOptions.Single(o => o.Text == "A").Id;
 
-        var attempts = new AttemptService(db, new EnrollmentService(db));
+        var attempts = new AttemptService(db, new EnrollmentService(db), new IncorrectAnswerService(db));
         var (id, _) = await attempts.SubmitAsync("s1", quizId, new Dictionary<int, AttemptService.QuizAnswerInput>
         {
             [multi] = Multiple(onlyA.ToString(CultureInfo.InvariantCulture)),
@@ -113,7 +113,7 @@ public sealed class QuestionTypesTests
         var single = await AddQuestionAsync(db, quizId, QuestionType.SingleChoice, 1, ("A", true), ("B", false));
         var shortAnswer = await AddQuestionAsync(db, quizId, QuestionType.ShortAnswer, 4);
 
-        var attempts = new AttemptService(db, new EnrollmentService(db));
+        var attempts = new AttemptService(db, new EnrollmentService(db), new IncorrectAnswerService(db));
         var (id, error) = await attempts.SubmitAsync("s1", quizId, new Dictionary<int, AttemptService.QuizAnswerInput>
         {
             [single] = Option(await GetCorrectOptionIdAsync(db, single)),
@@ -135,7 +135,7 @@ public sealed class QuestionTypesTests
         var (db, quizId) = await SeedAsync();
         var single = await AddQuestionAsync(db, quizId, QuestionType.SingleChoice, 1, ("A", true), ("B", false));
         var shortAnswer = await AddQuestionAsync(db, quizId, QuestionType.ShortAnswer, 4);
-        var attempts = new AttemptService(db, new EnrollmentService(db));
+        var attempts = new AttemptService(db, new EnrollmentService(db), new IncorrectAnswerService(db));
         var (id, _) = await attempts.SubmitAsync("s1", quizId, new Dictionary<int, AttemptService.QuizAnswerInput>
         {
             [single] = Option(await GetCorrectOptionIdAsync(db, single)),
