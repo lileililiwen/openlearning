@@ -257,6 +257,33 @@ public class DetailsModel : PageModel
         return RedirectToPage(new { id });
     }
 
+    public async Task<IActionResult> OnPostAddCommentAsync(int id, int reviewId, string commentBody)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return Challenge();
+        }
+
+        var (ok, error) = await _reviews.AddCommentAsync(reviewId, userId, commentBody ?? string.Empty);
+        TempData["Message"] = ok ? "Comment posted." : error;
+        TempData["MessageType"] = ok ? "success" : "danger";
+        return RedirectToPage(new { id });
+    }
+
+    public async Task<IActionResult> OnPostDeleteCommentAsync(int id, int commentId)
+    {
+        if (!User.IsInRole(Roles.Admin))
+        {
+            return Forbid();
+        }
+
+        await _reviews.DeleteCommentAsync(commentId);
+        TempData["Message"] = "Comment removed.";
+        TempData["MessageType"] = "success";
+        return RedirectToPage(new { id });
+    }
+
     public async Task<IActionResult> OnPostPublishAsync(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

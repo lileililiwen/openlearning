@@ -327,6 +327,37 @@
                         {
                             <p class="mb-0">@review.Comment</p>
                         }
+
+                        @if (review.Comments.Count > 0)
+                        {
+                            <div class="mt-2 ms-3 border-start ps-3">
+                                @foreach (var comment in review.Comments)
+                                {
+                                    <div class="small mb-1">
+                                        <strong>@(comment.Author?.DisplayName ?? comment.AuthorId)</strong>
+                                        @if (comment.AuthorId == course.InstructorId)
+                                        {
+                                            <span class="badge bg-primary ms-1">教师</span>
+                                        }
+                                        <span class="text-muted ms-1">· @comment.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                                        @if (Model.IsAdmin)
+                                        {
+                                            <form method="post" asp-page-handler="DeleteComment" asp-route-id="@course.Id" asp-route-commentId="@comment.Id" class="d-inline">
+                                                <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2">删除</button>
+                                            </form>
+                                        }
+                                        <div>@comment.Body</div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        @if (Model.IsEnrolled || Model.IsOwner)
+                        {
+                            <form method="post" asp-page-handler="AddComment" asp-route-id="@course.Id" asp-route-reviewId="@review.Id" class="mt-2 d-flex gap-2">
+                                <input name="commentBody" class="form-control form-control-sm" placeholder="追评…" />
+                                <button type="submit" class="btn btn-sm btn-outline-primary">评论</button>
+                            </form>
+                        }
                     </div>
                 }
             </div>

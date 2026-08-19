@@ -8,7 +8,7 @@ namespace OpenLearning.Ratings.Services;
 /// <summary>Average rating (0 when no reviews) and total review count.</summary>
 public sealed record RatingAggregate(double Average, int Count);
 
-/// <summary>One review row with author display info for owner/admin views.</summary>
+/// <summary>One review row with author display info and follow-up comments.</summary>
 public sealed record ReviewWithAuthor(
     int Id,
     string UserId,
@@ -16,7 +16,8 @@ public sealed record ReviewWithAuthor(
     string? AuthorEmail,
     int Rating,
     string? Comment,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    List<ReviewComment> Comments);
 
 public class ReviewService
 {
@@ -118,21 +119,26 @@ public class ReviewService
         return grouped.ToDictionary(g => g.CourseId, g => new RatingAggregate(g.Average, g.Count));
     }
 
-    /// <summary>All reviews for a course, newest first, joined with author info.</summary>
+    /// <summary>All reviews for a course, newest first, joined with author info and comments.</summary>
     public async Task<List<ReviewWithAuthor>> GetReviewsForCourseAsync(int courseId)
     {
-        return await _db.Set<Review>().AsNoTracking()
+        var reviews = await _db.Set<Review>().AsNoTracking()
+            .Include(r => r.User)
+            .Include(r => r.Comments).ThenInclude(c => c.Author)
             .Where(r => r.CourseId == courseId)
             .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+        return reviews
             .Select(r => new ReviewWithAuthor(
                 r.Id,
                 r.UserId,
-                r.User!.DisplayName,
-                r.User.Email,
+                r.User?.DisplayName ?? r.UserId,
+                r.User?.Email,
                 r.Rating,
                 r.Comment,
-                r.CreatedAt))
-            .ToListAsync();
+                r.CreatedAt,
+                r.Comments.OrderBy(c => c.CreatedAt).ToList()))
+            .ToList();
     }
 
     /// <summary>The current user's review (if any) for a course — to pre-fill the form.</summary>
@@ -140,6 +146,57 @@ public class ReviewService
     {
         return _db.Set<Review>().AsNoTracking()
                 .FirstOrDefaultAsync(r => r.CourseId == courseId && r.UserId == userId);
+    }
+
+    /// <summary>
+    /// Enrolled students and the course owner can comment on a review; exact
+    /// duplicate comments are rejected.
+    /// </summary>
+    public async Task<(bool Ok, string? Error)> AddCommentAsync(int reviewId, string userId, string body)
+    {
+        var review = await _db.Set<Review>()
+            .Include(r => r.Course)
+            .FirstOrDefaultAsync(r => r.Id == reviewId);
+        if (review is null)
+        {
+            return (false, "Review not found.");
+        }
+
+        var isOwner = review.Course!.InstructorId == userId;
+        if (!isOwner && !await _enrollments.IsEnrolledAsync(userId, review.CourseId))
+        {
+            return (false, "You must be enrolled in this course to comment.");
+        }
+
+        var trimmed = body.Trim();
+        if (trimmed.Length == 0 || trimmed.Length > 2000)
+        {
+            return (false, "Comment must be between 1 and 2000 characters.");
+        }
+
+        if (await _db.Set<ReviewComment>().AnyAsync(c =>
+                c.ReviewId == reviewId && c.AuthorId == userId && c.Body == trimmed))
+        {
+            return (false, "You already posted this exact comment.");
+        }
+
+        _db.Set<ReviewComment>().Add(new ReviewComment { ReviewId = reviewId, AuthorId = userId, Body = trimmed });
+        await _db.SaveChangesAsync();
+        return (true, null);
+    }
+
+    /// <summary>Admin-only moderation: delete a review comment by id.</summary>
+    public async Task<bool> DeleteCommentAsync(int commentId)
+    {
+        var comment = await _db.Set<ReviewComment>().FindAsync(commentId);
+        if (comment is null)
+        {
+            return false;
+        }
+
+        _db.Set<ReviewComment>().Remove(comment);
+        await _db.SaveChangesAsync();
+        return true;
     }
 
     /// <summary>Admin-only moderation: delete a review by id.</summary>

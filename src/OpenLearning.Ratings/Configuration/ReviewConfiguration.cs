@@ -21,3 +21,21 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
                .OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+public class ReviewCommentConfiguration : IEntityTypeConfiguration<ReviewComment>
+{
+    public void Configure(EntityTypeBuilder<ReviewComment> builder)
+    {
+        builder.Property(c => c.Body).HasMaxLength(2000).IsRequired();
+        builder.HasIndex(c => new { c.ReviewId, c.CreatedAt });
+        builder.HasIndex(c => new { c.ReviewId, c.AuthorId, c.Body }).IsUnique();
+        builder.HasOne(c => c.Review)
+               .WithMany(r => r.Comments)
+               .HasForeignKey(c => c.ReviewId)
+               .OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(c => c.Author)
+               .WithMany()
+               .HasForeignKey(c => c.AuthorId)
+               .OnDelete(DeleteBehavior.Cascade);
+    }
+}
