@@ -11,6 +11,8 @@ using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Ecommerce.Services;
 using OpenLearning.Enrollment.Services;
+using OpenLearning.Exams.Models;
+using OpenLearning.Exams.Services;
 using OpenLearning.Memberships.Services;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Notifications.Services;
@@ -26,6 +28,7 @@ public class DetailsModel : PageModel
     private readonly EnrollmentService _enrollments;
     private readonly ProgressService _progress;
     private readonly QuizService _quizzes;
+    private readonly ExamService _exams;
     private readonly OrderService _orders;
     private readonly CartService _cart;
     private readonly ReviewService _reviews;
@@ -38,6 +41,7 @@ public class DetailsModel : PageModel
         EnrollmentService enrollments,
         ProgressService progress,
         QuizService quizzes,
+        ExamService exams,
         OrderService orders,
         CartService cart,
         ReviewService reviews,
@@ -49,6 +53,7 @@ public class DetailsModel : PageModel
         _enrollments = enrollments;
         _progress = progress;
         _quizzes = quizzes;
+        _exams = exams;
         _orders = orders;
         _cart = cart;
         _reviews = reviews;
@@ -69,6 +74,8 @@ public class DetailsModel : PageModel
     public Course? Course { get; set; }
 
     public List<Quiz> Quizzes { get; set; } = new();
+
+    public List<Exam> Exams { get; set; } = new();
 
     public bool IsOwner { get; set; }
 
@@ -114,6 +121,7 @@ public class DetailsModel : PageModel
 
         Course = course;
         Quizzes = await _quizzes.GetForCourseAsync(id);
+        Exams = await _exams.GetForCourseAsync(id);
         Aggregate = await _reviews.GetRatingAsync(id);
 
         if (userId is not null)

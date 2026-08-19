@@ -4,9 +4,13 @@ public class Question
 {
     public int Id { get; set; }
 
-    public int QuizId { get; set; }
+    /// <summary>Container quiz; null when the question belongs to an exam instead.</summary>
+    public int? QuizId { get; set; }
 
     public Quiz? Quiz { get; set; }
+
+    /// <summary>Container exam; null when the question belongs to a quiz instead.</summary>
+    public int? ExamId { get; set; }
 
     public string Text { get; set; } = string.Empty;
 

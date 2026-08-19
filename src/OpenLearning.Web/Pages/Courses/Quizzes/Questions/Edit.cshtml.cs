@@ -104,7 +104,7 @@ public class EditModel : PageModel
         var options = new List<AnswerOptionInput>();
         for (var i = 0; i < Input.Options.Count; i++)
         {
-            var text = Input.Options[i].Trim();
+            var text = (Input.Options[i] ?? string.Empty).Trim();
             if (text.Length == 0)
             {
                 continue;

@@ -221,6 +221,41 @@
             }
         }
 
+        @if (Model.Exams.Count > 0)
+        {
+            <h2 class="h4 mt-4 mb-3">Exams</h2>
+            @foreach (var exam in Model.Exams)
+            {
+                <div class="card mb-2 shadow-sm">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>@exam.Title</strong>
+                            @if (exam.IsOfficial)
+                            {
+                                <span class="badge bg-danger ms-1">Official</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary ms-1">Mock</span>
+                            }
+                            @if (!string.IsNullOrEmpty(exam.Description))
+                            {
+                                <p class="text-muted small mb-0">@exam.Description</p>
+                            }
+                        </div>
+                        @if (Model.IsEnrolled)
+                        {
+                            <a class="btn btn-sm btn-primary" asp-page="/Courses/Exams/Take" asp-route-id="@exam.Id">Take exam</a>
+                        }
+                        else if (Model.IsOwner)
+                        {
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Exams/Edit" asp-route-id="@exam.Id">Manage</a>
+                        }
+                    </div>
+                </div>
+            }
+        }
+
         <hr class="my-4" />
 
         <h2 class="h4 mb-3">Ratings &amp; reviews</h2>

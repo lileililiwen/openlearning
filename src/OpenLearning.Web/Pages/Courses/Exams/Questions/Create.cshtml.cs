@@ -6,23 +6,22 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Assessments.Models;
 using OpenLearning.Assessments.Services;
 using OpenLearning.Auth;
+using OpenLearning.Exams.Services;
 
-namespace OpenLearning.Web.Pages.Courses.Quizzes.Questions;
+namespace OpenLearning.Web.Pages.Courses.Exams.Questions;
 
 [Authorize(Policy = Policies.RequireInstructor)]
 public class CreateModel : PageModel
 {
-    private readonly QuestionService _questions;
-    private readonly QuizService _quizzes;
+    private readonly ExamService _exams;
 
-    public CreateModel(QuestionService questions, QuizService quizzes)
+    public CreateModel(ExamService exams)
     {
-        _questions = questions;
-        _quizzes = quizzes;
+        _exams = exams;
     }
 
     [BindProperty]
-    public int QuizId { get; set; }
+    public int ExamId { get; set; }
 
     [BindProperty]
     public InputModel Input { get; set; } = new();
@@ -45,11 +44,11 @@ public class CreateModel : PageModel
         public List<int> CorrectIndexes { get; set; } = new();
     }
 
-    public async Task<IActionResult> OnGetAsync(int quizId)
+    public async Task<IActionResult> OnGetAsync(int examId)
     {
-        QuizId = quizId;
+        ExamId = examId;
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        if (!await _quizzes.IsOwnerAsync(quizId, userId))
+        if (!await _exams.IsOwnerAsync(examId, userId))
         {
             return Forbid();
         }
@@ -78,8 +77,8 @@ public class CreateModel : PageModel
         }
 
         var options = BuildOptions();
-        var (_, error) = await _questions.AddAsync(
-            QuizId, userId, Input.Text, Input.Points, Input.QuestionType, options);
+        var (_, error) = await _exams.AddQuestionAsync(
+            ExamId, userId, Input.Text, Input.Points, Input.QuestionType, options);
 
         if (error is not null)
         {
@@ -87,7 +86,7 @@ public class CreateModel : PageModel
             return Page();
         }
 
-        return RedirectToPage("/Courses/Quizzes/Edit", new { id = QuizId });
+        return RedirectToPage("/Courses/Exams/Edit", new { id = ExamId });
     }
 
     private List<AnswerOptionInput> BuildOptions()

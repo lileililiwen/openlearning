@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -7,41 +6,44 @@ using OpenLearning.Assessments.Models;
 using OpenLearning.Assessments.Services;
 using OpenLearning.Auth.Models;
 using OpenLearning.Enrollment.Services;
-using OpenLearning.Notifications.Models;
-using OpenLearning.Notifications.Services;
+using OpenLearning.Exams.Models;
+using OpenLearning.Exams.Services;
 using OpenLearning.Storage.Models;
 using OpenLearning.Storage.Services;
 
-namespace OpenLearning.Web.Pages.Courses.Quizzes;
+namespace OpenLearning.Web.Pages.Courses.Exams;
 
 public class TakeModel : PageModel
 {
-    private readonly AttemptService _attempts;
+    private readonly ExamService _exams;
     private readonly EnrollmentService _enrollments;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly NotificationService _notifications;
     private readonly StorageService _storage;
 
     public TakeModel(
-        AttemptService attempts,
+        ExamService exams,
         EnrollmentService enrollments,
         UserManager<ApplicationUser> userManager,
-        NotificationService notifications,
         StorageService storage)
     {
-        _attempts = attempts;
+        _exams = exams;
         _enrollments = enrollments;
         _userManager = userManager;
-        _notifications = notifications;
         _storage = storage;
     }
 
-    public Quiz? Quiz { get; set; }
+    public Exam? Exam { get; set; }
 
-    public List<QuizAttempt> Attempts { get; set; } = new();
+    public ExamAttempt? Attempt { get; set; }
+
+    /// <summary>Denial reason (window closed, attempt limit reached, etc.).</summary>
+    public string? ErrorMessage { get; set; }
 
     [BindProperty]
-    public int QuizId { get; set; }
+    public int ExamId { get; set; }
+
+    [BindProperty]
+    public int AttemptId { get; set; }
 
     /// <summary>
     /// Radios for single-choice and true/false questions. The explicit Name keeps the
@@ -60,6 +62,10 @@ public class TakeModel : PageModel
     [BindProperty(Name = "TextAnswers")]
     public Dictionary<int, string> TextAnswers { get; set; } = new();
 
+    /// <summary>Times the student left the exam page; recorded on submit.</summary>
+    [BindProperty]
+    public int ScreenSwitchCount { get; set; }
+
     public async Task<IActionResult> OnGetAsync(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -74,20 +80,23 @@ public class TakeModel : PageModel
             return Forbid();
         }
 
-        var quiz = await _attempts.GetQuizForTakeAsync(id);
-        if (quiz is null)
+        var exam = await _exams.GetForTakeAsync(id);
+        if (exam is null)
         {
             return NotFound();
         }
 
-        if (!await _enrollments.IsEnrolledAsync(userId, quiz.CourseId))
+        if (!await _enrollments.IsEnrolledAsync(userId, exam.CourseId))
         {
             return Forbid();
         }
 
-        Quiz = quiz;
-        QuizId = id;
-        Attempts = await _attempts.GetAttemptsForStudentAsync(userId, id);
+        var (attempt, error) = await _exams.StartAsync(id, userId);
+        Exam = exam;
+        ExamId = id;
+        Attempt = attempt;
+        AttemptId = attempt?.Id ?? 0;
+        ErrorMessage = error;
         return Page();
     }
 
@@ -101,20 +110,14 @@ public class TakeModel : PageModel
             return Forbid();
         }
 
-        if (!ModelState.IsValid)
-        {
-            Quiz = await _attempts.GetQuizForTakeAsync(QuizId);
-            return Page();
-        }
-
-        var quiz = await _attempts.GetQuizForTakeAsync(QuizId);
-        if (quiz is null)
+        var exam = await _exams.GetForTakeAsync(ExamId);
+        if (exam is null)
         {
             return NotFound();
         }
 
         var answerInputs = new Dictionary<int, AttemptService.QuizAnswerInput>();
-        foreach (var question in quiz.Questions.OrderBy(q => q.OrderIndex))
+        foreach (var question in exam.Questions.OrderBy(q => q.OrderIndex))
         {
             switch (question.QuestionType)
             {
@@ -147,7 +150,7 @@ public class TakeModel : PageModel
                         if (uploadError is not null)
                         {
                             ModelState.AddModelError(string.Empty, uploadError);
-                            Quiz = quiz;
+                            Exam = exam;
                             return Page();
                         }
 
@@ -159,41 +162,21 @@ public class TakeModel : PageModel
             }
         }
 
-        var (attemptId, error) = await _attempts.SubmitAsync(userId, QuizId, answerInputs);
+        var (attemptId, error) = await _exams.SubmitAsync(AttemptId, userId, answerInputs, ScreenSwitchCount);
         if (error is not null)
         {
             ModelState.AddModelError(string.Empty, error);
-            Quiz = quiz;
-            Attempts = await _attempts.GetAttemptsForStudentAsync(userId, QuizId);
+            Exam = exam;
             return Page();
         }
 
         if (attemptId is null)
         {
             ModelState.AddModelError(string.Empty, "Could not save your attempt.");
-            Quiz = quiz;
-            Attempts = await _attempts.GetAttemptsForStudentAsync(userId, QuizId);
+            Exam = exam;
             return Page();
         }
 
-        var attempt = await _attempts.GetAttemptAsync(attemptId.Value, userId);
-        var submittedQuiz = attempt?.Quiz;
-        if (submittedQuiz is not null)
-        {
-            var percent = attempt!.MaxScore > 0 ? (int)Math.Round(attempt.Score * 100.0 / attempt.MaxScore) : 0;
-            await _notifications.CreateAsync(
-                userId,
-                NotificationType.Quiz,
-                $"Quiz submitted: {submittedQuiz.Title}",
-                $"Your score is {percent}%. View the result below.",
-                $"/Courses/Quizzes/Result?id={attemptId}",
-                new Dictionary<string, string>
-                {
-                    ["QuizTitle"] = submittedQuiz.Title,
-                    ["Score"] = percent.ToString(CultureInfo.InvariantCulture),
-                });
-        }
-
-        return RedirectToPage("/Courses/Quizzes/Result", new { id = attemptId });
+        return RedirectToPage("/Courses/Exams/Result", new { id = attemptId });
     }
 }

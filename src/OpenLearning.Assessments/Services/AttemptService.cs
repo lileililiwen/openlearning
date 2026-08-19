@@ -141,34 +141,18 @@ public class AttemptService
 
     private static QuizAttemptAnswer BuildAnswer(Question question, QuizAnswerInput input)
     {
-        var answer = new QuizAttemptAnswer { QuestionId = question.Id, Question = question };
-
-        switch (question.QuestionType)
+        var scored = QuestionScoring.Score(
+            question, input.OptionId, input.SelectedOptionIds, input.TextAnswer, input.FileAnswerUrl);
+        return new QuizAttemptAnswer
         {
-            case QuestionType.SingleChoice:
-            case QuestionType.TrueFalse:
-                answer.AnswerOptionId = input.OptionId;
-                answer.IsCorrect = question.AnswerOptions.Any(o => o.Id == input.OptionId && o.IsCorrect);
-                break;
-            case QuestionType.MultipleChoice:
-                var selected = ParseIds(input.SelectedOptionIds);
-                var correctIds = question.AnswerOptions.Where(o => o.IsCorrect).Select(o => o.Id).ToHashSet();
-                answer.SelectedOptionIds = string.Join(",", selected);
-                answer.IsCorrect = selected.SetEquals(correctIds);
-                break;
-            case QuestionType.FillBlank:
-                answer.TextAnswer = input.TextAnswer;
-                answer.IsCorrect = IsFillBlankMatch(question, input.TextAnswer);
-                break;
-            case QuestionType.ShortAnswer:
-                answer.TextAnswer = input.TextAnswer;
-                break;
-            case QuestionType.FileUpload:
-                answer.FileAnswerUrl = input.FileAnswerUrl;
-                break;
-        }
-
-        return answer;
+            QuestionId = question.Id,
+            Question = question,
+            AnswerOptionId = scored.OptionId,
+            SelectedOptionIds = scored.SelectedOptionIds,
+            TextAnswer = scored.TextAnswer,
+            FileAnswerUrl = scored.FileAnswerUrl,
+            IsCorrect = scored.IsCorrect,
+        };
     }
 
     /// <summary>
@@ -177,63 +161,15 @@ public class AttemptService
     /// </summary>
     private static (int Score, int MaxScore) ComputeScores(IEnumerable<QuizAttemptAnswer> answers)
     {
-        var score = 0;
-        var maxScore = 0;
-        foreach (var answer in answers)
-        {
-            var question = answer.Question!;
-            if (question.QuestionType is QuestionType.ShortAnswer or QuestionType.FileUpload)
-            {
-                if (answer.IsGraded)
-                {
-                    maxScore += question.Points;
-                    score += answer.GradedScore ?? 0;
-                }
-
-                continue;
-            }
-
-            maxScore += question.Points;
-            if (answer.IsCorrect)
-            {
-                score += question.Points;
-            }
-        }
-
-        return (score, maxScore);
-    }
-
-    private static HashSet<int> ParseIds(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return new HashSet<int>();
-        }
-
-        return value
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(s => int.TryParse(s, out _))
-            .Select(int.Parse)
-            .ToHashSet();
-    }
-
-    /// <summary>Trim, collapse inner whitespace, and lowercase for comparison.</summary>
-    private static string Normalize(string value)
-    {
-        return string.Concat(value.Trim().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)).ToLowerInvariant();
-    }
-
-    private static bool IsFillBlankMatch(Question question, string? text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return false;
-        }
-
-        var normalized = Normalize(text);
-        return question.AnswerOptions
-            .Where(o => o.IsCorrect)
-            .Any(o => Normalize(o.Text) == normalized);
+        return QuestionScoring.ComputeScores(answers.Select(a => new QuestionScoring.ScoredAnswer(
+            Question: a.Question!,
+            OptionId: a.AnswerOptionId,
+            SelectedOptionIds: a.SelectedOptionIds,
+            TextAnswer: a.TextAnswer,
+            FileAnswerUrl: a.FileAnswerUrl,
+            IsCorrect: a.IsCorrect,
+            IsGraded: a.IsGraded,
+            GradedScore: a.GradedScore)));
     }
 
     public Task<List<QuizAttempt>> GetAttemptsForQuizAsync(int quizId, string ownerId)

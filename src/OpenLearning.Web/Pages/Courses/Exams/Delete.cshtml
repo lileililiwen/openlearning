@@ -1,0 +1,25 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Exams.DeleteModel
+@{
+    ViewData["Title"] = "Delete Exam";
+    var exam = Model.Exam!;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-danger">
+            <div class="card-body p-4">
+                <h1 class="h4 text-danger mb-3">Delete exam</h1>
+                <p>Are you sure you want to delete the exam <strong>@exam.Title</strong>?</p>
+                <p class="text-muted small">This permanently removes the exam and all recorded attempts.</p>
+
+                <form method="post">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">Delete exam</button>
+                        <a class="btn btn-outline-secondary" asp-page="/Courses/Exams/Edit" asp-route-id="@exam.Id">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,71 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Exams.ResultsModel
+@{
+    ViewData["Title"] = "Exam Results";
+    var exam = Model.Exam!;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">@exam.Title — Attempts</h1>
+    <a class="btn btn-outline-secondary" asp-page="/Courses/Exams/Edit" asp-route-id="@exam.Id">Back to exam</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white"><strong>@Model.Attempts.Count attempt(s)</strong></div>
+    @if (Model.Attempts.Count == 0)
+    {
+        <div class="card-body text-muted">No attempts yet.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Submitted</th>
+                        <th>Score</th>
+                        <th>Percent</th>
+                        <th>Result</th>
+                        <th>Switches</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var attempt in Model.Attempts)
+                    {
+                        <tr>
+                            <td>@(attempt.Student?.DisplayName ?? attempt.StudentId)</td>
+                            <td>@(attempt.SubmittedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
+                            <td>@attempt.Score / @attempt.MaxScore</td>
+                            <td>@attempt.Percent%</td>
+                            <td>
+                                @if (attempt.Passed)
+                                {
+                                    <span class="badge bg-success">Passed</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Failed</span>
+                                }
+                            </td>
+                            <td>
+                                @if (attempt.ScreenSwitchCount > 0)
+                                {
+                                    <span class="badge bg-warning text-dark">@attempt.ScreenSwitchCount</span>
+                                }
+                                else
+                                {
+                                    <span>0</span>
+                                }
+                            </td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Exams/Result" asp-route-id="@attempt.Id">Review</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

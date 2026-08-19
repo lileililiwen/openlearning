@@ -6,23 +6,25 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Assessments.Models;
 using OpenLearning.Assessments.Services;
 using OpenLearning.Auth;
+using OpenLearning.Exams.Models;
+using OpenLearning.Exams.Services;
 
-namespace OpenLearning.Web.Pages.Courses.Quizzes.Questions;
+namespace OpenLearning.Web.Pages.Courses.Exams.Questions;
 
 [Authorize(Policy = Policies.RequireInstructor)]
-public class CreateModel : PageModel
+public class EditModel : PageModel
 {
-    private readonly QuestionService _questions;
-    private readonly QuizService _quizzes;
+    private readonly ExamService _exams;
 
-    public CreateModel(QuestionService questions, QuizService quizzes)
+    public EditModel(ExamService exams)
     {
-        _questions = questions;
-        _quizzes = quizzes;
+        _exams = exams;
     }
 
+    public Question? Question { get; set; }
+
     [BindProperty]
-    public int QuizId { get; set; }
+    public int Id { get; set; }
 
     [BindProperty]
     public InputModel Input { get; set; } = new();
@@ -38,20 +40,41 @@ public class CreateModel : PageModel
 
         public QuestionType QuestionType { get; set; } = QuestionType.SingleChoice;
 
-        public List<string> Options { get; set; } = new() { "", "", "", "" };
+        public List<string> Options { get; set; } = new();
 
         public int? CorrectIndex { get; set; }
 
         public List<int> CorrectIndexes { get; set; } = new();
     }
 
-    public async Task<IActionResult> OnGetAsync(int quizId)
+    public async Task<IActionResult> OnGetAsync(int id)
     {
-        QuizId = quizId;
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        if (!await _quizzes.IsOwnerAsync(quizId, userId))
+        var question = await _exams.GetQuestionAsync(id);
+        if (question is null || question.ExamId is null)
+        {
+            return NotFound();
+        }
+
+        if (!await _exams.IsOwnerAsync(question.ExamId.Value, userId))
         {
             return Forbid();
+        }
+
+        Question = question;
+        Id = id;
+        Input.Text = question.Text;
+        Input.Points = question.Points;
+        Input.QuestionType = question.QuestionType;
+
+        var options = question.AnswerOptions.OrderBy(o => o.OrderIndex).ToList();
+        Input.Options = options.Select(o => o.Text).ToList();
+        Input.CorrectIndex = options.FindIndex(o => o.IsCorrect);
+        Input.CorrectIndex = Input.CorrectIndex >= 0 ? Input.CorrectIndex : null;
+        Input.CorrectIndexes = options.Where(o => o.IsCorrect).Select(o => o.OrderIndex - 1).ToList();
+        while (Input.Options.Count < 4)
+        {
+            Input.Options.Add(string.Empty);
         }
 
         return Page();
@@ -62,36 +85,24 @@ public class CreateModel : PageModel
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         if (!ModelState.IsValid)
         {
+            Question = await _exams.GetQuestionAsync(Id);
             return Page();
         }
 
         if (Input.QuestionType is QuestionType.SingleChoice or QuestionType.TrueFalse && !Input.CorrectIndex.HasValue)
         {
             ModelState.AddModelError(string.Empty, "Select which answer option is correct.");
+            Question = await _exams.GetQuestionAsync(Id);
             return Page();
         }
 
         if (Input.QuestionType == QuestionType.MultipleChoice && Input.CorrectIndexes.Count == 0)
         {
             ModelState.AddModelError(string.Empty, "Select at least one correct answer.");
+            Question = await _exams.GetQuestionAsync(Id);
             return Page();
         }
 
-        var options = BuildOptions();
-        var (_, error) = await _questions.AddAsync(
-            QuizId, userId, Input.Text, Input.Points, Input.QuestionType, options);
-
-        if (error is not null)
-        {
-            ModelState.AddModelError(string.Empty, error);
-            return Page();
-        }
-
-        return RedirectToPage("/Courses/Quizzes/Edit", new { id = QuizId });
-    }
-
-    private List<AnswerOptionInput> BuildOptions()
-    {
         var options = new List<AnswerOptionInput>();
         for (var i = 0; i < Input.Options.Count; i++)
         {
@@ -111,6 +122,22 @@ public class CreateModel : PageModel
             options.Add(new AnswerOptionInput(text, isCorrect));
         }
 
-        return options;
+        var (ok, error) = await _exams.UpdateQuestionAsync(
+            Id, userId, Input.Text, Input.Points, Input.QuestionType, options);
+
+        if (!ok)
+        {
+            ModelState.AddModelError(string.Empty, error ?? "Unable to save question.");
+            Question = await _exams.GetQuestionAsync(Id);
+            return Page();
+        }
+
+        var examId = (await _exams.GetQuestionAsync(Id))?.ExamId;
+        if (examId is null)
+        {
+            return NotFound();
+        }
+
+        return RedirectToPage("/Courses/Exams/Edit", new { id = examId.Value });
     }
 }

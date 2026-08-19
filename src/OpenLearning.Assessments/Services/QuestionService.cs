@@ -123,7 +123,8 @@ public class QuestionService
         return true;
     }
 
-    private static bool TryValidateOptions(QuestionType type, List<AnswerOptionInput> options, out string? error)
+    /// <summary>Shared option-shape validation for quiz and exam questions.</summary>
+    public static bool TryValidateOptions(QuestionType type, List<AnswerOptionInput> options, out string? error)
     {
         if (type is QuestionType.ShortAnswer or QuestionType.FileUpload)
         {

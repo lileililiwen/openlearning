@@ -10,6 +10,7 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
     {
         builder.Property(q => q.Text).HasMaxLength(1000).IsRequired();
         builder.HasIndex(q => new { q.QuizId, q.OrderIndex });
+        builder.HasIndex(q => new { q.ExamId, q.OrderIndex });
         builder.HasOne(q => q.Quiz)
                .WithMany(q => q.Questions)
                .HasForeignKey(q => q.QuizId)

@@ -1,0 +1,122 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Exams.EditModel
+@{
+    ViewData["Title"] = "Edit Exam";
+    var exam = Model.Exam!;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Edit exam</h1>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@exam.CourseId">Back to course</a>
+        <a class="btn btn-outline-danger" asp-page="/Courses/Exams/Delete" asp-route-id="@exam.Id">Delete</a>
+    </div>
+</div>
+
+<form method="post" class="card shadow-sm mb-4">
+    <div class="card-body p-4">
+        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label asp-for="Input.Title" class="form-label"></label>
+            <input asp-for="Input.Title" class="form-control" autofocus />
+            <span asp-validation-for="Input.Title" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.Description" class="form-label"></label>
+            <textarea asp-for="Input.Description" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Input.Description" class="text-danger small"></span>
+        </div>
+
+        <div class="form-check form-switch mb-3">
+            <input asp-for="Input.IsOfficial" class="form-check-input" />
+            <label asp-for="Input.IsOfficial" class="form-check-label">
+                Official exam <span class="text-muted small">(counts toward credentials; mock exams are practice)</span>
+            </label>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label asp-for="Input.DurationMinutes" class="form-label">Duration (minutes)</label>
+                <input asp-for="Input.DurationMinutes" type="number" min="1" max="600" class="form-control" />
+                <span asp-validation-for="Input.DurationMinutes" class="text-danger small"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Input.PassPercent" class="form-label">Pass percent</label>
+                <input asp-for="Input.PassPercent" type="number" min="1" max="100" class="form-control" />
+                <span asp-validation-for="Input.PassPercent" class="text-danger small"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Input.MaxAttempts" class="form-label">Max attempts</label>
+                <input asp-for="Input.MaxAttempts" type="number" min="1" max="50" class="form-control" />
+                <span asp-validation-for="Input.MaxAttempts" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+            <div class="col-md-6">
+                <label asp-for="Input.OpensAt" class="form-label">Opens at</label>
+                <input asp-for="Input.OpensAt" type="datetime-local" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Input.ClosesAt" class="form-label">Closes at</label>
+                <input asp-for="Input.ClosesAt" type="datetime-local" class="form-control" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-4">Save exam</button>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>Questions (@exam.Questions.Count)</strong>
+        <a class="btn btn-sm btn-primary" asp-page="/Courses/Exams/Questions/Create" asp-route-examId="@exam.Id">Add question</a>
+    </div>
+    <ul class="list-group list-group-flush">
+        @if (exam.Questions.Count == 0)
+        {
+            <li class="list-group-item text-muted">
+                No questions yet. Add a question to let students take this exam.
+            </li>
+        }
+        else
+        {
+            foreach (var question in exam.Questions)
+            {
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-semibold">Q@(question.OrderIndex). @question.Text</span>
+                            <span class="badge bg-secondary ms-2">@question.Points pt</span>
+                        </div>
+                        <span class="d-inline-flex gap-2">
+                            <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Exams/Questions/Edit" asp-route-id="@question.Id">Edit</a>
+                            <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Exams/Questions/Delete" asp-route-id="@question.Id">Delete</a>
+                        </span>
+                    </div>
+                    <ul class="list-unstyled ms-3 mt-2 mb-0 small">
+                        @foreach (var option in question.AnswerOptions.OrderBy(o => o.OrderIndex))
+                        {
+                            <li>
+                                @if (option.IsCorrect)
+                                {
+                                    <span class="text-success">&#10003; @option.Text</span>
+                                }
+                                else
+                                {
+                                    <span>@option.Text</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+        }
+    </ul>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
