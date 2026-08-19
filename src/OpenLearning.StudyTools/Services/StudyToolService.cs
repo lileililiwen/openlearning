@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.CourseManagement.Models;
+using OpenLearning.Progress.Models;
 using OpenLearning.Progress.Services;
 using OpenLearning.StudyTools.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
@@ -173,5 +174,73 @@ public class StudyToolService
             .Where(d => d.LessonId == lessonId && d.IsAllowed)
             .OrderBy(d => d.Label)
             .ToListAsync();
+    }
+
+    /// <summary>
+    /// Upserts the per-day, per-user, per-course study aggregate for a UTC day.
+    /// Idempotent: re-running for the same day overwrites the rows.
+    /// </summary>
+    public async Task AggregateDailyAsync(DateOnly day)
+    {
+        var start = day.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var end = start.AddDays(1);
+
+        var secondsRows = await _db.Set<StudySession>().AsNoTracking()
+            .Where(s => s.StartedAt >= start && s.StartedAt < end)
+            .Select(s => new { s.UserId, s.CourseId, s.DurationSeconds })
+            .ToListAsync();
+        var secondsByKey = secondsRows
+            .GroupBy(r => (r.UserId, r.CourseId))
+            .ToDictionary(g => g.Key, g => g.Sum(r => r.DurationSeconds));
+
+        var completionRows = await _db.Set<LessonCompletion>().AsNoTracking()
+            .Where(c => c.CompletedAt >= start && c.CompletedAt < end)
+            .Select(c => c.EnrollmentId)
+            .ToListAsync();
+        var enrollmentIds = completionRows.Distinct().ToList();
+        var enrollments = new Dictionary<int, (string StudentId, int CourseId)>();
+        if (enrollmentIds.Count > 0)
+        {
+            enrollments = (await _db.Set<EnrollmentEntity>().AsNoTracking()
+                    .Where(e => enrollmentIds.Contains(e.Id))
+                    .Select(e => new { e.Id, e.StudentId, e.CourseId })
+                    .ToListAsync())
+                .ToDictionary(e => e.Id, e => (e.StudentId, e.CourseId));
+        }
+
+        var completionCounts = completionRows
+            .Where(id => enrollments.ContainsKey(id))
+            .GroupBy(id => (enrollments[id].StudentId, enrollments[id].CourseId))
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        var keys = secondsByKey.Keys
+            .Union(completionCounts.Keys)
+            .ToList();
+        var existing = await _db.Set<StudyDailyAggregate>()
+            .Where(a => a.Date == day)
+            .ToListAsync();
+        var existingByKey = existing.ToDictionary(a => (a.UserId, a.CourseId));
+
+        foreach (var (userId, courseId) in keys)
+        {
+            if (existingByKey.TryGetValue((userId, courseId), out var aggregate))
+            {
+                aggregate.TotalSeconds = secondsByKey.GetValueOrDefault((userId, courseId));
+                aggregate.LessonsCompleted = completionCounts.GetValueOrDefault((userId, courseId));
+            }
+            else
+            {
+                _db.Set<StudyDailyAggregate>().Add(new StudyDailyAggregate
+                {
+                    Date = day,
+                    UserId = userId,
+                    CourseId = courseId,
+                    TotalSeconds = secondsByKey.GetValueOrDefault((userId, courseId)),
+                    LessonsCompleted = completionCounts.GetValueOrDefault((userId, courseId)),
+                });
+            }
+        }
+
+        await _db.SaveChangesAsync();
     }
 }

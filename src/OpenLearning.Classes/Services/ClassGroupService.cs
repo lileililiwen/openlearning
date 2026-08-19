@@ -158,4 +158,24 @@ public class ClassGroupService
         await _db.SaveChangesAsync();
         return (true, null);
     }
+
+    /// <summary>Class groups starting within the next <paramref name="window"/> (for the class-start-reminder job).</summary>
+    public Task<List<ClassGroup>> ListStartingWithinAsync(DateTime now, TimeSpan window)
+    {
+        var horizon = now + window;
+        return _db.Set<ClassGroup>().AsNoTracking()
+            .Where(c => c.StartsAt > now && c.StartsAt <= horizon)
+            .OrderBy(c => c.StartsAt)
+            .ToListAsync();
+    }
+
+    /// <summary>Student ids enrolled in a class group (for targeted reminders).</summary>
+    public Task<List<string>> ListMemberStudentIdsAsync(int classGroupId)
+    {
+        return _db.Set<EnrollmentEntity>()
+            .Where(e => e.ClassGroupId == classGroupId)
+            .Select(e => e.StudentId)
+            .Distinct()
+            .ToListAsync();
+    }
 }

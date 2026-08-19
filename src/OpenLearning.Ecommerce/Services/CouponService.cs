@@ -148,6 +148,46 @@ public class CouponService
         return (true, null);
     }
 
+    /// <summary>Releases a coupon hold for an order (order cancelled). Idempotent.</summary>
+    public async Task<bool> ReleaseHoldAsync(int orderId)
+    {
+        var redemption = await _db.Set<CouponRedemption>()
+            .FirstOrDefaultAsync(r => r.OrderId == orderId);
+        if (redemption is null)
+        {
+            return false;
+        }
+
+        var coupon = await _db.Set<Coupon>().FindAsync(redemption.CouponId);
+        if (coupon is not null && coupon.Uses > 0)
+        {
+            coupon.Uses--;
+        }
+
+        _db.Set<CouponRedemption>().Remove(redemption);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>Deactivates coupons past their expiry. Returns the count deactivated.</summary>
+    public async Task<int> DisableExpiredAsync(DateTime now)
+    {
+        var expired = await _db.Set<Coupon>()
+            .Where(c => c.IsActive && c.ExpiresAt != null && c.ExpiresAt < now)
+            .ToListAsync();
+        foreach (var coupon in expired)
+        {
+            coupon.IsActive = false;
+        }
+
+        if (expired.Count > 0)
+        {
+            await _db.SaveChangesAsync();
+        }
+
+        return expired.Count;
+    }
+
     public async Task<(bool Ok, string? Error)> CreateAsync(
         string code, int? discountPercent, decimal? discountAmount, DateTime? expiresAt, int? maxUses)
     {

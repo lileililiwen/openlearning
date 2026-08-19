@@ -40,3 +40,11 @@ public class LessonDownloadConfiguration : IEntityTypeConfiguration<LessonDownlo
                .OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+public class StudyDailyAggregateConfiguration : IEntityTypeConfiguration<StudyDailyAggregate>
+{
+    public void Configure(EntityTypeBuilder<StudyDailyAggregate> builder)
+    {
+        builder.HasIndex(a => new { a.Date, a.UserId, a.CourseId }).IsUnique();
+    }
+}

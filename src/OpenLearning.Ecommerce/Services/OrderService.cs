@@ -376,6 +376,54 @@ public class OrderService
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Closes unpaid orders older than <paramref name="age"/> (status → Cancelled)
+    /// and releases any coupon hold. Returns the orders closed.
+    /// </summary>
+    public async Task<List<Order>> ExpireUnpaidAsync(TimeSpan age)
+    {
+        var cutoff = DateTime.UtcNow - age;
+        var orders = await _db.Set<Order>()
+            .Where(o => o.Status == OrderStatus.Pending && o.CreatedAt < cutoff)
+            .ToListAsync();
+        foreach (var order in orders)
+        {
+            order.Status = OrderStatus.Cancelled;
+            await _coupons.ReleaseHoldAsync(order.Id);
+        }
+
+        if (orders.Count > 0)
+        {
+            await _db.SaveChangesAsync();
+        }
+
+        return orders;
+    }
+
+    /// <summary>
+    /// Rejects refund requests that have been pending longer than
+    /// <paramref name="age"/> (reason "timeout"). Returns the affected orders.
+    /// </summary>
+    public async Task<List<Order>> TimeoutCloseRefundsAsync(TimeSpan age)
+    {
+        var cutoff = DateTime.UtcNow - age;
+        var orders = await _db.Set<Order>()
+            .Where(o => o.RefundStatus == RefundStatus.Requested
+                && o.RefundRequestedAt != null && o.RefundRequestedAt.Value < cutoff)
+            .ToListAsync();
+        foreach (var order in orders)
+        {
+            order.RefundStatus = RefundStatus.Rejected;
+        }
+
+        if (orders.Count > 0)
+        {
+            await _db.SaveChangesAsync();
+        }
+
+        return orders;
+    }
+
     /// <summary>Loads any order with course/student for the admin UI.</summary>
     public Task<Order?> GetByIdForAdminAsync(int id)
     {

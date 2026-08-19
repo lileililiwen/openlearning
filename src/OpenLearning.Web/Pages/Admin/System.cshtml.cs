@@ -47,6 +47,7 @@ public class SystemModel : PageModel
         new() { Key = "Site.Name", Label = "Site name", Description = "Shown in the header, page titles, and footer." },
         new() { Key = "Catalog.PageSize", Label = "Catalog page size", Description = "Courses per page on the public catalog (1–50)." },
         new() { Key = "enrollment.expiry.graceDays", Label = "Enrollment expiry grace days", Description = "Days a learner keeps read-only access after a course's access period expires (0–365)." },
+        new() { Key = "logging.retention.days", Label = "Log retention (days)", Description = "How many days operation/error logs are kept before the logs.archive job prunes them (1–3650)." },
     };
 
     public List<SettingItem> Settings { get; set; } = new();
@@ -75,6 +76,12 @@ public class SystemModel : PageModel
                 (!int.TryParse(value, out var graceDays) || graceDays < 0 || graceDays > 365))
             {
                 return Flash("Enrollment expiry grace days must be a whole number between 0 and 365.", "danger");
+            }
+
+            if (key == "logging.retention.days" &&
+                (!int.TryParse(value, out var retentionDays) || retentionDays < 1 || retentionDays > 3650))
+            {
+                return Flash("Log retention days must be a whole number between 1 and 3650.", "danger");
             }
 
             valid[key] = value;

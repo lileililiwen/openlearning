@@ -14,6 +14,9 @@ public enum NotificationType
     Membership = 6,
     Order = 7,
     Enrollment = 8,
+    Assignment = 9,
+    Exam = 10,
+    Class = 11,
 }
 
 /// <summary>One in-app notification for a user.</summary>

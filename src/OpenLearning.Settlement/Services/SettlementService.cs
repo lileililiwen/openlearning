@@ -35,6 +35,51 @@ public class SettlementService
         await _db.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Freezes each instructor's net earnings for a period into a
+    /// <see cref="SettlementStatement"/>. Idempotent: instructors that already
+    /// have a statement for <paramref name="periodStart"/> are skipped.
+    /// Returns the number of statements created.
+    /// </summary>
+    public async Task<int> CloseInstructorPeriodAsync(DateTime periodStart, DateTime periodEnd)
+    {
+        var alreadyClosed = (await _db.Set<SettlementStatement>()
+                .Where(s => s.PeriodStart == periodStart)
+                .Select(s => s.InstructorId)
+                .ToListAsync())
+            .ToHashSet();
+
+        var rows = await _db.Set<SettlementLedger>().AsNoTracking()
+            .Where(l => l.CreatedAt >= periodStart && l.CreatedAt < periodEnd)
+            .Select(l => new { l.InstructorId, l.Amount })
+            .ToListAsync();
+
+        var totals = rows
+            .GroupBy(r => r.InstructorId)
+            .Select(g => (InstructorId: g.Key, Amount: g.Sum(r => r.Amount)))
+            .Where(t => t.Amount != 0m && !alreadyClosed.Contains(t.InstructorId))
+            .ToList();
+
+        foreach (var total in totals)
+        {
+            _db.Set<SettlementStatement>().Add(new SettlementStatement
+            {
+                InstructorId = total.InstructorId,
+                PeriodStart = periodStart,
+                PeriodEnd = periodEnd,
+                GrossAmount = total.Amount,
+                NetAmount = total.Amount,
+            });
+        }
+
+        if (totals.Count > 0)
+        {
+            await _db.SaveChangesAsync();
+        }
+
+        return totals.Count;
+    }
+
     /// <summary>Total credited (sum of all ledger entries, including reversals).</summary>
     public async Task<decimal> GetTotalAsync(string instructorId)
     {

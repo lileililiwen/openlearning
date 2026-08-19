@@ -587,4 +587,19 @@ public class ExamService
         attempt.Passed = attempt.Percent >= attempt.Exam.PassPercent;
         await _db.SaveChangesAsync();
     }
+
+    /// <summary>Exams whose start window begins within the next <paramref name="window"/> (for the exam-reminder job).</summary>
+    public Task<List<Exam>> ListStartingWithinAsync(DateTime now, TimeSpan window)
+    {
+        var horizon = now + window;
+        return _db.Set<Exam>().AsNoTracking()
+            .Where(e => e.OpensAt != null && e.OpensAt.Value > now && e.OpensAt.Value <= horizon)
+            .OrderBy(e => e.OpensAt)
+            .ToListAsync();
+    }
+
+    public Task<bool> HasAttemptedAsync(int examId, string studentId)
+    {
+        return _db.Set<ExamAttempt>().AnyAsync(a => a.ExamId == examId && a.StudentId == studentId);
+    }
 }

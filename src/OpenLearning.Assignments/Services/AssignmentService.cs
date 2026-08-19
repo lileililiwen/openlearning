@@ -146,6 +146,11 @@ public class AssignmentService
             return (false, "Assignment not found.");
         }
 
+        if (assignment.DueAt is DateTime due && DateTime.UtcNow > due)
+        {
+            return (false, "This assignment is past its due date.");
+        }
+
         var existing = await _db.Set<AssignmentSubmission>()
             .FirstOrDefaultAsync(s => s.AssignmentId == assignmentId && s.StudentId == studentId);
 
@@ -236,5 +241,15 @@ public class AssignmentService
         return value.Value.Kind == DateTimeKind.Unspecified
             ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc)
             : value.Value.ToUniversalTime();
+    }
+
+    /// <summary>Assignments due within the given window (for the due-reminder job).</summary>
+    public Task<List<Assignment>> ListDueWithinAsync(DateTime now, TimeSpan window)
+    {
+        var horizon = now + window;
+        return _db.Set<Assignment>().AsNoTracking()
+            .Where(a => a.DueAt != null && a.DueAt.Value > now && a.DueAt.Value <= horizon)
+            .OrderBy(a => a.DueAt)
+            .ToListAsync();
     }
 }

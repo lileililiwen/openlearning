@@ -131,7 +131,7 @@ builder.Services.AddNotificationsModule();
 builder.Services.AddStorageModule(
     builder.Configuration["Storage:Root"]
     ?? Path.Combine(builder.Environment.ContentRootPath, "storage"));
-builder.Services.AddLoggingModule(builder.Configuration.GetValue("Logging:RetentionDays", 90));
+builder.Services.AddLoggingModule();
 builder.Services.AddMembershipsModule();
 builder.Services.AddOperationsModule();
 builder.Services.AddAssignmentsModule();
@@ -142,6 +142,21 @@ builder.Services.AddSystemConfigModule();
 builder.Services.AddModerationModule();
 builder.Services.AddLiveModule();
 builder.Services.AddJobsModule();
+// Scheduled business jobs (registered per the scheduled-business-jobs change).
+// Deferred until their dependency specs land: settlement.distributor-period-close
+// (affiliate-distribution), async-io.cleanup (async-io-jobs),
+// grade.export.cleanup (grade-export), analytics.daily/weekly-report.
+builder.Services.AddJob<OpenLearning.Web.Jobs.OrderExpireUnpaidJob>();
+builder.Services.AddJob<OpenLearning.Web.Jobs.RefundTimeoutCloseJob>();
+builder.Services.AddJob<OpenLearning.Web.Jobs.EnrollmentExpiryRevokeJob>();
+builder.Services.AddJob<OpenLearning.Web.Jobs.EnrollmentExpiryNotifySoonJob>();
+builder.Services.AddJob<OpenLearning.Web.Jobs.AssignmentDueReminderJob>();
+builder.Services.AddJob<OpenLearning.Web.Jobs.ExamReminderJob>();
+builder.Services.AddJob<OpenLearning.Web.Jobs.ClassStartReminderJob>();
+builder.Services.AddJob<OpenLearning.Web.Jobs.StudyDailyAggregateJob>();
+builder.Services.AddJob<OpenLearning.Web.Jobs.InstructorSettlementCloseJob>();
+builder.Services.AddJob<OpenLearning.Web.Jobs.CouponExpireDisabledJob>();
+builder.Services.AddJob<OpenLearning.Web.Jobs.LogArchiveJob>();
 builder.Services.AddSignalR();
 
 // Optional email channel: only used when Email:Enabled is true.

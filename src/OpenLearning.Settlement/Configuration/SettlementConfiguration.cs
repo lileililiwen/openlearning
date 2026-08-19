@@ -27,3 +27,13 @@ public class WithdrawalRequestConfiguration : IEntityTypeConfiguration<Withdrawa
         builder.HasIndex(w => w.Status);
     }
 }
+
+public class SettlementStatementConfiguration : IEntityTypeConfiguration<SettlementStatement>
+{
+    public void Configure(EntityTypeBuilder<SettlementStatement> builder)
+    {
+        builder.Property(s => s.GrossAmount).HasPrecision(10, 2);
+        builder.Property(s => s.NetAmount).HasPrecision(10, 2);
+        builder.HasIndex(s => new { s.InstructorId, s.PeriodStart }).IsUnique();
+    }
+}
