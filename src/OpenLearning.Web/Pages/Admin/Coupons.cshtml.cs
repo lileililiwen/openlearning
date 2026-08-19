@@ -46,4 +46,34 @@ public class CouponsModel : PageModel
         TempData["MessageType"] = ok ? "success" : "danger";
         return RedirectToPage();
     }
+
+    public async Task<IActionResult> OnPostUpdateAsync(int id)
+    {
+        var (ok, error) = await _coupons.UpdateAsync(id, DiscountPercent, DiscountAmount, ExpiresAt, MaxUses);
+        TempData["Message"] = ok ? "Coupon updated." : error;
+        TempData["MessageType"] = ok ? "success" : "danger";
+        return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostSetActiveAsync(int id, bool active)
+    {
+        var (ok, error) = await _coupons.SetActiveAsync(id, active);
+        string? message;
+        if (!ok)
+        {
+            message = error;
+        }
+        else if (active)
+        {
+            message = "Coupon activated.";
+        }
+        else
+        {
+            message = "Coupon deactivated.";
+        }
+
+        TempData["Message"] = message;
+        TempData["MessageType"] = ok ? "success" : "danger";
+        return RedirectToPage();
+    }
 }

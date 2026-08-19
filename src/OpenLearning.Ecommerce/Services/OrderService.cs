@@ -287,6 +287,172 @@ public class OrderService
         return (true, null);
     }
 
+    // ===== Finance admin =====
+
+    /// <summary>Filters for the admin all-orders page.</summary>
+    public sealed record OrderFilter(
+        OrderStatus? Status,
+        DateTime? From,
+        DateTime? To,
+        string? Search);
+
+    /// <summary>
+    /// Admin listing of every order with status/date/search filters, a page of
+    /// results, and totals over the filtered set.
+    /// </summary>
+    public async Task<(List<Order> Orders, int TotalCount, decimal TotalAmount)> GetAdminOrdersAsync(
+        OrderFilter filter, int page, int pageSize)
+    {
+        IQueryable<Order> query = _db.Set<Order>().AsNoTracking();
+        if (filter.Status is not null)
+        {
+            query = query.Where(o => o.Status == filter.Status);
+        }
+
+        if (filter.From is not null)
+        {
+            query = query.Where(o => o.CreatedAt >= DateTime.SpecifyKind(filter.From.Value, DateTimeKind.Utc));
+        }
+
+        if (filter.To is not null)
+        {
+            var end = DateTime.SpecifyKind(filter.To.Value.Date, DateTimeKind.Utc).AddDays(1);
+            query = query.Where(o => o.CreatedAt < end);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var term = filter.Search.Trim();
+            query = query.Where(o =>
+                (o.Course != null && o.Course.Title.Contains(term))
+                || (o.Student != null && (o.Student.DisplayName.Contains(term) || (o.Student.Email != null && o.Student.Email.Contains(term)))));
+        }
+
+        var totalCount = await query.CountAsync();
+        var totalAmount = await query.SumAsync(o => (decimal?)o.Amount) ?? 0m;
+        var orders = await query
+            .Include(o => o.Course)
+            .Include(o => o.Student)
+            .OrderByDescending(o => o.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        return (orders, totalCount, totalAmount);
+    }
+
+    /// <summary>Admin approves or rejects a pending refund request.</summary>
+    public async Task<(bool Ok, string? Error)> ReviewRefundAsync(int orderId, bool approve)
+    {
+        var order = await _db.Set<Order>()
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+        if (order is null)
+        {
+            return (false, "Order not found.");
+        }
+
+        if (order.RefundStatus != RefundStatus.Requested)
+        {
+            return (false, "This order has no pending refund request.");
+        }
+
+        order.RefundStatus = approve ? RefundStatus.Approved : RefundStatus.Rejected;
+        if (approve)
+        {
+            order.Status = OrderStatus.Refunded;
+        }
+
+        await _db.SaveChangesAsync();
+        return (true, null);
+    }
+
+    /// <summary>Orders with a pending refund request (admin review queue).</summary>
+    public Task<List<Order>> GetRefundRequestsAsync()
+    {
+        return _db.Set<Order>().AsNoTracking()
+            .Where(o => o.RefundStatus == RefundStatus.Requested)
+            .Include(o => o.Course)
+            .Include(o => o.Student)
+            .OrderBy(o => o.RefundRequestedAt)
+            .ToListAsync();
+    }
+
+    /// <summary>Loads any order with course/student for the admin UI.</summary>
+    public Task<Order?> GetByIdForAdminAsync(int id)
+    {
+        return _db.Set<Order>().AsNoTracking()
+            .Include(o => o.Course)
+            .Include(o => o.Student)
+            .FirstOrDefaultAsync(o => o.Id == id);
+    }
+
+    /// <summary>One row of the reconciliation report.</summary>
+    public sealed record ReconRow(
+        int CourseId,
+        string CourseTitle,
+        int GrossOrders,
+        decimal Gross,
+        int RefundedOrders,
+        decimal Refunds,
+        decimal Net);
+
+    /// <summary>
+    /// Per-course and total reconciliation over a paid period: gross paid
+    /// orders, refunded orders/amount, and net = gross - refunds.
+    /// </summary>
+    public async Task<(List<ReconRow> Rows, int TotalGrossOrders, decimal TotalGross, int TotalRefundedOrders, decimal TotalRefunds, decimal TotalNet)>
+        GetReconciliationAsync(DateTime? from, DateTime? to)
+    {
+        var rangeFrom = NormalizeUtc(from);
+        DateTime? rangeEnd = null;
+        if (to is not null)
+        {
+            rangeEnd = DateTime.SpecifyKind(to.Value.Date, DateTimeKind.Utc).AddDays(1);
+        }
+
+        IQueryable<Order> query = _db.Set<Order>().AsNoTracking();
+        if (rangeFrom is not null)
+        {
+            query = query.Where(o => o.PaidAt >= rangeFrom.Value);
+        }
+
+        if (rangeEnd is not null)
+        {
+            query = query.Where(o => o.PaidAt < rangeEnd.Value);
+        }
+
+        var orders = await query
+            .Include(o => o.Course)
+            .ToListAsync();
+
+        var rows = orders
+            .GroupBy(o => new { o.CourseId, CourseTitle = o.Course?.Title ?? string.Empty })
+            .Select(g =>
+            {
+                var gross = g.Where(o => o.Status == OrderStatus.Paid).Sum(o => o.Amount);
+                var refunds = g.Where(o => o.Status == OrderStatus.Refunded).Sum(o => o.Amount);
+                return new ReconRow(
+                    g.Key.CourseId,
+                    g.Key.CourseTitle,
+                    g.Count(o => o.Status == OrderStatus.Paid),
+                    gross,
+                    g.Count(o => o.Status == OrderStatus.Refunded),
+                    refunds,
+                    Math.Round(gross - refunds, 2));
+            })
+            .OrderByDescending(r => r.Net)
+            .ToList();
+
+        var totalGross = orders.Where(o => o.Status == OrderStatus.Paid).Sum(o => o.Amount);
+        var totalRefunds = orders.Where(o => o.Status == OrderStatus.Refunded).Sum(o => o.Amount);
+        return (
+            rows,
+            orders.Count(o => o.Status == OrderStatus.Paid),
+            totalGross,
+            orders.Count(o => o.Status == OrderStatus.Refunded),
+            totalRefunds,
+            Math.Round(totalGross - totalRefunds, 2));
+    }
+
     /// <summary>Outcome of a cart checkout.</summary>
     public sealed record CheckoutResult(
         int OrderCount,

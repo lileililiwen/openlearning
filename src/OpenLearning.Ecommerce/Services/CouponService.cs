@@ -105,6 +105,49 @@ public class CouponService
         return 0m;
     }
 
+    public Task<Coupon?> GetByIdAsync(int id)
+    {
+        return _db.Set<Coupon>().AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task<(bool Ok, string? Error)> UpdateAsync(
+        int couponId, int? discountPercent, decimal? discountAmount, DateTime? expiresAt, int? maxUses)
+    {
+        var coupon = await _db.Set<Coupon>().FirstOrDefaultAsync(c => c.Id == couponId);
+        if (coupon is null)
+        {
+            return (false, "Coupon not found.");
+        }
+
+        var hasPercent = discountPercent is > 0 and <= 100;
+        var hasAmount = discountAmount is > 0;
+        if (hasPercent == hasAmount)
+        {
+            return (false, "Set exactly one of percent (1-100) or amount (> 0).");
+        }
+
+        coupon.DiscountPercent = hasPercent ? discountPercent : null;
+        coupon.DiscountAmount = hasAmount ? discountAmount : null;
+        coupon.ExpiresAt = expiresAt;
+        coupon.MaxUses = maxUses;
+        await _db.SaveChangesAsync();
+        return (true, null);
+    }
+
+    public async Task<(bool Ok, string? Error)> SetActiveAsync(int couponId, bool isActive)
+    {
+        var coupon = await _db.Set<Coupon>().FirstOrDefaultAsync(c => c.Id == couponId);
+        if (coupon is null)
+        {
+            return (false, "Coupon not found.");
+        }
+
+        coupon.IsActive = isActive;
+        await _db.SaveChangesAsync();
+        return (true, null);
+    }
+
     public async Task<(bool Ok, string? Error)> CreateAsync(
         string code, int? discountPercent, decimal? discountAmount, DateTime? expiresAt, int? maxUses)
     {

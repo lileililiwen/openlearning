@@ -72,6 +72,7 @@
                                     <th class="text-center">Uses</th>
                                     <th>Expires</th>
                                     <th class="text-center">Status</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -106,6 +107,43 @@
                                             {
                                                 <span class="badge bg-secondary">Disabled</span>
                                             }
+                                        </td>
+                                        <td class="text-end">
+                                            <form method="post" asp-page-handler="SetActive" asp-route-id="@coupon.Id" asp-route-active="@(!coupon.IsActive)" class="d-inline">
+                                                <button type="submit" class="btn btn-sm @(coupon.IsActive ? "btn-outline-danger" : "btn-outline-success")">
+                                                    @(coupon.IsActive ? "Deactivate" : "Activate")
+                                                </button>
+                                            </form>
+                                            <details class="d-inline-block ms-2">
+                                                <summary class="btn btn-sm btn-outline-secondary d-inline-block">Edit</summary>
+                                                <div class="card mt-2" style="min-width: 340px">
+                                                    <div class="card-body">
+                                                        <form method="post" asp-page-handler="Update" asp-route-id="@coupon.Id">
+                                                            <div class="row g-2">
+                                                                <div class="col-6">
+                                                                    <label class="form-label small">Percent</label>
+                                                                    <input type="number" name="DiscountPercent" min="1" max="100" value="@coupon.DiscountPercent" class="form-control form-control-sm" />
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label class="form-label small">Amount</label>
+                                                                    <input type="number" name="DiscountAmount" min="0.01" step="0.01" value="@coupon.DiscountAmount" class="form-control form-control-sm" />
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <label class="form-label small">Expires</label>
+                                                                    <input type="datetime-local" name="ExpiresAt" value="@coupon.ExpiresAt?.ToString("yyyy-MM-ddTHH:mm")" class="form-control form-control-sm" />
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <label class="form-label small">Max uses</label>
+                                                                    <input type="number" name="MaxUses" min="1" value="@coupon.MaxUses" class="form-control form-control-sm" />
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <button type="submit" class="btn btn-sm btn-primary w-100">Save</button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </details>
                                         </td>
                                     </tr>
                                 }

@@ -1,0 +1,113 @@
+@page
+@model OpenLearning.Web.Pages.Admin.OrdersModel
+@{
+    ViewData["Title"] = "Orders";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Orders</h1>
+        <p class="text-muted mb-0">Every order on the platform, with filters and totals.</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Admin home</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-2">
+        <select name="Status" class="form-select" asp-for="Status">
+            <option value="">All statuses</option>
+            <option value="0">Pending</option>
+            <option value="1">Paid</option>
+            <option value="2">Refunded</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input type="date" name="From" value="@Model.From?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <input type="date" name="To" value="@Model.To?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <input type="text" name="Search" value="@Model.Search" class="form-control" placeholder="Course title, student name or email" />
+    </div>
+    <div class="col-md-2 d-grid">
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+</form>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="text-muted small">@Model.TotalCount order(s), total @Model.TotalAmount.ToString("C")</div>
+    <a class="btn btn-sm btn-outline-secondary" asp-page="/Admin/Reports/Revenue">Revenue report</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white shadow-sm rounded">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Course</th>
+                <th>Student</th>
+                <th class="text-end">Amount</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Refund</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.Orders)
+            {
+                <tr>
+                    <td>@order.Id</td>
+                    <td>
+                        @(order.Course?.Title ?? $"Course #{order.CourseId}")
+                        @if (!string.IsNullOrEmpty(order.PaymentReference))
+                        {
+                            <div class="text-muted small">@order.PaymentReference</div>
+                        }
+                    </td>
+                    <td>@(order.Student?.DisplayName ?? order.StudentId)</td>
+                    <td class="text-end">@order.Amount.ToString("C")</td>
+                    <td class="text-center">
+                        @if (order.Status == OpenLearning.Ecommerce.Models.OrderStatus.Paid)
+                        {
+                            <span class="badge bg-success">Paid</span>
+                        }
+                        else if (order.Status == OpenLearning.Ecommerce.Models.OrderStatus.Refunded)
+                        {
+                            <span class="badge bg-danger">Refunded</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (order.RefundStatus != OpenLearning.Ecommerce.Models.RefundStatus.None)
+                        {
+                            <span class="badge bg-secondary">@order.RefundStatus</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                    <td>@order.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.PageCount > 1)
+{
+    <nav>
+        <ul class="pagination justify-content-center">
+            @for (var p = 1; p <= Model.PageCount; p++)
+            {
+                <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                    <a class="page-link" asp-page="/Admin/Orders" asp-route-page="@p" asp-route-status="@Model.Status" asp-route-from="@Model.From?.ToString("yyyy-MM-dd")" asp-route-to="@Model.To?.ToString("yyyy-MM-dd")" asp-route-search="@Model.Search">@p</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

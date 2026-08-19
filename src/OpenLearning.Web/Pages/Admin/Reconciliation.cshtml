@@ -1,0 +1,92 @@
+@page
+@model OpenLearning.Web.Pages.Admin.ReconciliationModel
+@{
+    ViewData["Title"] = "Reconciliation";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Reconciliation</h1>
+        <p class="text-muted mb-0">Gross orders, refunds, and net revenue over a period.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Admin home</a>
+        <a class="btn btn-outline-primary" asp-page-handler="Export" asp-route-from="@Model.From?.ToString("yyyy-MM-dd")" asp-route-to="@Model.To?.ToString("yyyy-MM-dd")">Export CSV</a>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="date" name="From" value="@Model.From?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <input type="date" name="To" value="@Model.To?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Apply</button>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Gross orders</div>
+                <div class="h4 mb-0">@Model.TotalGrossOrders</div>
+                <div class="text-muted small">@Model.TotalGross.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Refunds</div>
+                <div class="h4 mb-0">@Model.TotalRefundedOrders</div>
+                <div class="text-muted small">@Model.TotalRefunds.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Net revenue</div>
+                <div class="h4 mb-0">@Model.TotalNet.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Rows.Count == 0)
+{
+    <div class="alert alert-info">No paid orders in this period.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th class="text-center">Gross orders</th>
+                    <th class="text-end">Gross</th>
+                    <th class="text-center">Refunded</th>
+                    <th class="text-end">Refunds</th>
+                    <th class="text-end">Net</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    <tr>
+                        <td>@row.CourseTitle</td>
+                        <td class="text-center">@row.GrossOrders</td>
+                        <td class="text-end">@row.Gross.ToString("C")</td>
+                        <td class="text-center">@row.RefundedOrders</td>
+                        <td class="text-end">@row.Refunds.ToString("C")</td>
+                        <td class="text-end fw-semibold">@row.Net.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
