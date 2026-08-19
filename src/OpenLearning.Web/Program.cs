@@ -17,6 +17,8 @@ using OpenLearning.Data;
 using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
 using OpenLearning.Exams;
+using OpenLearning.Live;
+using OpenLearning.Live.Hubs;
 using OpenLearning.Logging;
 using OpenLearning.Logging.Middleware;
 using OpenLearning.Memberships;
@@ -137,6 +139,7 @@ builder.Services.AddSettlementModule();
 // After AddNotificationsModule so the template renderer override wins.
 builder.Services.AddSystemConfigModule();
 builder.Services.AddModerationModule();
+builder.Services.AddLiveModule();
 builder.Services.AddSignalR();
 
 // Optional email channel: only used when Email:Enabled is true.
@@ -189,6 +192,7 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapHub<CourseChatHub>("/hubs/course-chat");
+app.MapHub<LiveChatHub>("/hubs/live-chat");
 
 // SCORM 1.2 runtime API endpoints (called by scorm-api.js).
 app.MapPost("/scorm/runtime/init", async (ScormInitRequest request, HttpContext http, ScormRuntimeService runtime) =>

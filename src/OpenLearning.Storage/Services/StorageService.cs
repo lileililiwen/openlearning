@@ -99,6 +99,12 @@ public class StorageService
             .FirstOrDefaultAsync(f => f.Key == key);
     }
 
+    public Task<StoredFile?> GetByIdAsync(int id)
+    {
+        return _db.Set<StoredFile>().AsNoTracking()
+            .FirstOrDefaultAsync(f => f.Id == id);
+    }
+
     public async Task<(StoredFile? File, Stream? Stream)> OpenAsync(string key)
     {
         var file = await GetAsync(key);

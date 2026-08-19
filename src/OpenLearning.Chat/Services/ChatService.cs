@@ -24,7 +24,7 @@ public class ChatService
     public async Task<List<ChatMessage>> GetRecentMessagesAsync(int courseId, int limit = 50)
     {
         var messages = await _db.Set<ChatMessage>().AsNoTracking()
-            .Where(m => m.CourseId == courseId)
+            .Where(m => m.CourseId == courseId && !m.SessionId.HasValue)
             .Include(m => m.User)
             .OrderByDescending(m => m.SentAt)
             .Take(limit)

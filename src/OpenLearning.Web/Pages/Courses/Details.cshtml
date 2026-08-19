@@ -422,6 +422,7 @@
                         </a>
                     }
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Chat" asp-route-id="@course.Id">Course chat</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Live/Index" asp-route-id="@course.Id">Live sessions</a>
                     <form method="post" asp-page-handler="Withdraw" asp-route-id="@course.Id"
                           onsubmit="return confirm('Withdraw from this course?');">
                         <button type="submit" class="btn btn-outline-danger w-100">Withdraw</button>
@@ -462,6 +463,7 @@
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Reviews" asp-route-id="@course.Id">Reviews</a>
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Orders" asp-route-id="@course.Id">Orders</a>
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Chat" asp-route-id="@course.Id">Course chat</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Live/Index" asp-route-id="@course.Id">Live sessions</a>
                     <form method="post" asp-page-handler="Publish" asp-route-id="@course.Id">
                         <button type="submit" class="btn btn-outline-success w-100 mb-2">
                             @(course.IsPublished ? "Unpublish" : "Publish")

@@ -23,5 +23,8 @@ public class ChatMessage
     /// <summary>Lesson the message belongs to (danmu only; null for course chat).</summary>
     public int? LessonId { get; set; }
 
+    /// <summary>Live session the message belongs to (live chat only; null for course-wide chat).</summary>
+    public int? SessionId { get; set; }
+
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
 }
