@@ -1,0 +1,88 @@
+@page
+@model OpenLearning.Web.Pages.Invoices.ViewModel
+@{
+    ViewData["Title"] = "Invoice";
+    var invoice = Model.Invoice!;
+    var order = Model.Order!;
+}
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a class="btn btn-outline-secondary" asp-page="/Orders/Detail" asp-route-id="@order.Id">Back to order</a>
+    <button type="button" class="btn btn-primary" onclick="window.print()">Print</button>
+</div>
+
+<div class="card shadow-sm" id="invoice-print">
+    <div class="card-body p-5">
+        @if (invoice.VoidedAt is not null)
+        {
+            <div class="text-center mb-4">
+                <span class="display-6 text-danger">VOIDED</span>
+                <div class="text-muted">@invoice.VoidReason</div>
+            </div>
+        }
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h1 class="h3 mb-1">@(invoice.Type == InvoiceType.RedLetter ? "Red-Letter Correction" : "Invoice")</h1>
+                <p class="text-muted mb-0">Number: <strong>@invoice.Number</strong></p>
+            </div>
+            <div class="text-end text-muted small">
+                <div>Issued: @invoice.IssuedAt.ToLocalTime().ToString("yyyy-MM-dd")</div>
+                @if (Model.Original is not null)
+                {
+                    <div>Corrects invoice: <strong>@Model.Original.Number</strong></div>
+                }
+            </div>
+        </div>
+        <hr />
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h6 class="text-muted">Buyer</h6>
+                <div>@(order.Student?.DisplayName ?? order.StudentId)</div>
+                <div>@order.Student?.Email</div>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <h6 class="text-muted">Order</h6>
+                <div>#@order.Id — @order.Course?.Title</div>
+                <div>Paid: @order.PaidAt?.ToLocalTime().ToString("yyyy-MM-dd")</div>
+            </div>
+        </div>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Description</th>
+                    <th class="text-end">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@order.Course?.Title — @order.Id</td>
+                    <td class="text-end">@invoice.Amount.ToString("C")</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th class="text-end">Total</th>
+                    <th class="text-end">@invoice.Amount.ToString("C")</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        @@media print {
+            body * { visibility: hidden; }
+            #invoice-print, #invoice-print * { visibility: visible; }
+            #invoice-print { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; }
+        }
+    </style>
+}

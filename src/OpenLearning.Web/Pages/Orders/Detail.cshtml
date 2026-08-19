@@ -62,9 +62,23 @@ else
                             {
                                 <tr><th>Refund status</th><td>@order.RefundStatus</td></tr>
                             }
-                            @if (order.InvoiceRequestedAt is not null)
+                            @if (Model.InvoiceRequest is not null)
                             {
-                                <tr><th>Invoice</th><td>Requested @order.InvoiceRequestedAt.Value.ToString("yyyy-MM-dd")</td></tr>
+                                <tr><th>Invoice request</th><td>@Model.InvoiceRequest.Status</td></tr>
+                            }
+                            @if (Model.Invoices.Count > 0)
+                            {
+                                <tr>
+                                    <th>Invoices</th>
+                                    <td>
+                                        @foreach (var invoice in Model.Invoices)
+                                        {
+                                            <a asp-page="/Invoices/View" asp-route-id="@invoice.Id">@invoice.Number</a>
+                                            <text>@(invoice.VoidedAt is not null ? "(voided)" : "")</text>
+                                            <br />
+                                        }
+                                    </td>
+                                </tr>
                             }
                         </tbody>
                     </table>
@@ -85,12 +99,18 @@ else
                     </div>
                 </div>
             }
-            @if (order.Status == OpenLearning.Ecommerce.Models.OrderStatus.Paid && order.InvoiceRequestedAt is null)
+            @if (order.Status == OpenLearning.Ecommerce.Models.OrderStatus.Paid && Model.InvoiceRequest is null)
             {
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h2 class="h6 mb-2">Invoice</h2>
                         <form method="post" asp-page-handler="Invoice" asp-route-id="@order.Id">
+                            <div class="mb-2">
+                                <input asp-for="Title" class="form-control" placeholder="Title (e.g. Course invoice)" required />
+                            </div>
+                            <div class="mb-2">
+                                <input asp-for="TaxId" class="form-control" placeholder="Tax ID (optional)" />
+                            </div>
                             <button type="submit" class="btn btn-outline-primary w-100">Request invoice</button>
                         </form>
                     </div>

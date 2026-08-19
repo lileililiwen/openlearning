@@ -1,0 +1,113 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Invoices.IndexModel
+@{
+    ViewData["Title"] = "Admin · Invoices";
+}
+
+<h1 class="h3 mb-4">Admin — Invoices</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<h2 class="h5 mb-3">Pending requests</h2>
+@if (Model.Requests.Count == 0)
+{
+    <div class="alert alert-info">No pending invoice requests.</div>
+}
+else
+{
+    <div class="table-responsive mb-4">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Order</th>
+                    <th>Title</th>
+                    <th>Tax ID</th>
+                    <th>Requested</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var request in Model.Requests)
+                {
+                    <tr>
+                        <td>@(request.Student?.DisplayName ?? request.StudentUserId)</td>
+                        <td>#@request.OrderId</td>
+                        <td>@request.Title</td>
+                        <td>@request.TaxId</td>
+                        <td>@request.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd")</td>
+                        <td class="text-end d-flex justify-content-end gap-2">
+                            <form method="post" asp-page-handler="Issue" asp-route-id="@request.Id">
+                                <button type="submit" class="btn btn-sm btn-success">Issue</button>
+                            </form>
+                            <form method="post" asp-page-handler="Reject" asp-route-id="@request.Id" class="d-flex gap-2">
+                                <input name="reason" class="form-control form-control-sm" placeholder="reason…" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<h2 class="h5 mb-3">Issued invoices</h2>
+@if (Model.Issued.Count == 0)
+{
+    <div class="alert alert-info">No invoices have been issued yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Number</th>
+                    <th>Order</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Issued</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var invoice in Model.Issued)
+                {
+                    <tr class="@(invoice.VoidedAt is not null ? "table-secondary" : "")">
+                        <td>
+                            <a asp-page="/Invoices/View" asp-route-id="@invoice.Id">@invoice.Number</a>
+                            @if (invoice.VoidedAt is not null)
+                            {
+                                <span class="badge bg-danger ms-1">Voided</span>
+                            }
+                        </td>
+                        <td>#@invoice.OrderId</td>
+                        <td>@invoice.Amount.ToString("C")</td>
+                        <td>@invoice.Type</td>
+                        <td>@invoice.IssuedAt.ToLocalTime().ToString("yyyy-MM-dd")</td>
+                        <td class="text-end d-flex justify-content-end gap-2">
+                            @if (invoice.VoidedAt is null && invoice.Type == InvoiceType.Normal)
+                            {
+                                <form method="post" asp-page-handler="Void" asp-route-id="@invoice.Id" class="d-flex gap-2">
+                                    <input name="reason" class="form-control form-control-sm" placeholder="void reason…" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Void this invoice?');">Void</button>
+                                </form>
+                                <form method="post" asp-page-handler="RedLetter" asp-route-id="@invoice.Id">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Red letter</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

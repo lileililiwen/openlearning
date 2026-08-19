@@ -48,6 +48,9 @@ public class SystemModel : PageModel
         new() { Key = "Catalog.PageSize", Label = "Catalog page size", Description = "Courses per page on the public catalog (1–50)." },
         new() { Key = "enrollment.expiry.graceDays", Label = "Enrollment expiry grace days", Description = "Days a learner keeps read-only access after a course's access period expires (0–365)." },
         new() { Key = "logging.retention.days", Label = "Log retention (days)", Description = "How many days operation/error logs are kept before the logs.archive job prunes them (1–3650)." },
+        new() { Key = "invoice.nextNumber", Label = "Next invoice number", Description = "The next invoice number that will be allocated (default 100000)." },
+        new() { Key = "invoice.prefix", Label = "Invoice number prefix", Description = "Optional prefix prepended to invoice numbers (default empty)." },
+        new() { Key = "invoice.padding", Label = "Invoice number padding", Description = "Zero-pad the numeric part of invoice numbers to this width (1–20, default 6)." },
     };
 
     public List<SettingItem> Settings { get; set; } = new();

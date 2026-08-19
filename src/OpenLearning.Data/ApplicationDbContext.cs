@@ -10,6 +10,7 @@ using OpenLearning.CourseManagement.Models;
 using OpenLearning.Distribution.Models;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Exams.Models;
+using OpenLearning.Invoicing.Models;
 using OpenLearning.Jobs.Models;
 using OpenLearning.Live.Models;
 using OpenLearning.Logging.Models;
@@ -26,6 +27,7 @@ using OpenLearning.StudyTools.Models;
 using OpenLearning.SystemConfig.Models;
 using OpenLearning.UserManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
+using InvoiceRequestEntity = OpenLearning.Ecommerce.Models.InvoiceRequest;
 
 namespace OpenLearning.Data;
 
@@ -78,7 +80,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<PointsLedger> PointsLedgers => Set<PointsLedger>();
 
-    public DbSet<InvoiceRequest> InvoiceRequests => Set<InvoiceRequest>();
+    public DbSet<InvoiceRequestEntity> InvoiceRequests => Set<InvoiceRequestEntity>();
 
     public DbSet<SettlementLedger> SettlementLedgers => Set<SettlementLedger>();
 
@@ -182,5 +184,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(LiveSession).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Job).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(DistributorProfile).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Invoice).Assembly);
     }
 }

@@ -18,6 +18,7 @@ using OpenLearning.Distribution;
 using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
 using OpenLearning.Exams;
+using OpenLearning.Invoicing;
 using OpenLearning.Jobs;
 using OpenLearning.Live;
 using OpenLearning.Live.Hubs;
@@ -144,6 +145,7 @@ builder.Services.AddModerationModule();
 builder.Services.AddLiveModule();
 builder.Services.AddJobsModule();
 builder.Services.AddDistributionModule();
+builder.Services.AddInvoicingModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();

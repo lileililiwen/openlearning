@@ -132,6 +132,7 @@ public static class DefaultMenus
         group.Items.Add(new MenuItem { Key = "withdrawals", GroupKey = group.Key, Label = "提现审核", Route = "/Admin/Withdrawals", SortOrder = 4, IconKey = "bi-cash-coin", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "reconciliation", GroupKey = group.Key, Label = "对账报表", Route = "/Admin/Reconciliation", SortOrder = 5, IconKey = "bi-calculator", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "coupons", GroupKey = group.Key, Label = "优惠券", Route = "/Admin/Coupons", SortOrder = 6, IconKey = "bi-ticket-perforated", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "invoices", GroupKey = group.Key, Label = "发票管理", Route = "/Admin/Invoices", SortOrder = 7, IconKey = "bi-file-earmark-text", AllowedRoles = Roles.Finance });
         return group;
     }
 
