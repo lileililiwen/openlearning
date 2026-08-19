@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assignments.Models;
+using OpenLearning.Notifications.Services;
 
 namespace OpenLearning.Assignments.Services;
 
@@ -10,10 +11,12 @@ namespace OpenLearning.Assignments.Services;
 public class AssignmentService
 {
     private readonly DbContext _db;
+    private readonly NotificationService _notifications;
 
-    public AssignmentService(DbContext db)
+    public AssignmentService(DbContext db, NotificationService notifications)
     {
         _db = db;
+        _notifications = notifications;
     }
 
     // ===== Owner-gated management =====
@@ -215,6 +218,25 @@ public class AssignmentService
         submission.GradedAt = DateTime.UtcNow;
         submission.GradedBy = graderId;
         await _db.SaveChangesAsync();
+
+        // Emit assignment.graded exactly once per grade; a re-grade must not re-notify.
+        if (submission.NotifiedAt is null)
+        {
+            var assignment = await _db.Set<Assignment>().AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Id == submission.AssignmentId);
+            await _notifications.SendAsync(
+                NotificationService.EventKeys.AssignmentGraded,
+                submission.StudentId,
+                new Dictionary<string, string>
+                {
+                    ["assignmentTitle"] = assignment?.Title ?? string.Empty,
+                    ["score"] = score.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                },
+                $"/Courses/Assignments/Detail?id={submission.AssignmentId}");
+            submission.NotifiedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+        }
+
         return (true, null);
     }
 
@@ -250,6 +272,38 @@ public class AssignmentService
         return _db.Set<Assignment>().AsNoTracking()
             .Where(a => a.DueAt != null && a.DueAt.Value > now && a.DueAt.Value <= horizon)
             .OrderBy(a => a.DueAt)
+            .ToListAsync();
+    }
+
+    /// <summary>Assignments whose due date passed but have not yet fired the due-missed notification.</summary>
+    public Task<List<Assignment>> ListPastDueUnnotifiedAsync(DateTime now)
+    {
+        return _db.Set<Assignment>().AsNoTracking()
+            .Where(a => a.DueAt != null && a.DueAt.Value < now && a.DueMissedNotifiedAt == null)
+            .OrderBy(a => a.DueAt)
+            .ToListAsync();
+    }
+
+    /// <summary>Marks an assignment as due-missed-notified (idempotency guard for the job).</summary>
+    public async Task MarkDueMissedNotifiedAsync(int assignmentId)
+    {
+        var assignment = await _db.Set<Assignment>().FindAsync(assignmentId);
+        if (assignment is null || assignment.DueMissedNotifiedAt is not null)
+        {
+            return;
+        }
+
+        assignment.DueMissedNotifiedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+    }
+
+    /// <summary>Submitting students for an assignment (used to exclude them from reminders).</summary>
+    public Task<List<string>> GetSubmittingStudentIdsAsync(int assignmentId)
+    {
+        return _db.Set<AssignmentSubmission>().AsNoTracking()
+            .Where(s => s.AssignmentId == assignmentId)
+            .Select(s => s.StudentId)
+            .Distinct()
             .ToListAsync();
     }
 }

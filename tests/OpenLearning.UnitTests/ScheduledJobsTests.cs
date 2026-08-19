@@ -163,7 +163,7 @@ public sealed class ScheduledJobsTests
         db.Set<Assignment>().AddRange(dueSoon, pastDue);
         await db.SaveChangesAsync();
 
-        var service = new AssignmentService(db);
+        var service = new AssignmentService(db, TestNotificationService.Create(db));
         var due = await service.ListDueWithinAsync(DateTime.UtcNow, TimeSpan.FromHours(24));
         Assert.Single(due);
         Assert.Equal("Soon", due[0].Title);

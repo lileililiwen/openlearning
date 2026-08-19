@@ -25,7 +25,7 @@ public sealed class InvoicingTests
         db.SaveChanges();
         var config = new SystemConfigService(db);
         var numbers = new InvoiceNumberService(config);
-        return (db, new InvoiceService(db, numbers), numbers, order);
+        return (db, new InvoiceService(db, numbers, TestNotificationService.Create(db)), numbers, order);
     }
 
     [Fact]

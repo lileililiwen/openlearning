@@ -2,6 +2,7 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Invoicing.Models;
+using OpenLearning.Notifications.Services;
 using OpenLearning.SystemConfig.Services;
 using InvoiceRequestEntity = OpenLearning.Invoicing.Models.InvoiceRequest;
 
@@ -44,11 +45,13 @@ public class InvoiceService
 {
     private readonly DbContext _db;
     private readonly InvoiceNumberService _numbers;
+    private readonly NotificationService _notifications;
 
-    public InvoiceService(DbContext db, InvoiceNumberService numbers)
+    public InvoiceService(DbContext db, InvoiceNumberService numbers, NotificationService notifications)
     {
         _db = db;
         _numbers = numbers;
+        _notifications = notifications;
     }
 
     public async Task<(bool Ok, string? Error)> SubmitAsync(string studentId, int orderId, string title, string? taxId)
@@ -137,6 +140,16 @@ public class InvoiceService
         request.ReviewedBy = reviewerId;
         request.InvoiceId = invoice.Id;
         await _db.SaveChangesAsync();
+
+        await _notifications.SendAsync(
+            NotificationService.EventKeys.InvoiceIssued,
+            request.StudentUserId,
+            new Dictionary<string, string>
+            {
+                ["invoiceNumber"] = invoice.Number,
+                ["amount"] = invoice.Amount.ToString("F2", CultureInfo.InvariantCulture),
+            },
+            $"/Invoices/View?id={invoice.Id}");
         return (true, null);
     }
 
@@ -154,6 +167,12 @@ public class InvoiceService
         request.ReviewedBy = reviewerId;
         request.Reason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
         await _db.SaveChangesAsync();
+
+        await _notifications.SendAsync(
+            NotificationService.EventKeys.InvoiceRejected,
+            request.StudentUserId,
+            new Dictionary<string, string> { ["reason"] = request.Reason ?? string.Empty },
+            $"/Orders/Detail?id={request.OrderId}");
         return (true, null);
     }
 
@@ -173,6 +192,20 @@ public class InvoiceService
         invoice.VoidedAt = DateTime.UtcNow;
         invoice.VoidReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
         await _db.SaveChangesAsync();
+
+        var studentId = await _db.Set<Order>().AsNoTracking()
+            .Where(o => o.Id == invoice.OrderId)
+            .Select(o => o.StudentId)
+            .FirstOrDefaultAsync();
+        await _notifications.SendAsync(
+            NotificationService.EventKeys.InvoiceVoided,
+            studentId ?? string.Empty,
+            new Dictionary<string, string>
+            {
+                ["invoiceNumber"] = invoice.Number,
+                ["reason"] = invoice.VoidReason ?? string.Empty,
+            },
+            $"/Invoices/View?id={invoice.Id}");
         return (true, null);
     }
 
@@ -185,7 +218,7 @@ public class InvoiceService
         }
 
         var number = await _numbers.AllocateNextAsync();
-        _db.Set<Invoice>().Add(new Invoice
+        var redLetter = new Invoice
         {
             Number = await _numbers.FormatAsync(number),
             OrderId = original.OrderId,
@@ -193,8 +226,23 @@ public class InvoiceService
             Type = InvoiceType.RedLetter,
             IssuedBy = reviewerId,
             OriginalInvoiceId = original.Id,
-        });
+        };
+        _db.Set<Invoice>().Add(redLetter);
         await _db.SaveChangesAsync();
+
+        var studentId = await _db.Set<Order>().AsNoTracking()
+            .Where(o => o.Id == original.OrderId)
+            .Select(o => o.StudentId)
+            .FirstOrDefaultAsync();
+        await _notifications.SendAsync(
+            NotificationService.EventKeys.InvoiceRedLetterIssued,
+            studentId ?? string.Empty,
+            new Dictionary<string, string>
+            {
+                ["originalNumber"] = original.Number,
+                ["invoiceNumber"] = redLetter.Number,
+            },
+            $"/Invoices/View?id={redLetter.Id}");
         return (true, null);
     }
 

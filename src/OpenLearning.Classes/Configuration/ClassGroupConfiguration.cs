@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenLearning.Classes.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
+using NotificationEntity = OpenLearning.Notifications.Models.Notification;
 
 namespace OpenLearning.Classes.Configuration;
 
@@ -22,6 +23,14 @@ public class ClassGroupConfiguration : IEntityTypeConfiguration<ClassGroup>
         builder.HasMany<EnrollmentEntity>()
                .WithOne()
                .HasForeignKey(e => e.ClassGroupId)
+               .OnDelete(DeleteBehavior.SetNull);
+
+        // Notification.ClassGroupId is a scalar on the Notification entity (owned by
+        // OpenLearning.Notifications); the relationship is configured here so the
+        // Notifications module never needs to reference this module.
+        builder.HasMany<NotificationEntity>()
+               .WithOne()
+               .HasForeignKey(n => n.ClassGroupId)
                .OnDelete(DeleteBehavior.SetNull);
     }
 }

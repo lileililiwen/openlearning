@@ -602,4 +602,17 @@ public class ExamService
     {
         return _db.Set<ExamAttempt>().AnyAsync(a => a.ExamId == examId && a.StudentId == studentId);
     }
+
+    /// <summary>Marks an exam as reminder-notified (idempotency guard for the reminder job).</summary>
+    public async Task MarkReminderNotifiedAsync(int examId)
+    {
+        var exam = await _db.Set<Exam>().FindAsync(examId);
+        if (exam is null || exam.ReminderNotifiedAt is not null)
+        {
+            return;
+        }
+
+        exam.ReminderNotifiedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+    }
 }

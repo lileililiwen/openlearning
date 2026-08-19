@@ -13,6 +13,7 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
         builder.Property(n => n.Link).HasMaxLength(500);
         builder.HasIndex(n => new { n.UserId, n.CreatedAt });
         builder.HasIndex(n => n.IsRead);
+        builder.HasIndex(n => n.ClassGroupId);
     }
 }
 

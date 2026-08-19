@@ -18,7 +18,7 @@ public sealed class AssignmentServiceTests
     private static async Task<int> CreateAssignmentAsync(
         ApplicationDbContext db, int courseId = 1, string authorId = "instructor-1", bool allowResubmit = false)
     {
-        var service = new AssignmentService(db);
+        var service = new AssignmentService(db, TestNotificationService.Create(db));
         var (ok, error) = await service.CreateAsync(
             courseId, authorId, "Essay", "Write 500 words", null, allowResubmit);
         Assert.True(ok);
@@ -43,7 +43,7 @@ public sealed class AssignmentServiceTests
     {
         var db = CreateDb();
         var id = await CreateAssignmentAsync(db);
-        var service = new AssignmentService(db);
+        var service = new AssignmentService(db, TestNotificationService.Create(db));
 
         var (ok, error) = await service.UpdateAsync(id, "other-instructor", "Essay", "x", null, false);
 
@@ -56,7 +56,7 @@ public sealed class AssignmentServiceTests
     {
         var db = CreateDb();
         var assignmentId = await CreateAssignmentAsync(db);
-        var service = new AssignmentService(db);
+        var service = new AssignmentService(db, TestNotificationService.Create(db));
 
         var (ok1, _) = await service.SubmitAsync(assignmentId, "student-1", "draft", null);
         Assert.True(ok1);
@@ -74,7 +74,7 @@ public sealed class AssignmentServiceTests
     {
         var db = CreateDb();
         var assignmentId = await CreateAssignmentAsync(db);
-        var service = new AssignmentService(db);
+        var service = new AssignmentService(db, TestNotificationService.Create(db));
         await service.SubmitAsync(assignmentId, "student-1", "first", null);
         var submission = await service.GetSubmissionAsync(assignmentId, "student-1");
         await service.GradeAsync(submission!.Id, "instructor-1", 80, "Good");
@@ -90,7 +90,7 @@ public sealed class AssignmentServiceTests
     {
         var db = CreateDb();
         var assignmentId = await CreateAssignmentAsync(db, allowResubmit: true);
-        var service = new AssignmentService(db);
+        var service = new AssignmentService(db, TestNotificationService.Create(db));
         await service.SubmitAsync(assignmentId, "student-1", "first", null);
         var submission = await service.GetSubmissionAsync(assignmentId, "student-1");
         await service.GradeAsync(submission!.Id, "instructor-1", 80, "Good");
@@ -109,7 +109,7 @@ public sealed class AssignmentServiceTests
     {
         var db = CreateDb();
         var assignmentId = await CreateAssignmentAsync(db);
-        var service = new AssignmentService(db);
+        var service = new AssignmentService(db, TestNotificationService.Create(db));
         await service.SubmitAsync(assignmentId, "student-1", "work", null);
         var submission = await service.GetSubmissionAsync(assignmentId, "student-1");
         Assert.NotNull(submission);

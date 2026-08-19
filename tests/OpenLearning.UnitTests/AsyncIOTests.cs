@@ -53,7 +53,7 @@ public sealed class AsyncIOTests
         var scopeFactory = services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>();
         var transcoder = new MediaTranscoder(scopeFactory, provider, NullLogger<MediaTranscoder>.Instance);
         var storage = new StorageService(db, provider, transcoder);
-        return (db, new AsyncIOService(db, storage), tempDir);
+        return (db, new AsyncIOService(db, storage, TestNotificationService.Create(db)), tempDir);
     }
 
     [Fact]

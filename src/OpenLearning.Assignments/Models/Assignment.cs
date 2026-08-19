@@ -15,6 +15,9 @@ public class Assignment
 
     public DateTime? DueAt { get; set; }
 
+    /// <summary>When the due-missed notification was last emitted (idempotency guard).</summary>
+    public DateTime? DueMissedNotifiedAt { get; set; }
+
     /// <summary>When false, a submission after grading is rejected.</summary>
     public bool AllowResubmitAfterGrading { get; set; }
 
@@ -46,4 +49,7 @@ public class AssignmentSubmission
     public DateTime? GradedAt { get; set; }
 
     public string? GradedBy { get; set; }
+
+    /// <summary>When the grade notification was emitted (re-grades must not re-notify).</summary>
+    public DateTime? NotifiedAt { get; set; }
 }

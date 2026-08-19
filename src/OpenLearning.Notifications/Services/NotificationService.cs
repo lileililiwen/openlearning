@@ -36,7 +36,7 @@ public class NotificationService
 
     public async Task CreateAsync(
         string userId, NotificationType type, string title, string body, string? link = null,
-        IReadOnlyDictionary<string, string>? values = null)
+        IReadOnlyDictionary<string, string>? values = null, int? classGroupId = null)
     {
         var (finalTitle, finalBody) = await RenderAsync(type, title, body, values);
         var (inAppAllowed, emailAllowed, smsAllowed, pushAllowed) =
@@ -51,6 +51,7 @@ public class NotificationService
                 Title = finalTitle,
                 Body = finalBody,
                 Link = link,
+                ClassGroupId = classGroupId,
             });
             await _db.SaveChangesAsync();
         }
@@ -92,6 +93,104 @@ public class NotificationService
             {
                 // Push is best-effort and optional.
             }
+        }
+    }
+
+    /// <summary>Maps a template event key (e.g. <c>assignment.graded</c>) to its type and fallback copy.</summary>
+    public static class EventKeys
+    {
+        public const string AssignmentGraded = "assignment.graded";
+        public const string ExamStartingSoon = "exam.starting-soon";
+        public const string AssignmentDueSoon = "assignment.due-soon";
+        public const string AssignmentDueMissed = "assignment.due-missed";
+        public const string ClassStartingSoon = "class.starting-soon";
+        public const string EnrollmentExpiringSoon = "enrollment.expiring-soon";
+        public const string EnrollmentExpired = "enrollment.expired";
+        public const string OrderExpired = "order.expired";
+        public const string RefundTimeoutRejected = "refund.timeout-rejected";
+        public const string InvoiceIssued = "invoice.issued";
+        public const string InvoiceRejected = "invoice.rejected";
+        public const string InvoiceVoided = "invoice.voided";
+        public const string InvoiceRedLetterIssued = "invoice.red-letter-issued";
+        public const string ImportCompleted = "import.completed";
+        public const string ImportFailed = "import.failed";
+        public const string ExportReady = "export.ready";
+        public const string ExportProgress = "export.progress";
+        public const string AccountWelcome = "account.welcome";
+        public const string EnrollmentGrantedBulk = "enrollment.granted-bulk";
+    }
+
+    private static readonly Dictionary<string, (NotificationType Type, string Title, string Body)> _events =
+        new()
+        {
+            [EventKeys.AssignmentGraded] = (NotificationType.AssignmentGraded, "Assignment graded", "Your submission has been graded."),
+            [EventKeys.ExamStartingSoon] = (NotificationType.ExamStartingSoon, "Exam starting soon", "An exam you are enrolled in starts within 30 minutes."),
+            [EventKeys.AssignmentDueSoon] = (NotificationType.AssignmentDueSoon, "Assignment due soon", "An assignment is due within 24 hours."),
+            [EventKeys.AssignmentDueMissed] = (NotificationType.AssignmentDueMissed, "Assignment missed", "You did not submit an assignment by its due date."),
+            [EventKeys.ClassStartingSoon] = (NotificationType.ClassStartingSoon, "Class starting soon", "A class you are enrolled in starts within 30 minutes."),
+            [EventKeys.EnrollmentExpiringSoon] = (NotificationType.EnrollmentExpiringSoon, "Course access expiring soon", "Your course access expires within 7 days."),
+            [EventKeys.EnrollmentExpired] = (NotificationType.EnrollmentExpired, "Course access expired", "Your course access has ended."),
+            [EventKeys.OrderExpired] = (NotificationType.OrderExpired, "Order expired", "Your unpaid order was cancelled."),
+            [EventKeys.RefundTimeoutRejected] = (NotificationType.RefundTimeoutRejected, "Refund request closed", "Your refund request was not approved within the review window."),
+            [EventKeys.InvoiceIssued] = (NotificationType.InvoiceIssued, "Invoice issued", "Your invoice is ready."),
+            [EventKeys.InvoiceRejected] = (NotificationType.InvoiceRejected, "Invoice request rejected", "Your invoice request was rejected."),
+            [EventKeys.InvoiceVoided] = (NotificationType.InvoiceVoided, "Invoice voided", "An invoice was voided."),
+            [EventKeys.InvoiceRedLetterIssued] = (NotificationType.InvoiceRedLetterIssued, "Red-letter invoice issued", "A red-letter invoice has been issued."),
+            [EventKeys.ImportCompleted] = (NotificationType.ImportCompleted, "Import completed", "Your import job has finished."),
+            [EventKeys.ImportFailed] = (NotificationType.ImportFailed, "Import failed", "Your import job could not be completed."),
+            [EventKeys.ExportReady] = (NotificationType.ExportReady, "Export ready", "Your export file is ready to download."),
+            [EventKeys.ExportProgress] = (NotificationType.ExportProgress, "Export in progress", "Your export is still running."),
+            [EventKeys.AccountWelcome] = (NotificationType.AccountWelcome, "Welcome", "Welcome to OpenLearning!"),
+            [EventKeys.EnrollmentGrantedBulk] = (NotificationType.EnrollmentGrantedBulk, "Course access granted", "You have been enrolled in courses."),
+        };
+
+    /// <summary>
+    /// Sends a template-driven event to one user. The title/body come from the
+    /// seeded template (when active) with the caller's placeholders; otherwise
+    /// the registry fallback copy is used.
+    /// </summary>
+    public Task SendAsync(string key, string userId, IReadOnlyDictionary<string, string>? values = null, string? link = null)
+    {
+        if (!_events.TryGetValue(key, out var spec))
+        {
+            return Task.CompletedTask;
+        }
+
+        return CreateAsync(userId, spec.Type, spec.Title, spec.Body, link, values);
+    }
+
+    /// <summary>Creates one notification per user id for a template-driven event.</summary>
+    public async Task SendForManyAsync(
+        string key, IEnumerable<string> userIds, IReadOnlyDictionary<string, string>? values = null, string? link = null)
+    {
+        if (!_events.TryGetValue(key, out var spec))
+        {
+            return;
+        }
+
+        await CreateForManyAsync(userIds, spec.Type, spec.Title, spec.Body, link, values);
+    }
+
+    /// <summary>
+    /// Sends a template-driven, class-scoped event to every active student
+    /// enrolled in the class, tagging each notification with the class id.
+    /// </summary>
+    public async Task SendClassScopedAsync(
+        string key, int classGroupId, IReadOnlyDictionary<string, string>? values = null, string? link = null)
+    {
+        if (!_events.TryGetValue(key, out var spec))
+        {
+            return;
+        }
+
+        var studentIds = await _db.Set<EnrollmentEntity>()
+            .Where(e => e.ClassGroupId == classGroupId && e.RevokedAt == null)
+            .Select(e => e.StudentId)
+            .Distinct()
+            .ToListAsync();
+        foreach (var studentId in studentIds)
+        {
+            await CreateAsync(studentId, spec.Type, spec.Title, spec.Body, link, values, classGroupId);
         }
     }
 
@@ -235,7 +334,8 @@ public class NotificationService
                 title,
                 body,
                 null,
-                new Dictionary<string, string> { ["SenderId"] = senderId });
+                new Dictionary<string, string> { ["SenderId"] = senderId },
+                classGroupId);
         }
     }
 

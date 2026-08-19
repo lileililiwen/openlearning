@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.AsyncIO.Models;
+using OpenLearning.Notifications.Services;
 using OpenLearning.Storage.Models;
 using OpenLearning.Storage.Services;
 
@@ -34,11 +35,13 @@ public class AsyncIOService
 {
     private readonly DbContext _db;
     private readonly StorageService _storage;
+    private readonly NotificationService _notifications;
 
-    public AsyncIOService(DbContext db, StorageService storage)
+    public AsyncIOService(DbContext db, StorageService storage, NotificationService notifications)
     {
         _db = db;
         _storage = storage;
+        _notifications = notifications;
     }
 
     public async Task<(AsyncIOJob? Job, string? Error)> SubmitAsync(
@@ -130,6 +133,36 @@ public class AsyncIOService
         job.SuccessRows = successRows;
         job.ErrorRows = errorRows;
         await _db.SaveChangesAsync();
+
+        if (job.ResultFileKey is not null)
+        {
+            // Export jobs carry a result file; notify with the download link and expiry.
+            await _notifications.SendAsync(
+                NotificationService.EventKeys.ExportReady,
+                job.UserId,
+                new Dictionary<string, string>
+                {
+                    ["kind"] = job.Kind,
+                    ["downloadUrl"] = $"/files/{job.ResultFileKey}",
+                    ["expiresAt"] = job.CreatedAt.AddDays(7).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+                },
+                $"/files/{job.ResultFileKey}");
+        }
+        else
+        {
+            // Import jobs notify with the success/error counts and error-file link.
+            await _notifications.SendAsync(
+                NotificationService.EventKeys.ImportCompleted,
+                job.UserId,
+                new Dictionary<string, string>
+                {
+                    ["kind"] = job.Kind,
+                    ["successCount"] = successRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["errorCount"] = errorRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["errorFileLink"] = job.ErrorFileKey is null ? string.Empty : $"/files/{job.ErrorFileKey}",
+                },
+                $"/Admin/AsyncIO/Index");
+        }
     }
 
     public async Task FailAsync(int jobId, string message)
@@ -144,6 +177,15 @@ public class AsyncIOService
         job.FinishedAt = DateTime.UtcNow;
         job.ErrorMessage = (message ?? string.Empty)[..Math.Min(message?.Length ?? 0, 2000)];
         await _db.SaveChangesAsync();
+
+        await _notifications.SendAsync(
+            NotificationService.EventKeys.ImportFailed,
+            job.UserId,
+            new Dictionary<string, string>
+            {
+                ["kind"] = job.Kind,
+                ["error"] = job.ErrorMessage ?? string.Empty,
+            });
     }
 
     /// <summary>Stores the result file (export output) and sets its key.</summary>
@@ -202,6 +244,26 @@ public class AsyncIOService
         }
 
         return null;
+    }
+
+    /// <summary>Emits an export.progress notification at the given percentage (25/50/75).</summary>
+    public async Task ReportProgressAsync(int jobId, int percent)
+    {
+        var job = await _db.Set<AsyncIOJob>().AsNoTracking().FirstOrDefaultAsync(j => j.Id == jobId);
+        if (job is null)
+        {
+            return;
+        }
+
+        var clamped = Math.Clamp(percent, 0, 100);
+        await _notifications.SendAsync(
+            NotificationService.EventKeys.ExportProgress,
+            job.UserId,
+            new Dictionary<string, string>
+            {
+                ["kind"] = job.Kind,
+                ["percent"] = clamped.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            });
     }
 
     /// <summary>Prunes result/error files older than the retention period. Returns the count pruned.</summary>

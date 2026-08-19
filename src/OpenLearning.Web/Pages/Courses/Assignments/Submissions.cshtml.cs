@@ -8,8 +8,6 @@ using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
 using OpenLearning.Auth.Services;
 using OpenLearning.CourseManagement.Services;
-using OpenLearning.Notifications.Models;
-using OpenLearning.Notifications.Services;
 
 namespace OpenLearning.Web.Pages.Courses.Assignments;
 
@@ -19,18 +17,15 @@ public class SubmissionsModel : PageModel
     private readonly AssignmentService _assignments;
     private readonly CourseService _courses;
     private readonly UserService _users;
-    private readonly NotificationService _notifications;
 
     public SubmissionsModel(
         AssignmentService assignments,
         CourseService courses,
-        UserService users,
-        NotificationService notifications)
+        UserService users)
     {
         _assignments = assignments;
         _courses = courses;
         _users = users;
-        _notifications = notifications;
     }
 
     public Assignment? Assignment { get; set; }
@@ -87,12 +82,7 @@ public class SubmissionsModel : PageModel
         var (ok, error) = await _assignments.GradeAsync(submissionId, graderId, score, feedback);
         if (ok)
         {
-            await _notifications.CreateAsync(
-                submission.StudentId,
-                NotificationType.Quiz,
-                $"Assignment graded: {submission.Assignment.Title}",
-                score is not null ? $"Your score is {score}/100." : "Your assignment has been graded.",
-                $"/Courses/Assignments/Detail?id={submission.AssignmentId}");
+            // The assignment.graded notification is emitted by AssignmentService.GradeAsync.
         }
 
         TempData["Message"] = ok ? "Grade saved." : error;

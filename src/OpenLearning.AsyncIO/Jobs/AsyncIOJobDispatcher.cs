@@ -3,8 +3,6 @@ using OpenLearning.AsyncIO.Models;
 using OpenLearning.AsyncIO.Services;
 using OpenLearning.Jobs;
 using OpenLearning.Logging.Services;
-using OpenLearning.Notifications.Models;
-using OpenLearning.Notifications.Services;
 using OpenLearning.Storage.Services;
 
 namespace OpenLearning.AsyncIO.Jobs;
@@ -25,7 +23,6 @@ public sealed class AsyncIOJobDispatcher : IJob
     private readonly AsyncIOService _service;
     private readonly StorageService _storage;
     private readonly IEnumerable<IAsyncIOProcessor> _processors;
-    private readonly NotificationService _notifications;
     private readonly LogService _logs;
 
     public AsyncIOJobDispatcher(
@@ -33,14 +30,12 @@ public sealed class AsyncIOJobDispatcher : IJob
         AsyncIOService service,
         StorageService storage,
         IEnumerable<IAsyncIOProcessor> processors,
-        NotificationService notifications,
         LogService logs)
     {
         _db = db;
         _service = service;
         _storage = storage;
         _processors = processors;
-        _notifications = notifications;
         _logs = logs;
     }
 
@@ -58,7 +53,6 @@ public sealed class AsyncIOJobDispatcher : IJob
             if (processor is null)
             {
                 await _service.FailAsync(job.Id, $"No processor is registered for kind '{job.Kind}'.");
-                await NotifyAsync(job.UserId, "import.failed", $"The {job.Kind} job could not run because no processor is registered.");
                 await AuditAsync(job);
                 continue;
             }
@@ -70,7 +64,6 @@ public sealed class AsyncIOJobDispatcher : IJob
                 if (file is null || stream is null)
                 {
                     await _service.FailAsync(job.Id, "The source file is missing.");
-                    await NotifyAsync(job.UserId, "import.failed", $"The {job.Kind} job failed: source file missing.");
                     await AuditAsync(job);
                     continue;
                 }
@@ -81,19 +74,11 @@ public sealed class AsyncIOJobDispatcher : IJob
                     if (ok)
                     {
                         await _service.CompleteAsync(job.Id, total, success, total - success);
-                        var finished = await _db.Set<AsyncIOJob>().AsNoTracking()
-                            .FirstOrDefaultAsync(j => j.Id == job.Id, cancellationToken);
-                        await NotifyAsync(
-                            job.UserId,
-                            "import.completed",
-                            $"{job.Kind}: {finished?.SuccessRows ?? 0} of {finished?.TotalRows ?? 0} rows processed successfully.",
-                            finished?.ErrorFileKey is null ? null : $"/files/{finished.ErrorFileKey}");
                         await AuditAsync(job);
                     }
                     else
                     {
                         await _service.FailAsync(job.Id, error ?? "Processing failed.");
-                        await NotifyAsync(job.UserId, "import.failed", $"{job.Kind} failed: {error ?? "unknown error"}");
                         await AuditAsync(job);
                     }
                 }
@@ -101,15 +86,9 @@ public sealed class AsyncIOJobDispatcher : IJob
             catch (Exception ex)
             {
                 await _service.FailAsync(job.Id, ex.Message);
-                await NotifyAsync(job.UserId, "import.failed", $"{job.Kind} failed: {ex.Message}");
                 await AuditAsync(job);
             }
         }
-    }
-
-    private async Task NotifyAsync(string userId, string title, string body, string? link = null)
-    {
-        await _notifications.CreateAsync(userId, NotificationType.AsyncIO, title, body, link);
     }
 
     private async Task AuditAsync(AsyncIOJob job)

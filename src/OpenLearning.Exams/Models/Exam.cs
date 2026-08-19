@@ -43,6 +43,9 @@ public class Exam
 
     public DateTime? ClosesAt { get; set; }
 
+    /// <summary>When the starting-soon reminder was last emitted (idempotency guard).</summary>
+    public DateTime? ReminderNotifiedAt { get; set; }
+
     public ICollection<Question> Questions { get; set; } = new List<Question>();
 
     public ICollection<ExamAttempt> Attempts { get; set; } = new List<ExamAttempt>();

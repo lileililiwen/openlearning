@@ -385,6 +385,7 @@ public class OrderService
         var cutoff = DateTime.UtcNow - age;
         var orders = await _db.Set<Order>()
             .Where(o => o.Status == OrderStatus.Pending && o.CreatedAt < cutoff)
+            .Include(o => o.Course)
             .ToListAsync();
         foreach (var order in orders)
         {
@@ -410,6 +411,7 @@ public class OrderService
         var orders = await _db.Set<Order>()
             .Where(o => o.RefundStatus == RefundStatus.Requested
                 && o.RefundRequestedAt != null && o.RefundRequestedAt.Value < cutoff)
+            .Include(o => o.Course)
             .ToListAsync();
         foreach (var order in orders)
         {

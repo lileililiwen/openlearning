@@ -42,11 +42,14 @@ public sealed class OrderExpireUnpaidJob : IJob
         var closed = await _orders.ExpireUnpaidAsync(_age);
         foreach (var order in closed)
         {
-            await _notifications.CreateAsync(
+            await _notifications.SendAsync(
+                NotificationService.EventKeys.OrderExpired,
                 order.StudentId,
-                NotificationType.Order,
-                "Order expired",
-                $"Your pending order for course #{order.CourseId} was cancelled because it was not paid in time.",
+                new Dictionary<string, string>
+                {
+                    ["courseTitle"] = order.Course?.Title ?? string.Empty,
+                    ["amount"] = order.Amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture),
+                },
                 $"/Courses/Details?id={order.CourseId}");
         }
     }
@@ -80,11 +83,13 @@ public sealed class RefundTimeoutCloseJob : IJob
         var rejected = await _orders.TimeoutCloseRefundsAsync(_age);
         foreach (var order in rejected)
         {
-            await _notifications.CreateAsync(
+            await _notifications.SendAsync(
+                NotificationService.EventKeys.RefundTimeoutRejected,
                 order.StudentId,
-                NotificationType.Order,
-                "Refund request closed",
-                $"Your refund request for course #{order.CourseId} was not approved within the review window.",
+                new Dictionary<string, string>
+                {
+                    ["courseTitle"] = order.Course?.Title ?? string.Empty,
+                },
                 $"/Orders/Detail?id={order.Id}");
         }
     }
@@ -140,13 +145,39 @@ public sealed class AssignmentDueReminderJob : IJob
                 : 0;
             foreach (var studentId in unsubmitted)
             {
-                await _notifications.CreateAsync(
+                await _notifications.SendAsync(
+                    NotificationService.EventKeys.AssignmentDueSoon,
                     studentId,
-                    NotificationType.Assignment,
-                    "Assignment due soon",
-                    $"Assignment \"{assignment.Title}\" is due in {days} day(s). Submit it before the deadline.",
+                    new Dictionary<string, string>
+                    {
+                        ["assignmentTitle"] = assignment.Title,
+                        ["days"] = days.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    },
                     $"/Courses/Assignments/Detail?id={assignment.Id}");
             }
+        }
+
+        // Auto-close path: assignments whose due date passed get one due-missed
+        // notification per non-submitting enrolled student, then are marked.
+        var pastDue = await _assignments.ListPastDueUnnotifiedAsync(now);
+        foreach (var assignment in pastDue)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var (enrollments, _) = await _enrollments.GetEnrollmentsForRosterAsync(assignment.CourseId);
+            var studentIds = enrollments.Select(e => e.StudentId).ToList();
+            var submitterIds = await _assignments.GetSubmittingStudentIdsAsync(assignment.Id);
+            var unsubmitted = studentIds.Where(id => !submitterIds.Contains(id)).ToList();
+
+            foreach (var studentId in unsubmitted)
+            {
+                await _notifications.SendAsync(
+                    NotificationService.EventKeys.AssignmentDueMissed,
+                    studentId,
+                    new Dictionary<string, string> { ["assignmentTitle"] = assignment.Title },
+                    $"/Courses/Assignments/Detail?id={assignment.Id}");
+            }
+
+            await _assignments.MarkDueMissedNotifiedAsync(assignment.Id);
         }
     }
 }
@@ -182,6 +213,13 @@ public sealed class ExamReminderJob : IJob
         foreach (var exam in exams)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            // Skip exams already reminded in a previous tick.
+            if (exam.ReminderNotifiedAt is not null)
+            {
+                continue;
+            }
+
             var (enrollments, _) = await _enrollments.GetEnrollmentsForRosterAsync(exam.CourseId);
             var studentIds = enrollments.Select(e => e.StudentId).ToList();
             var attemptFlags = await Task.WhenAll(studentIds.Select(async s => new
@@ -193,13 +231,14 @@ public sealed class ExamReminderJob : IJob
 
             foreach (var studentId in notAttempted)
             {
-                await _notifications.CreateAsync(
+                await _notifications.SendAsync(
+                    NotificationService.EventKeys.ExamStartingSoon,
                     studentId,
-                    NotificationType.Exam,
-                    "Exam starting soon",
-                    $"The exam \"{exam.Title}\" starts within 30 minutes. Get ready!",
+                    new Dictionary<string, string> { ["examTitle"] = exam.Title },
                     $"/Courses/Exams/Take?id={exam.Id}");
             }
+
+            await _exams.MarkReminderNotifiedAsync(exam.Id);
         }
     }
 }
@@ -233,16 +272,11 @@ public sealed class ClassStartReminderJob : IJob
         foreach (var classGroup in classes)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var members = await _classes.ListMemberStudentIdsAsync(classGroup.Id);
-            foreach (var studentId in members)
-            {
-                await _notifications.CreateAsync(
-                    studentId,
-                    NotificationType.Class,
-                    "Class starting soon",
-                    $"Your class \"{classGroup.Name}\" starts within 30 minutes.",
-                    $"/Courses/Classes/Detail?id={classGroup.Id}");
-            }
+            await _notifications.SendClassScopedAsync(
+                NotificationService.EventKeys.ClassStartingSoon,
+                classGroup.Id,
+                new Dictionary<string, string> { ["className"] = classGroup.Name },
+                $"/Courses/Classes/Detail?id={classGroup.Id}");
         }
     }
 }
