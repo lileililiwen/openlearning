@@ -61,6 +61,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Order> Orders => Set<Order>();
 
+    public DbSet<CartItem> CartItems => Set<CartItem>();
+
+    public DbSet<Coupon> Coupons => Set<Coupon>();
+
+    public DbSet<CouponRedemption> CouponRedemptions => Set<CouponRedemption>();
+
+    public DbSet<BalanceLedger> BalanceLedgers => Set<BalanceLedger>();
+
+    public DbSet<PointsLedger> PointsLedgers => Set<PointsLedger>();
+
+    public DbSet<InvoiceRequest> InvoiceRequests => Set<InvoiceRequest>();
+
     public DbSet<ScormPackage> ScormPackages => Set<ScormPackage>();
 
     public DbSet<ScormRecord> ScormRecords => Set<ScormRecord>();

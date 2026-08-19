@@ -27,6 +27,7 @@ public class DetailsModel : PageModel
     private readonly ProgressService _progress;
     private readonly QuizService _quizzes;
     private readonly OrderService _orders;
+    private readonly CartService _cart;
     private readonly ReviewService _reviews;
     private readonly CertificateService _certificates;
     private readonly NotificationService _notifications;
@@ -38,6 +39,7 @@ public class DetailsModel : PageModel
         ProgressService progress,
         QuizService quizzes,
         OrderService orders,
+        CartService cart,
         ReviewService reviews,
         CertificateService certificates,
         NotificationService notifications,
@@ -48,6 +50,7 @@ public class DetailsModel : PageModel
         _progress = progress;
         _quizzes = quizzes;
         _orders = orders;
+        _cart = cart;
         _reviews = reviews;
         _certificates = certificates;
         _notifications = notifications;
@@ -209,6 +212,20 @@ public class DetailsModel : PageModel
 
         await _enrollments.WithdrawAsync(userId, id);
         return RedirectToPage("/MyCourses");
+    }
+
+    public async Task<IActionResult> OnPostAddToCartAsync(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return Challenge();
+        }
+
+        var (ok, error) = await _cart.AddAsync(userId, id);
+        TempData["Message"] = ok ? "Added to cart." : error;
+        TempData["MessageType"] = ok ? "success" : "danger";
+        return RedirectToPage(new { id });
     }
 
     public async Task<IActionResult> OnPostSubmitReviewAsync(int id)

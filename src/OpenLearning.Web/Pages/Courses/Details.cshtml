@@ -339,6 +339,9 @@
                         <a class="btn btn-primary w-100" asp-page="/Courses/Checkout" asp-route-courseId="@course.Id">
                             Buy for @course.Price!.Value.ToString("C")
                         </a>
+                        <form method="post" asp-page-handler="AddToCart" asp-route-id="@course.Id" class="mt-2">
+                            <button type="submit" class="btn btn-outline-primary w-100">Add to cart</button>
+                        </form>
                     }
                 }
                 else if (course.IsPublished && User.Identity?.IsAuthenticated != true)

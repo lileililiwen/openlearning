@@ -1,0 +1,85 @@
+@page
+@model OpenLearning.Web.Pages.Orders.IndexModel
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<div class="mb-4">
+    <h1 class="h3 mb-1">My Orders</h1>
+    <p class="text-muted mb-0">Your course purchases and their status.</p>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Orders.Count == 0)
+{
+    <div class="alert alert-info">You have not placed any orders yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th class="text-end">Amount</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Refund</th>
+                    <th class="text-center">Invoice</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.Orders)
+                {
+                    <tr>
+                        <td>
+                            <a asp-page="/Courses/Details" asp-route-id="@order.CourseId" class="fw-semibold">@(order.Course?.Title ?? $"Course #{order.CourseId}")</a>
+                            <div class="text-muted small">@order.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
+                        </td>
+                        <td class="text-end">@order.Amount.ToString("C")</td>
+                        <td class="text-center">
+                            @if (order.Status == OpenLearning.Ecommerce.Models.OrderStatus.Paid)
+                            {
+                                <span class="badge bg-success">Paid</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            @if (order.RefundStatus != OpenLearning.Ecommerce.Models.RefundStatus.None)
+                            {
+                                <span class="badge bg-secondary">@order.RefundStatus</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            @if (order.InvoiceRequestedAt is not null)
+                            {
+                                <span class="badge bg-secondary">Requested</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Orders/Detail" asp-route-id="@order.Id">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

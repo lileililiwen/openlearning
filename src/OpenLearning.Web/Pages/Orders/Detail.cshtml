@@ -1,0 +1,101 @@
+@page
+@model OpenLearning.Web.Pages.Orders.DetailModel
+@{
+    ViewData["Title"] = $"Order #{Model.Order?.Id}";
+}
+
+@if (Model.Order is null)
+{
+    <div class="alert alert-danger">Order not found.</div>
+}
+else
+{
+    var order = Model.Order;
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Orders/Index">My Orders</a></li>
+            <li class="breadcrumb-item active">Order #@order.Id</li>
+        </ol>
+    </nav>
+
+    @if (TempData["Message"] is string message)
+    {
+        <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+            @message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="h4 mb-3">Order #@order.Id</h1>
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th class="w-50">Course</th>
+                                <td>
+                                    <a asp-page="/Courses/Details" asp-route-id="@order.CourseId">@(order.Course?.Title ?? $"Course #{order.CourseId}")</a>
+                                </td>
+                            </tr>
+                            <tr><th>Amount</th><td>@order.Amount.ToString("C")</td></tr>
+                            @if (order.DiscountAmount > 0)
+                            {
+                                <tr><th>Coupon discount</th><td>-@order.DiscountAmount.ToString("C")</td></tr>
+                            }
+                            @if (order.PaidWithBalance > 0)
+                            {
+                                <tr><th>Paid with balance</th><td>@order.PaidWithBalance.ToString("C")</td></tr>
+                            }
+                            <tr><th>Status</th><td>@order.Status</td></tr>
+                            <tr><th>Placed</th><td>@order.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td></tr>
+                            @if (order.PaidAt is not null)
+                            {
+                                <tr><th>Paid</th><td>@order.PaidAt.Value.ToString("yyyy-MM-dd HH:mm")</td></tr>
+                            }
+                            @if (!string.IsNullOrEmpty(order.PaymentReference))
+                            {
+                                <tr><th>Reference</th><td>@order.PaymentReference</td></tr>
+                            }
+                            @if (order.RefundStatus != OpenLearning.Ecommerce.Models.RefundStatus.None)
+                            {
+                                <tr><th>Refund status</th><td>@order.RefundStatus</td></tr>
+                            }
+                            @if (order.InvoiceRequestedAt is not null)
+                            {
+                                <tr><th>Invoice</th><td>Requested @order.InvoiceRequestedAt.Value.ToString("yyyy-MM-dd")</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            @if (order.Status == OpenLearning.Ecommerce.Models.OrderStatus.Paid && order.RefundStatus == OpenLearning.Ecommerce.Models.RefundStatus.None)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <h2 class="h6 mb-2">Need help?</h2>
+                        <form method="post" asp-page-handler="Refund" asp-route-id="@order.Id"
+                              onsubmit="return confirm('Request a refund for this order? An admin will review it.');">
+                            <button type="submit" class="btn btn-outline-warning w-100">Request refund</button>
+                        </form>
+                    </div>
+                </div>
+            }
+            @if (order.Status == OpenLearning.Ecommerce.Models.OrderStatus.Paid && order.InvoiceRequestedAt is null)
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h6 mb-2">Invoice</h2>
+                        <form method="post" asp-page-handler="Invoice" asp-route-id="@order.Id">
+                            <button type="submit" class="btn btn-outline-primary w-100">Request invoice</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}

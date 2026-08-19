@@ -5,8 +5,18 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject NotificationService NotificationService
 @inject OpenLearning.SystemConfig.Services.SystemConfigService SystemConfig
+@inject OpenLearning.Ecommerce.Services.CartService CartService
 @{
     var siteName = await SystemConfig.GetStringAsync("Site.Name", "OpenLearning");
+    var cartCount = 0;
+    if (SignInManager.IsSignedIn(User))
+    {
+        var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (uid is not null)
+        {
+            cartCount = await CartService.GetCountAsync(uid);
+        }
+    }
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -39,6 +49,12 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-page="/Memberships/Index">Memberships</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Cart">Cart@(cartCount > 0 ? $" ({cartCount})" : "")</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Orders/Index">Orders</a>
                     </li>
                     @if (User.IsInRole(Roles.Student))
                     {
@@ -89,6 +105,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Admin/MembershipPlans">Membership Plans</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Admin/Coupons">Coupons</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Admin/Operations">Operations</a>

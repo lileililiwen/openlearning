@@ -1,0 +1,119 @@
+@page
+@model OpenLearning.Web.Pages.Admin.CouponsModel
+@{
+    ViewData["Title"] = "Coupons";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Coupons</h1>
+        <p class="text-muted mb-0">Discount codes students can apply at checkout.</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Admin home</a>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Create coupon</h2>
+                <form method="post">
+                    <div class="mb-3">
+                        <label asp-for="Code" class="form-label"></label>
+                        <input asp-for="Code" class="form-control" placeholder="e.g. SAVE20" />
+                        <span asp-validation-for="Code" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="DiscountPercent" class="form-label">Discount percent (1-100)</label>
+                        <input asp-for="DiscountPercent" type="number" min="1" max="100" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="DiscountAmount" class="form-label">Or flat amount</label>
+                        <input asp-for="DiscountAmount" type="number" min="0.01" step="0.01" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ExpiresAt" class="form-label">Expires (optional)</label>
+                        <input asp-for="ExpiresAt" type="datetime-local" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="MaxUses" class="form-label">Max uses (optional)</label>
+                        <input asp-for="MaxUses" type="number" min="1" class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Create coupon</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Existing coupons</h2>
+                @if (Model.Coupons.Count == 0)
+                {
+                    <p class="text-muted mb-0">No coupons yet.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Discount</th>
+                                    <th class="text-center">Uses</th>
+                                    <th>Expires</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var coupon in Model.Coupons)
+                                {
+                                    <tr>
+                                        <td><strong>@coupon.Code</strong></td>
+                                        <td>
+                                            @if (coupon.DiscountPercent is > 0)
+                                            {
+                                                @($"{coupon.DiscountPercent}%")
+                                            }
+                                            else if (coupon.DiscountAmount is > 0)
+                                            {
+                                                @coupon.DiscountAmount.Value.ToString("C")
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @coupon.Uses@(coupon.MaxUses is not null ? $"/{coupon.MaxUses}" : "")
+                                        </td>
+                                        <td>@(coupon.ExpiresAt?.ToString("yyyy-MM-dd") ?? "Never")</td>
+                                        <td class="text-center">
+                                            @if (coupon.IsActive)
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Disabled</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

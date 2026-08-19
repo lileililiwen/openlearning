@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
 using OpenLearning.CourseManagement.Models;
+using OpenLearning.Ecommerce.Models;
 using OpenLearning.Progress.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 
@@ -96,6 +97,27 @@ public static class DbSeeder
                     new LessonCompletion { EnrollmentId = enrollment.Id, LessonId = lessonIds[1] });
                 await db.SaveChangesAsync();
             }
+        }
+
+        // Commerce-extras demo data (idempotent): a coupon and a starting
+        // balance/points for the demo student so cart checkout with discounts
+        // is exercisable in development.
+        if (!await db.Coupons.AnyAsync(c => c.Code == "WELCOME10"))
+        {
+            db.Coupons.Add(new Coupon { Code = "WELCOME10", DiscountPercent = 10 });
+            await db.SaveChangesAsync();
+        }
+
+        if (!await db.BalanceLedgers.AnyAsync(l => l.UserId == student.Id))
+        {
+            db.BalanceLedgers.Add(new BalanceLedger { UserId = student.Id, Amount = 50m, Reason = "Signup bonus" });
+            await db.SaveChangesAsync();
+        }
+
+        if (!await db.PointsLedgers.AnyAsync(l => l.UserId == student.Id))
+        {
+            db.PointsLedgers.Add(new PointsLedger { UserId = student.Id, Amount = 500, Reason = "Welcome points" });
+            await db.SaveChangesAsync();
         }
     }
 

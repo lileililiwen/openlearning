@@ -9,6 +9,14 @@ public enum OrderStatus
     Paid = 1,
 }
 
+public enum RefundStatus
+{
+    None = 0,
+    Requested = 1,
+    Approved = 2,
+    Rejected = 3,
+}
+
 public class Order
 {
     public int Id { get; set; }
@@ -30,4 +38,26 @@ public class Order
     public DateTime? PaidAt { get; set; }
 
     public string PaymentReference { get; set; } = string.Empty;
+
+    /// <summary>Batch id shared by all orders created in one cart checkout.</summary>
+    public Guid? CartCheckoutId { get; set; }
+
+    // ===== Discounts (coupons, balance, points) =====
+
+    public int? CouponId { get; set; }
+    public Coupon? Coupon { get; set; }
+
+    /// <summary>Coupon reduction applied before balance/points.</summary>
+    public decimal DiscountAmount { get; set; }
+
+    /// <summary>Portion of the order paid from the account balance.</summary>
+    public decimal PaidWithBalance { get; set; }
+
+    // ===== Refunds & invoices =====
+
+    public RefundStatus RefundStatus { get; set; } = RefundStatus.None;
+
+    public DateTime? RefundRequestedAt { get; set; }
+
+    public DateTime? InvoiceRequestedAt { get; set; }
 }
