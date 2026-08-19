@@ -58,6 +58,9 @@ public class EditModel : PageModel
         [Display(Name = "Subtitles URL (.vtt, optional)")]
         [StringLength(1000)]
         public string? SubtitleUrl { get; set; }
+
+        [Display(Name = "Preview lesson (visible to non-enrolled visitors of a published course)")]
+        public bool IsPreview { get; set; }
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -81,6 +84,7 @@ public class EditModel : PageModel
         Input.VideoUrl = lesson.VideoUrl;
         Input.VideoPosterUrl = lesson.VideoPosterUrl;
         Input.SubtitleUrl = lesson.SubtitleUrl;
+        Input.IsPreview = lesson.IsPreview;
         ScormPackage = await _scorm.GetForLessonAsync(id);
         return Page();
     }
@@ -97,7 +101,7 @@ public class EditModel : PageModel
         }
 
         var updated = await _lessons.UpdateAsync(
-            Id, userId, Input.Title, Input.Content, Input.VideoUrl, Input.VideoPosterUrl, Input.SubtitleUrl);
+            Id, userId, Input.Title, Input.Content, Input.VideoUrl, Input.VideoPosterUrl, Input.SubtitleUrl, Input.IsPreview);
         if (!updated)
         {
             return Forbid();

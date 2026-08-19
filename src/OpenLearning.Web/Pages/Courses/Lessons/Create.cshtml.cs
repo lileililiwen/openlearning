@@ -60,6 +60,9 @@ public class CreateModel : PageModel
         [Display(Name = "Subtitles URL (.vtt, optional)")]
         [StringLength(1000)]
         public string? SubtitleUrl { get; set; }
+
+        [Display(Name = "Preview lesson (visible to non-enrolled visitors of a published course)")]
+        public bool IsPreview { get; set; }
     }
 
     public async Task<IActionResult> OnGetAsync(int moduleId)
@@ -91,7 +94,7 @@ public class CreateModel : PageModel
         }
 
         var lesson = await _lessons.AddAsync(
-            ModuleId, userId, Input.Title, Input.Content, Input.VideoUrl, Input.VideoPosterUrl, Input.SubtitleUrl);
+            ModuleId, userId, Input.Title, Input.Content, Input.VideoUrl, Input.VideoPosterUrl, Input.SubtitleUrl, Input.IsPreview);
         if (lesson is null)
         {
             return Forbid();

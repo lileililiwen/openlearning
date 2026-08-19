@@ -32,7 +32,8 @@ public class LessonService
         string content,
         string? videoUrl = null,
         string? videoPosterUrl = null,
-        string? subtitleUrl = null)
+        string? subtitleUrl = null,
+        bool isPreview = false)
     {
         var module = await _db.Set<Module>()
             .Include(m => m.Course)
@@ -55,6 +56,7 @@ public class LessonService
             VideoUrl = NullIfBlank(videoUrl),
             VideoPosterUrl = NullIfBlank(videoPosterUrl),
             SubtitleUrl = NullIfBlank(subtitleUrl),
+            IsPreview = isPreview,
             OrderIndex = nextOrder + 1,
         };
         _db.Set<Lesson>().Add(lesson);
@@ -69,7 +71,8 @@ public class LessonService
         string content,
         string? videoUrl = null,
         string? videoPosterUrl = null,
-        string? subtitleUrl = null)
+        string? subtitleUrl = null,
+        bool isPreview = false)
     {
         var lesson = await _db.Set<Lesson>()
             .Include(l => l.Module).ThenInclude(m => m!.Course)
@@ -84,6 +87,7 @@ public class LessonService
         lesson.VideoUrl = NullIfBlank(videoUrl);
         lesson.VideoPosterUrl = NullIfBlank(videoPosterUrl);
         lesson.SubtitleUrl = NullIfBlank(subtitleUrl);
+        lesson.IsPreview = isPreview;
         await _db.SaveChangesAsync();
         return true;
     }

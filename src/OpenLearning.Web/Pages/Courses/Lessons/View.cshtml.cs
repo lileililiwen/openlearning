@@ -118,7 +118,8 @@ public class ViewModel : PageModel
         }
 
         var isEnrolled = userId is not null && await _enrollments.IsEnrolledAsync(userId, course.Id);
-        if (course.IsPublished && !isOwner && !isAdmin && !isEnrolled)
+        var canPreview = lesson.IsPreview && course.IsPublished;
+        if (course.IsPublished && !isOwner && !isAdmin && !isEnrolled && !canPreview)
         {
             return Forbid();
         }

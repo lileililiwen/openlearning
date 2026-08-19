@@ -174,6 +174,21 @@
         }
         else
         {
+            @foreach (var module in course.Modules.Where(m => m.Lessons.Any(l => l.IsPreview)))
+            {
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-header bg-white"><strong>@module.Title</strong></div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var lesson in module.Lessons.Where(l => l.IsPreview))
+                        {
+                            <li class="list-group-item">
+                                <span class="badge bg-success me-2">Preview</span>
+                                <a asp-page="/Courses/Lessons/View" asp-route-id="@lesson.Id">@lesson.Title</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
             <div class="alert alert-secondary">
                 <i>Course content is available after you enroll.</i>
             </div>

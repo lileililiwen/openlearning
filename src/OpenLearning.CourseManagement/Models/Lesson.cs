@@ -21,5 +21,8 @@ public class Lesson
     /// <summary>Optional WebVTT subtitle track URL.</summary>
     public string? SubtitleUrl { get; set; }
 
+    /// <summary>When true, non-enrolled visitors of a published course can view this lesson.</summary>
+    public bool IsPreview { get; set; }
+
     public int OrderIndex { get; set; }
 }
