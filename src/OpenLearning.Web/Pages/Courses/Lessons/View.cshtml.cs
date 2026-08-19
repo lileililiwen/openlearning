@@ -48,6 +48,20 @@ public class ViewModel : PageModel
 
     public bool IsCompleted { get; set; }
 
+    /// <summary>Total counted study time on this lesson, for the current Student.</summary>
+    public int LessonDurationSeconds { get; set; }
+
+    public static string FormatDuration(int seconds)
+    {
+        var totalMinutes = (int)Math.Ceiling(seconds / 60.0);
+        if (totalMinutes < 60)
+        {
+            return $"{totalMinutes} min";
+        }
+
+        return $"{(totalMinutes / 60)} h {totalMinutes % 60} min";
+    }
+
     private async Task<bool> IsSuspendedAsync()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -92,6 +106,7 @@ public class ViewModel : PageModel
             var completed = await _progress.GetCompletedLessonIdsAsync(userId, course.Id);
             IsCompleted = completed.Contains(id);
             await _progress.RecordAccessAsync(userId, course.Id, id);
+            LessonDurationSeconds = await _progress.GetLessonDurationAsync(userId, id);
         }
 
         return Page();

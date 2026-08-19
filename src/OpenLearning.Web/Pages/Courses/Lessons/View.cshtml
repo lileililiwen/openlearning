@@ -22,6 +22,10 @@
             <div class="card-body p-4">
                 <h1 class="h3 mb-1">@Model.Lesson.Title</h1>
                 <p class="text-muted small mb-3">@module.Title</p>
+                @if (Model.CanTrackProgress)
+                {
+                    <p class="text-muted small mb-3">Study time: @OpenLearning.Web.Pages.Courses.Lessons.ViewModel.FormatDuration(Model.LessonDurationSeconds)</p>
+                }
                 <hr />
                 <div class="lesson-content">
                     @Html.Raw(MarkdownRenderer.ToHtml(Model.Lesson.Content))
@@ -85,3 +89,54 @@
         </div>
     </div>
 </div>
+
+@if (Model.CanTrackProgress)
+{
+    <script>
+        // Study-duration session: start on load, heartbeat while visible, end on hide/close.
+        (function () {
+            const courseId = @course.Id;
+            const lessonId = @Model.Lesson.Id;
+            const heartbeatMs = 60000;
+            let sessionId = null;
+
+            async function post(url, body) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    return await response.json();
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            async function start() {
+                const data = await post('/progress/session/start', { courseId, lessonId });
+                if (data && data.sessionId) {
+                    sessionId = data.sessionId;
+                }
+            }
+
+            async function heartbeat() {
+                if (sessionId === null) return;
+                await post('/progress/session/heartbeat', { sessionId });
+            }
+
+            async function end() {
+                if (sessionId === null) return;
+                await post('/progress/session/end', { sessionId });
+                sessionId = null;
+            }
+
+            start();
+            setInterval(heartbeat, heartbeatMs);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') end();
+            });
+            window.addEventListener('pagehide', end);
+        })();
+    </script>
+}

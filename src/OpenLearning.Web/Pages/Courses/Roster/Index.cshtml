@@ -44,6 +44,7 @@ else
                     <th>Email</th>
                     <th>Enrolled</th>
                     <th class="text-center">Progress</th>
+                    <th class="text-center">Study time</th>
                     <th class="text-center">Last activity</th>
                     <th class="text-end">Actions</th>
                 </tr>
@@ -63,7 +64,8 @@ else
                             </div>
                             <span class="text-muted small">@row.ProgressPercent% (@row.CompletedLessons/@row.TotalLessons)</span>
                         </td>
-                        <td class="text-center text-muted small">@(row.LastAccessedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
+                        <td class="text-center text-muted small">@row.LastAccessedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—"</td>
+                        <td class="text-center text-muted small">@OpenLearning.Web.Pages.Courses.Roster.IndexModel.FormatDuration(row.StudyDurationSeconds)</td>
                         <td class="text-end">
                             <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Roster/Student" asp-route-id="@Model.CourseId" asp-route-studentId="@row.StudentId">View progress</a>
                             <form method="post" asp-page-handler="Withdraw" asp-route-id="@Model.CourseId" asp-route-studentId="@row.StudentId" class="d-inline"

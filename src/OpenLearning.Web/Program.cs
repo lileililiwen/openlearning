@@ -22,6 +22,7 @@ using OpenLearning.Notifications.Channels;
 using OpenLearning.Notifications.Email;
 using OpenLearning.Operations;
 using OpenLearning.Progress;
+using OpenLearning.Progress.Services;
 using OpenLearning.Ratings;
 using OpenLearning.Scorm;
 using OpenLearning.Scorm.Services;
@@ -29,6 +30,7 @@ using OpenLearning.Storage;
 using OpenLearning.Storage.Services;
 using OpenLearning.SystemConfig;
 using OpenLearning.UserManagement;
+using OpenLearning.Web.Progress;
 using OpenLearning.Web.Scorm;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -220,6 +222,44 @@ app.MapPost("/scorm/runtime/commit", async (ScormCommitRequest request, HttpCont
         request.ScoreRaw ?? string.Empty,
         request.SessionTime ?? string.Empty));
     return Results.Json(new { ok = true });
+});
+
+// Study-duration session tracking. The lesson page starts a session on load and
+// sends heartbeats while visible; the service accumulates counted seconds.
+app.MapPost("/progress/session/start", async (SessionStartRequest request, HttpContext http, ProgressService progress) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var (sessionId, error) = await progress.StartSessionAsync(userId, request.CourseId, request.LessonId);
+    return sessionId is null ? Results.Json(new { error }) : Results.Json(new { sessionId });
+});
+
+app.MapPost("/progress/session/heartbeat", async (SessionHeartbeatRequest request, HttpContext http, ProgressService progress) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var (ok, error) = await progress.HeartbeatAsync(request.SessionId, userId);
+    return ok ? Results.Json(new { ok = true }) : Results.Json(new { ok = false, error });
+});
+
+app.MapPost("/progress/session/end", async (SessionHeartbeatRequest request, HttpContext http, ProgressService progress) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var (ok, error) = await progress.EndSessionAsync(request.SessionId, userId);
+    return ok ? Results.Json(new { ok = true }) : Results.Json(new { ok = false, error });
 });
 
 // File storage serving. Private files (e.g. assignment answers) require the

@@ -21,7 +21,8 @@ public sealed record RosterRow(
     int ProgressPercent,
     int CompletedLessons,
     int TotalLessons,
-    DateTime? LastAccessedAt);
+    DateTime? LastAccessedAt,
+    int StudyDurationSeconds);
 
 [Authorize(Policy = Policies.RequireInstructor)]
 public class IndexModel : PageModel
@@ -41,6 +42,17 @@ public class IndexModel : PageModel
         _enrollments = enrollments;
         _progress = progress;
         _logs = logs;
+    }
+
+    public static string FormatDuration(int seconds)
+    {
+        var totalMinutes = (int)Math.Ceiling(seconds / 60.0);
+        if (totalMinutes < 60)
+        {
+            return $"{totalMinutes} min";
+        }
+
+        return $"{(totalMinutes / 60)} h {totalMinutes % 60} min";
     }
 
     [BindProperty(SupportsGet = true)]
@@ -78,6 +90,7 @@ public class IndexModel : PageModel
 
         var enrollmentIds = enrollments.Select(e => e.Id).ToList();
         var (completedByEnrollment, lastAccessByEnrollment) = await _progress.GetEnrollmentProgressMapAsync(enrollmentIds);
+        var durationByEnrollment = await _progress.GetDurationByEnrollmentAsync(enrollmentIds);
 
         Roster = enrollments.Select(e => new RosterRow(
             e.Id,
@@ -90,7 +103,8 @@ public class IndexModel : PageModel
                 : (int)Math.Round((completedByEnrollment.GetValueOrDefault(e.Id) * 100.0) / totalLessons),
             completedByEnrollment.GetValueOrDefault(e.Id),
             totalLessons,
-            lastAccessByEnrollment.TryGetValue(e.Id, out var last) ? (DateTime?)last : null))
+            lastAccessByEnrollment.TryGetValue(e.Id, out var last) ? (DateTime?)last : null,
+            durationByEnrollment.GetValueOrDefault(e.Id)))
             .Where(r => string.IsNullOrWhiteSpace(Search)
                 || r.StudentName.Contains(Search, StringComparison.OrdinalIgnoreCase)
                 || r.StudentEmail.Contains(Search, StringComparison.OrdinalIgnoreCase))

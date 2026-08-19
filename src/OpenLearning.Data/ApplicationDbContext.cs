@@ -46,6 +46,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<LessonAccess> LessonAccesses => Set<LessonAccess>();
 
+    public DbSet<StudySession> StudySessions => Set<StudySession>();
+
     public DbSet<Quiz> Quizzes => Set<Quiz>();
 
     public DbSet<Question> Questions => Set<Question>();

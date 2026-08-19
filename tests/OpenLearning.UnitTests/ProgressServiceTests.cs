@@ -255,4 +255,132 @@ public sealed class ProgressServiceTests
         Assert.Equal(1, completed[seeded.EnrollmentId]);
         Assert.True(lastAccess.ContainsKey(seeded.EnrollmentId));
     }
+
+    // ===== Study sessions =====
+
+    [Fact]
+    public async Task StartSession_fails_when_not_enrolled_or_foreign_lesson()
+    {
+        var seeded = SeedCourseWithTwoLessons();
+        var service = new ProgressService(seeded.Db);
+
+        var (notEnrolledId, notEnrolledError) = await service.StartSessionAsync("other", seeded.CourseId, seeded.Lesson1Id);
+        var (foreignId, foreignError) = await service.StartSessionAsync("s1", seeded.CourseId, 999_999);
+
+        Assert.Null(notEnrolledId);
+        Assert.Contains("enrolled", notEnrolledError, StringComparison.OrdinalIgnoreCase);
+        Assert.Null(foreignId);
+        Assert.Contains("belong", foreignError, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task StartSession_ends_previous_active_session_for_same_lesson()
+    {
+        var seeded = SeedCourseWithTwoLessons();
+        var service = new ProgressService(seeded.Db);
+
+        var (firstId, _) = await service.StartSessionAsync("s1", seeded.CourseId, seeded.Lesson1Id);
+        var (secondId, _) = await service.StartSessionAsync("s1", seeded.CourseId, seeded.Lesson1Id);
+
+        var sessions = await seeded.Db.Set<StudySession>().ToListAsync();
+        Assert.Equal(2, sessions.Count);
+        var first = sessions.Single(s => s.Id == firstId);
+        Assert.NotNull(first.EndedAt);
+        Assert.Null(sessions.Single(s => s.Id == secondId).EndedAt);
+    }
+
+    [Fact]
+    public async Task Heartbeat_accumulates_elapsed_time_and_excludes_idle_gaps()
+    {
+        var seeded = SeedCourseWithTwoLessons();
+        var service = new ProgressService(seeded.Db);
+        var (sessionId, _) = await service.StartSessionAsync("s1", seeded.CourseId, seeded.Lesson1Id);
+        var session = await seeded.Db.Set<StudySession>().SingleAsync(s => s.Id == sessionId);
+
+        // 30 seconds of activity -> counted.
+        session.LastActiveAt = DateTime.UtcNow.AddSeconds(-30);
+        await seeded.Db.SaveChangesAsync();
+        Assert.True((await service.HeartbeatAsync(sessionId!.Value, "s1")).Ok);
+
+        // 5 minutes away (well beyond the 2x-heartbeat idle gap) -> not counted.
+        session = await seeded.Db.Set<StudySession>().SingleAsync(s => s.Id == sessionId);
+        session.LastActiveAt = DateTime.UtcNow.AddSeconds(-300);
+        await seeded.Db.SaveChangesAsync();
+        Assert.True((await service.HeartbeatAsync(sessionId.Value, "s1")).Ok);
+
+        var duration = (await seeded.Db.Set<StudySession>().SingleAsync(s => s.Id == sessionId)).DurationSeconds;
+        Assert.InRange(duration, 20, 40);
+    }
+
+    [Fact]
+    public async Task EndSession_accumulates_trailing_time_and_sets_ended_at()
+    {
+        var seeded = SeedCourseWithTwoLessons();
+        var service = new ProgressService(seeded.Db);
+        var (sessionId, _) = await service.StartSessionAsync("s1", seeded.CourseId, seeded.Lesson1Id);
+        var session = await seeded.Db.Set<StudySession>().SingleAsync(s => s.Id == sessionId);
+        session.LastActiveAt = DateTime.UtcNow.AddSeconds(-30);
+        await seeded.Db.SaveChangesAsync();
+
+        Assert.True((await service.EndSessionAsync(sessionId!.Value, "s1")).Ok);
+
+        var ended = await seeded.Db.Set<StudySession>().SingleAsync(s => s.Id == sessionId);
+        Assert.NotNull(ended.EndedAt);
+        Assert.InRange(ended.DurationSeconds, 20, 40);
+    }
+
+    [Fact]
+    public async Task Daily_cap_limits_accumulation()
+    {
+        var seeded = SeedCourseWithTwoLessons();
+        var service = new ProgressService(seeded.Db);
+        var (sessionId, _) = await service.StartSessionAsync("s1", seeded.CourseId, seeded.Lesson1Id);
+        var session = await seeded.Db.Set<StudySession>().SingleAsync(s => s.Id == sessionId);
+        session.DurationSeconds = ProgressService.DailyCapSeconds - 20;
+        session.LastActiveAt = DateTime.UtcNow.AddSeconds(-30);
+        await seeded.Db.SaveChangesAsync();
+
+        await service.HeartbeatAsync(sessionId!.Value, "s1");
+
+        var duration = (await seeded.Db.Set<StudySession>().SingleAsync(s => s.Id == sessionId)).DurationSeconds;
+        Assert.Equal(ProgressService.DailyCapSeconds, duration);
+    }
+
+    [Fact]
+    public async Task Duration_queries_aggregate_by_lesson_course_and_enrollment()
+    {
+        var seeded = SeedCourseWithTwoLessons();
+        var service = new ProgressService(seeded.Db);
+
+        seeded.Db.Set<StudySession>().AddRange(
+            new StudySession { UserId = "s1", CourseId = seeded.CourseId, LessonId = seeded.Lesson1Id, EnrollmentId = seeded.EnrollmentId, DurationSeconds = 60 },
+            new StudySession { UserId = "s1", CourseId = seeded.CourseId, LessonId = seeded.Lesson2Id, EnrollmentId = seeded.EnrollmentId, DurationSeconds = 120 },
+            new StudySession { UserId = "s1", CourseId = seeded.CourseId, LessonId = seeded.Lesson1Id, EnrollmentId = seeded.EnrollmentId, DurationSeconds = 90 });
+        await seeded.Db.SaveChangesAsync();
+
+        Assert.Equal(150, await service.GetLessonDurationAsync("s1", seeded.Lesson1Id));
+        Assert.Equal(270, await service.GetCourseDurationAsync("s1", seeded.CourseId));
+        Assert.Equal(270, (await service.GetDurationByEnrollmentAsync(new List<int> { seeded.EnrollmentId }))[seeded.EnrollmentId]);
+        Assert.Equal(0, await service.GetLessonDurationAsync("s1", seeded.Lesson2Id + 1));
+    }
+
+    [Fact]
+    public async Task GetDailyDurations_groups_by_utc_start_day()
+    {
+        var seeded = SeedCourseWithTwoLessons();
+        var service = new ProgressService(seeded.Db);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+
+        seeded.Db.Set<StudySession>().AddRange(
+            new StudySession { UserId = "s1", CourseId = seeded.CourseId, LessonId = seeded.Lesson1Id, StartedAt = DateTime.UtcNow, DurationSeconds = 60 },
+            new StudySession { UserId = "s1", CourseId = seeded.CourseId, LessonId = seeded.Lesson2Id, StartedAt = DateTime.UtcNow, DurationSeconds = 120 },
+            new StudySession { UserId = "s1", CourseId = seeded.CourseId, LessonId = seeded.Lesson1Id, StartedAt = DateTime.UtcNow.AddDays(-1), DurationSeconds = 90 });
+        await seeded.Db.SaveChangesAsync();
+
+        var daily = await service.GetDailyDurationsAsync("s1", today.AddDays(-7), today);
+
+        Assert.Equal(180, daily[today]);
+        Assert.Equal(90, daily[today.AddDays(-1)]);
+        Assert.False(daily.ContainsKey(today.AddDays(1)));
+    }
 }

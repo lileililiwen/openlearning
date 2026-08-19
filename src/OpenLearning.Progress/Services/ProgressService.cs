@@ -15,6 +15,14 @@ public sealed record ContinueLearningItem(
 
 public class ProgressService
 {
+    /// <summary>Maximum counted study time per user per day (4 hours).</summary>
+    public const int DailyCapSeconds = 4 * 60 * 60;
+
+    /// <summary>Client heartbeat interval; gaps above twice this count as idle.</summary>
+    public const int HeartbeatIntervalSeconds = 60;
+
+    public const int MaxIdleGapSeconds = 2 * HeartbeatIntervalSeconds;
+
     private readonly DbContext _db;
 
     public ProgressService(DbContext db)
@@ -310,5 +318,180 @@ public class ProgressService
         return (
             completedCounts.ToDictionary(c => c.EnrollmentId, c => c.Completed),
             lastAccess.ToDictionary(a => a.EnrollmentId, a => a.LastAccessedAt));
+    }
+
+    // ===== Study sessions =====
+
+    /// <summary>
+    /// Starts a study session for a lesson, ending any still-active session for
+    /// the same (user, lesson) first (multi-tab duplicate prevention). Returns
+    /// the new session id.
+    /// </summary>
+    public async Task<(int? SessionId, string? Error)> StartSessionAsync(
+        string userId, int courseId, int lessonId)
+    {
+        var lessonBelongsToCourse = await _db.Set<Lesson>()
+            .AnyAsync(l => l.Id == lessonId && l.Module!.CourseId == courseId);
+        if (!lessonBelongsToCourse)
+        {
+            return (null, "Lesson does not belong to this course.");
+        }
+
+        var now = DateTime.UtcNow;
+
+        // Close any session still active for the same (user, lesson).
+        var active = await _db.Set<StudySession>()
+            .Where(s => s.UserId == userId && s.CourseId == courseId && s.LessonId == lessonId && s.EndedAt == null)
+            .ToListAsync();
+        foreach (var activeSession in active)
+        {
+            await AccumulateAsync(activeSession, (int)(now - activeSession.LastActiveAt).TotalSeconds);
+            activeSession.EndedAt = now;
+        }
+
+        var enrollment = await GetEnrollmentAsync(userId, courseId);
+        if (enrollment is null)
+        {
+            return (null, "You must be enrolled in this course to track study time.");
+        }
+
+        var session = new StudySession
+        {
+            UserId = userId,
+            CourseId = courseId,
+            LessonId = lessonId,
+            EnrollmentId = enrollment?.Id,
+            StartedAt = now,
+            LastActiveAt = now,
+        };
+        _db.Set<StudySession>().Add(session);
+        await _db.SaveChangesAsync();
+        return (session.Id, null);
+    }
+
+    /// <summary>
+    /// Accumulates elapsed time since the last heartbeat. Gaps of two heartbeat
+    /// intervals or more are treated as idle and do not count. The counted time
+    /// is capped per user per day.
+    /// </summary>
+    public async Task<(bool Ok, string? Error)> HeartbeatAsync(int sessionId, string userId)
+    {
+        var session = await _db.Set<StudySession>()
+            .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId);
+        if (session is null)
+        {
+            return (false, "Session not found.");
+        }
+
+        if (session.EndedAt is not null)
+        {
+            return (false, "Session already ended.");
+        }
+
+        var elapsed = (int)(DateTime.UtcNow - session.LastActiveAt).TotalSeconds;
+        if (elapsed >= MaxIdleGapSeconds)
+        {
+            elapsed = 0; // idle gap excluded
+        }
+
+        await AccumulateAsync(session, elapsed);
+        await _db.SaveChangesAsync();
+        return (true, null);
+    }
+
+    /// <summary>Finalizes a session, accumulating any trailing time.</summary>
+    public async Task<(bool Ok, string? Error)> EndSessionAsync(int sessionId, string userId)
+    {
+        var session = await _db.Set<StudySession>()
+            .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId);
+        if (session is null)
+        {
+            return (false, "Session not found.");
+        }
+
+        if (session.EndedAt is not null)
+        {
+            return (true, null);
+        }
+
+        var now = DateTime.UtcNow;
+        var elapsed = (int)(now - session.LastActiveAt).TotalSeconds;
+        if (elapsed >= MaxIdleGapSeconds)
+        {
+            elapsed = 0;
+        }
+
+        await AccumulateAsync(session, elapsed);
+        session.EndedAt = now;
+        await _db.SaveChangesAsync();
+        return (true, null);
+    }
+
+    private async Task AccumulateAsync(StudySession session, int elapsed)
+    {
+        var now = DateTime.UtcNow;
+        if (elapsed > 0)
+        {
+            // Cap applies per user per UTC day, attributed to the session start day.
+            var dayStart = session.StartedAt.Date;
+            var dayTotal = await _db.Set<StudySession>()
+                .Where(s => s.UserId == session.UserId && s.StartedAt >= dayStart && s.StartedAt < dayStart.AddDays(1))
+                .SumAsync(s => s.DurationSeconds);
+            var remaining = Math.Max(0, DailyCapSeconds - dayTotal);
+            session.DurationSeconds += Math.Min(elapsed, remaining);
+        }
+
+        session.LastActiveAt = now;
+    }
+
+    /// <summary>Total counted seconds for one lesson.</summary>
+    public Task<int> GetLessonDurationAsync(string userId, int lessonId)
+    {
+        return _db.Set<StudySession>().AsNoTracking()
+            .Where(s => s.UserId == userId && s.LessonId == lessonId)
+            .SumAsync(s => s.DurationSeconds);
+    }
+
+    /// <summary>Total counted seconds for one course.</summary>
+    public Task<int> GetCourseDurationAsync(string userId, int courseId)
+    {
+        return _db.Set<StudySession>().AsNoTracking()
+            .Where(s => s.UserId == userId && s.CourseId == courseId)
+            .SumAsync(s => s.DurationSeconds);
+    }
+
+    /// <summary>
+    /// Total counted seconds per UTC day within [from, to], attributed to each
+    /// session's start day.
+    /// </summary>
+    public async Task<Dictionary<DateOnly, int>> GetDailyDurationsAsync(
+        string userId, DateOnly from, DateOnly to)
+    {
+        var fromUtc = from.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var toExclusive = to.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var rows = await _db.Set<StudySession>().AsNoTracking()
+            .Where(s => s.UserId == userId && s.StartedAt >= fromUtc && s.StartedAt < toExclusive)
+            .Select(s => new { s.StartedAt, s.DurationSeconds })
+            .ToListAsync();
+        return rows
+            .GroupBy(r => DateOnly.FromDateTime(r.StartedAt.Date))
+            .ToDictionary(g => g.Key, g => g.Sum(r => r.DurationSeconds));
+    }
+
+    /// <summary>Total counted seconds per enrollment (used by the teacher roster).</summary>
+    public async Task<Dictionary<int, int>> GetDurationByEnrollmentAsync(List<int> enrollmentIds)
+    {
+        if (enrollmentIds.Count == 0)
+        {
+            return new Dictionary<int, int>();
+        }
+
+        var rows = await _db.Set<StudySession>().AsNoTracking()
+            .Where(s => s.EnrollmentId != null && enrollmentIds.Contains(s.EnrollmentId.Value))
+            .Select(s => new { s.EnrollmentId, s.DurationSeconds })
+            .ToListAsync();
+        return rows
+            .GroupBy(r => r.EnrollmentId!.Value)
+            .ToDictionary(g => g.Key, g => g.Sum(r => r.DurationSeconds));
     }
 }
