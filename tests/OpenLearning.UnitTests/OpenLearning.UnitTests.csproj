@@ -49,6 +49,7 @@
     <ProjectReference Include="..\..\src\OpenLearning.Invoicing\OpenLearning.Invoicing.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.AsyncIO\OpenLearning.AsyncIO.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Jobs\OpenLearning.Jobs.csproj" />
+    <ProjectReference Include="..\..\src\OpenLearning.GradeExport\OpenLearning.GradeExport.csproj" />
   </ItemGroup>
 
 </Project>

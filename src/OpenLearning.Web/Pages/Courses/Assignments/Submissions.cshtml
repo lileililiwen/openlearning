@@ -20,8 +20,13 @@ else
 </nav>
 
 <div class="mb-4">
-    <h1 class="h3 mb-1">Submissions — @assignment.Title</h1>
-    <p class="text-muted mb-0">@Model.Submissions.Count submission@(Model.Submissions.Count == 1 ? "" : "s"), @Model.Ungraded ungraded.</p>
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            <h1 class="h3 mb-1">Submissions — @assignment.Title</h1>
+            <p class="text-muted mb-0">@Model.Submissions.Count submission@(Model.Submissions.Count == 1 ? "" : "s"), @Model.Ungraded ungraded.</p>
+        </div>
+        <a class="btn btn-outline-primary btn-sm" asp-page="/Courses/Assignments/Export" asp-route-courseId="@assignment.CourseId" asp-route-assignmentId="@assignment.Id">Export</a>
+    </div>
 </div>
 
 @if (TempData["Message"] is string message)

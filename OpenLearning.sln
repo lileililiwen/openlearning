@@ -79,6 +79,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.QuestionIO", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.StudentIO", "src\OpenLearning.StudentIO\OpenLearning.StudentIO.csproj", "{7FB9AA44-BA18-47C0-88CC-5D658B87A881}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.GradeExport", "src\OpenLearning.GradeExport\OpenLearning.GradeExport.csproj", "{C4F5E2A9-1B3D-4A7E-9C80-5D6B2A8E4F11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

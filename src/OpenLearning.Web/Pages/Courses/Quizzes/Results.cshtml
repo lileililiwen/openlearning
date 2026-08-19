@@ -10,7 +10,10 @@
         <h1 class="h3 mb-0">@quiz.Title — Results</h1>
         <p class="text-muted mb-0">@Model.Attempts.Count attempt(s)</p>
     </div>
-    <a class="btn btn-outline-primary" asp-page="/Courses/Quizzes/Edit" asp-route-id="@quiz.Id">Edit quiz</a>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-page="/Courses/Quizzes/ExportResults" asp-route-courseId="@quiz.CourseId" asp-route-quizId="@quiz.Id">Export</a>
+        <a class="btn btn-outline-primary" asp-page="/Courses/Quizzes/Edit" asp-route-id="@quiz.Id">Edit quiz</a>
+    </div>
 </div>
 
 @if (Model.Attempts.Count == 0)

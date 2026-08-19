@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OpenLearning.AsyncIO\OpenLearning.AsyncIO.csproj" />
+    <ProjectReference Include="..\OpenLearning.Assessments\OpenLearning.Assessments.csproj" />
+    <ProjectReference Include="..\OpenLearning.Assignments\OpenLearning.Assignments.csproj" />
+    <ProjectReference Include="..\OpenLearning.Auth\OpenLearning.Auth.csproj" />
+    <ProjectReference Include="..\OpenLearning.Certificates\OpenLearning.Certificates.csproj" />
+    <ProjectReference Include="..\OpenLearning.Classes\OpenLearning.Classes.csproj" />
+    <ProjectReference Include="..\OpenLearning.CourseManagement\OpenLearning.CourseManagement.csproj" />
+    <ProjectReference Include="..\OpenLearning.Enrollment\OpenLearning.Enrollment.csproj" />
+    <ProjectReference Include="..\OpenLearning.Exams\OpenLearning.Exams.csproj" />
+    <ProjectReference Include="..\OpenLearning.Jobs\OpenLearning.Jobs.csproj" />
+    <ProjectReference Include="..\OpenLearning.Logging\OpenLearning.Logging.csproj" />
+    <ProjectReference Include="..\OpenLearning.Progress\OpenLearning.Progress.csproj" />
+    <ProjectReference Include="..\OpenLearning.Storage\OpenLearning.Storage.csproj" />
+    <ProjectReference Include="..\OpenLearning.SystemConfig\OpenLearning.SystemConfig.csproj" />
+  </ItemGroup>
+</Project>

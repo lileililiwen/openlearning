@@ -9,7 +9,10 @@
         <h1 class="h3 mb-1">Roster — @Model.CourseTitle</h1>
         <p class="text-muted mb-0">Enrolled students and their progress.</p>
     </div>
-    <a class="btn btn-outline-primary" asp-page="/Courses/Edit" asp-route-id="@Model.CourseId">Back to course</a>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-page="/Courses/Roster/Export" asp-route-courseId="@Model.CourseId">Export</a>
+        <a class="btn btn-outline-primary" asp-page="/Courses/Edit" asp-route-id="@Model.CourseId">Back to course</a>
+    </div>
 </div>
 
 @if (TempData["Message"] is string message)

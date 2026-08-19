@@ -1,0 +1,47 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Roster.ExportModel
+@{
+    ViewData["Title"] = "导出学员花名册";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">导出学员花名册</h1>
+    <div>
+        <a class="btn btn-outline-secondary btn-sm" asp-page="/Courses/Roster/Index" asp-route-id="@Model.CourseId">返回学员管理</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-page="/GradeExport/Jobs">查看导出任务</a>
+    </div>
+</div>
+
+<p class="text-muted small">
+    课程：<strong>@Model.CourseTitle</strong>。导出每位学员的入学时间、最后学习时间、学习进度、总评成绩与证书编号。超过 1000 行时自动转为异步导出，完成后通过站内信通知。
+</p>
+
+@if (Model.JobId is not null)
+{
+    <div class="alert alert-success">
+        文件正在生成，完成后将通过站内信通知。
+        <a asp-page="/GradeExport/Jobs">查看导出任务</a>
+    </div>
+}
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white"><strong>按条件导出</strong></div>
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" name="CourseId" value="@Model.CourseId" />
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label" asp-for="From">开始日期</label>
+                    <input asp-for="From" type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" asp-for="To">结束日期</label>
+                    <input asp-for="To" type="date" class="form-control" />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">导出 Excel</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,66 @@
+@page
+@model OpenLearning.Web.Pages.GradeExport.JobsModel
+@{
+    ViewData["Title"] = "导出任务";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">导出任务</h1>
+</div>
+
+<p class="text-muted small">导出的 Excel 文件保留 7 天，之后下载链接将失效。</p>
+
+@if (Model.Jobs.Count == 0)
+{
+    <div class="alert alert-info">暂无导出任务。</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>类型</th>
+                        <th>状态</th>
+                        <th>行数</th>
+                        <th>创建时间</th>
+                        <th>完成时间</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var job in Model.Jobs)
+                    {
+                        <tr>
+                            <td>@OpenLearning.Web.Pages.GradeExport.JobsModel.KindLabel(job.Kind)</td>
+                            <td>
+                                @if (job.Status == OpenLearning.AsyncIO.Models.AsyncIOJobStatus.Success)
+                                {
+                                    <span class="badge bg-success">@OpenLearning.Web.Pages.GradeExport.JobsModel.StatusLabel(job.Status)</span>
+                                }
+                                else if (job.Status == OpenLearning.AsyncIO.Models.AsyncIOJobStatus.Failed)
+                                {
+                                    <span class="badge bg-danger" title="@job.ErrorMessage">@OpenLearning.Web.Pages.GradeExport.JobsModel.StatusLabel(job.Status)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@OpenLearning.Web.Pages.GradeExport.JobsModel.StatusLabel(job.Status)</span>
+                                }
+                            </td>
+                            <td>@job.RowCount</td>
+                            <td>@job.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@(job.FinishedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                            <td class="text-end">
+                                @if (job.Status == OpenLearning.AsyncIO.Models.AsyncIOJobStatus.Success && job.DownloadKey is not null)
+                                {
+                                    <a class="btn btn-sm btn-primary" href="/files/@job.DownloadKey">下载</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

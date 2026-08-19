@@ -19,6 +19,7 @@ using OpenLearning.Distribution;
 using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
 using OpenLearning.Exams;
+using OpenLearning.GradeExport;
 using OpenLearning.Invoicing;
 using OpenLearning.Jobs;
 using OpenLearning.Live;
@@ -154,13 +155,14 @@ builder.Services.AddJob<OpenLearning.AsyncIO.Jobs.AsyncIOJobDispatcher>();
 builder.Services.AddJob<OpenLearning.AsyncIO.Jobs.AsyncIOCleanupJob>();
 builder.Services.AddQuestionIOModule();
 builder.Services.AddStudentIOModule();
+builder.Services.AddGradeExportModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();
 // Scheduled business jobs (registered per the scheduled-business-jobs change).
 // Deferred until their dependency specs land: settlement.distributor-period-close
-// (affiliate-distribution), async-io.cleanup (async-io-jobs),
-// grade.export.cleanup (grade-export), analytics.daily/weekly-report.
+// (affiliate-distribution), analytics.daily/weekly-report.
+builder.Services.AddJob<OpenLearning.GradeExport.Jobs.GradeExportCleanupJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.OrderExpireUnpaidJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.RefundTimeoutCloseJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.EnrollmentExpiryRevokeJob>();

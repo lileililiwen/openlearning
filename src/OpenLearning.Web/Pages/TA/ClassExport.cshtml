@@ -1,0 +1,41 @@
+@page "/TA/Class/{classId}/Export"
+@model OpenLearning.Web.Pages.TA.ClassExportModel
+@{
+    ViewData["Title"] = "导出班级花名册";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">导出班级花名册</h1>
+    <div>
+        <a class="btn btn-outline-secondary btn-sm" asp-page="/TA/Roster" asp-route-classId="@Model.ClassId">返回班级花名册</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-page="/GradeExport/Jobs">查看导出任务</a>
+    </div>
+</div>
+
+@if (Model.ClassGroup is not null)
+{
+    <p class="text-muted small">
+        班级：<strong>@Model.ClassGroup.Name</strong>。仅包含本班学员。超过 1000 行时自动转为异步导出，完成后通过站内信通知。
+    </p>
+}
+
+@if (Model.JobId is not null)
+{
+    <div class="alert alert-success">
+        文件正在生成，完成后将通过站内信通知。
+        <a asp-page="/GradeExport/Jobs">查看导出任务</a>
+    </div>
+}
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white"><strong>导出班级花名册</strong></div>
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" name="ClassId" value="@Model.ClassId" />
+            <p class="text-muted">导出本班全部学员（学生邮箱、姓名、入学时间、最后学习时间、学习进度、总评成绩、证书编号）。</p>
+            <button type="submit" class="btn btn-primary">导出 Excel</button>
+        </form>
+    </div>
+</div>

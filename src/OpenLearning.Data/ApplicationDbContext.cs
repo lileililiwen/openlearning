@@ -11,6 +11,7 @@ using OpenLearning.CourseManagement.Models;
 using OpenLearning.Distribution.Models;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Exams.Models;
+using OpenLearning.GradeExport.Models;
 using OpenLearning.Invoicing.Models;
 using OpenLearning.Jobs.Models;
 using OpenLearning.Live.Models;
@@ -161,6 +162,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<StudentImportRowError> StudentImportRowErrors => Set<StudentImportRowError>();
 
+    public DbSet<GradeExportJob> GradeExportJobs => Set<GradeExportJob>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -199,5 +202,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(AsyncIOJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(QuestionImportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(StudentImportJob).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(GradeExportJob).Assembly);
     }
 }

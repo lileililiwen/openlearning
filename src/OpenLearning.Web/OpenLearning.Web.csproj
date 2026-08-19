@@ -47,6 +47,7 @@
     <ProjectReference Include="..\OpenLearning.Live\OpenLearning.Live.csproj" />
     <ProjectReference Include="..\OpenLearning.QuestionIO\OpenLearning.QuestionIO.csproj" />
     <ProjectReference Include="..\OpenLearning.StudentIO\OpenLearning.StudentIO.csproj" />
+    <ProjectReference Include="..\OpenLearning.GradeExport\OpenLearning.GradeExport.csproj" />
     <ProjectReference Include="..\OpenLearning.Jobs\OpenLearning.Jobs.csproj" />
   </ItemGroup>
 

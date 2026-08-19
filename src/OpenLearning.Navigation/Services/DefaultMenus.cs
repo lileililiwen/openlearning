@@ -30,6 +30,7 @@ public static class DefaultMenus
         var group = new MenuGroup { Key = "ta.workbench", Label = "助教工作台", SortOrder = 25, IconKey = "bi-person-video3", AllowedRoles = Roles.TeachingAssistant };
         group.Items.Add(new MenuItem { Key = "ta-index", GroupKey = group.Key, Label = "我的班级", Route = "/TA/Index", SortOrder = 1, IconKey = "bi-people", AllowedRoles = Roles.TeachingAssistant });
         group.Items.Add(new MenuItem { Key = "ta-reminders", GroupKey = group.Key, Label = "班级提醒", Route = "/TA/Reminders", SortOrder = 2, IconKey = "bi-bell", AllowedRoles = Roles.TeachingAssistant });
+        group.Items.Add(new MenuItem { Key = "ta-exports", GroupKey = group.Key, Label = "导出任务", Route = "/GradeExport/Jobs", SortOrder = 3, IconKey = "bi-file-earmark-arrow-down", AllowedRoles = Roles.TeachingAssistant });
         return group;
     }
 
@@ -74,6 +75,7 @@ public static class DefaultMenus
         group.Items.Add(new MenuItem { Key = "manage-courses", GroupKey = group.Key, Label = "我的课程", Route = "/Courses/Manage", SortOrder = 1, IconKey = "bi-collection", AllowedRoles = Roles.Instructor });
         group.Items.Add(new MenuItem { Key = "new-course", GroupKey = group.Key, Label = "创建课程", Route = "/Courses/Create", SortOrder = 2, IconKey = "bi-plus-circle", AllowedRoles = Roles.Instructor });
         group.Items.Add(new MenuItem { Key = "roster", GroupKey = group.Key, Label = "学员管理", Route = "/Courses/Roster", SortOrder = 3, IconKey = "bi-people", AllowedRoles = Roles.Instructor });
+        group.Items.Add(new MenuItem { Key = "grade-exports", GroupKey = group.Key, Label = "导出任务", Route = "/GradeExport/Jobs", SortOrder = 4, IconKey = "bi-file-earmark-arrow-down", AllowedRoles = Roles.Instructor });
         return group;
     }
 
