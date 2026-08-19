@@ -72,7 +72,10 @@
 <div class="card shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <strong>Questions (@exam.Questions.Count)</strong>
-        <a class="btn btn-sm btn-primary" asp-page="/Courses/Exams/Questions/Create" asp-route-examId="@exam.Id">Add question</a>
+        <span class="d-inline-flex gap-2">
+            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Exams/ImportFromBank" asp-route-examId="@exam.Id">从题库导入</a>
+            <a class="btn btn-sm btn-primary" asp-page="/Courses/Exams/Questions/Create" asp-route-examId="@exam.Id">Add question</a>
+        </span>
     </div>
     <ul class="list-group list-group-flush">
         @if (exam.Questions.Count == 0)

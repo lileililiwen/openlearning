@@ -404,6 +404,53 @@ public class ExamService
         return (attempt.Id, null);
     }
 
+    /// <summary>Copies a question from the central bank into this exam (snapshot).</summary>
+    public async Task<(bool Ok, string? Error)> ImportFromBankAsync(int bankQuestionId, int examId, string ownerId)
+    {
+        var exam = await _db.Set<Exam>()
+            .Include(e => e.Course)
+            .FirstOrDefaultAsync(e => e.Id == examId);
+        if (exam?.Course is null || exam.Course.InstructorId != ownerId)
+        {
+            return (false, "You do not own this course.");
+        }
+
+        var source = await _db.Set<Question>().AsNoTracking()
+            .Include(q => q.AnswerOptions)
+            .FirstOrDefaultAsync(q => q.Id == bankQuestionId && q.IsBank && q.ArchivedAt == null);
+        if (source is null)
+        {
+            return (false, "Bank question not found.");
+        }
+
+        var nextOrder = await _db.Set<Question>()
+            .Where(q => q.ExamId == examId)
+            .Select(q => (int?)q.OrderIndex)
+            .MaxAsync() ?? 0;
+
+        var copy = new Question
+        {
+            ExamId = examId,
+            Text = source.Text,
+            QuestionType = source.QuestionType,
+            Points = source.Points,
+            OrderIndex = nextOrder + 1,
+        };
+        foreach (var option in source.AnswerOptions.OrderBy(o => o.OrderIndex))
+        {
+            copy.AnswerOptions.Add(new AnswerOption
+            {
+                Text = option.Text,
+                IsCorrect = option.IsCorrect,
+                OrderIndex = option.OrderIndex,
+            });
+        }
+
+        _db.Set<Question>().Add(copy);
+        await _db.SaveChangesAsync();
+        return (true, null);
+    }
+
     // ===== Results & grading =====
 
     public Task<ExamAttempt?> GetAttemptAsync(int attemptId, string viewerId)

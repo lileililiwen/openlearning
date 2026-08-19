@@ -20,5 +20,14 @@ public class Question
 
     public int Points { get; set; } = 1;
 
+    /// <summary>True for rows in the central question bank (no quiz/exam association).</summary>
+    public bool IsBank { get; set; }
+
+    /// <summary>Free-form topic/tag for bank questions.</summary>
+    public string? BankTopic { get; set; }
+
+    /// <summary>Set when an admin archives a bank question (hidden from import/search).</summary>
+    public DateTime? ArchivedAt { get; set; }
+
     public ICollection<AnswerOption> AnswerOptions { get; set; } = new List<AnswerOption>();
 }

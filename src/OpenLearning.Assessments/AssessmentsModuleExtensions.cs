@@ -10,6 +10,7 @@ public static class AssessmentsModuleExtensions
         services.AddScoped<QuizService>();
         services.AddScoped<QuestionService>();
         services.AddScoped<AttemptService>();
+        services.AddScoped<QuestionBankService>();
         return services;
     }
 }

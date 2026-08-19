@@ -1,0 +1,108 @@
+@page
+@model OpenLearning.Web.Pages.Admin.QuestionBank.CreateModel
+@{
+    ViewData["Title"] = "新增题库题目";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1 class="h3 mb-4">新增题库题目</h1>
+
+        <form method="post" class="card shadow-sm">
+            <div class="card-body p-4">
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.BankTopic" class="form-label">主题/标签</label>
+                    <input asp-for="Input.BankTopic" class="form-control" placeholder="如：C# 基础" />
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Input.Text" class="form-label">题干</label>
+                    <input asp-for="Input.Text" class="form-control" autofocus />
+                    <span asp-validation-for="Input.Text" class="text-danger small"></span>
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="Input.QuestionType" class="form-label">题型</label>
+                        <select asp-for="Input.QuestionType" class="form-select" id="question-type">
+                            @foreach (var type in Enum.GetValues<OpenLearning.Assessments.Models.QuestionType>())
+                            {
+                                <option value="@((int)type)">@type.ToString()</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="Input.Points" class="form-label">分值</label>
+                        <input asp-for="Input.Points" type="number" min="1" max="100" class="form-control" style="max-width: 120px" />
+                        <span asp-validation-for="Input.Points" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div id="options-section">
+                    <p class="form-label mb-2">
+                        答案选项
+                        <span class="text-muted small" id="options-hint">(2-4 个选项，标记一个为正确答案)</span>
+                    </p>
+                    @for (var i = 0; i < Model.Input.Options.Count; i++)
+                    {
+                        <div class="row g-2 align-items-center mb-2">
+                            <div class="col-auto">
+                                <input type="radio" class="form-check-input correct-marker correct-radio" name="Input.CorrectIndex" value="@i"
+                                       id="correct-@i" @(Model.Input.CorrectIndex == i ? "checked" : "") />
+                                <input type="checkbox" class="form-check-input correct-marker correct-checkbox" name="Input.CorrectIndexes" value="@i"
+                                       id="correctcb-@i" @(Model.Input.CorrectIndexes.Contains(i) ? "checked" : "") />
+                            </div>
+                            <div class="col-1">
+                                <label class="col-form-label small text-muted correct-label" for="correct-@i">正确</label>
+                            </div>
+                            <div class="col">
+                                <input asp-for="Input.Options[i]" class="form-control" placeholder="选项 @(i + 1)" />
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div id="no-options-hint" class="alert alert-secondary mb-0" style="display: none">
+                    <i>该题型不使用答案选项，学员以自由文本或文件作答。</i>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary">保存到题库</button>
+                    <a class="btn btn-outline-secondary" asp-page="/Admin/QuestionBank/Index">取消</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const select = document.getElementById('question-type');
+            const optionsSection = document.getElementById('options-section');
+            const noOptionsHint = document.getElementById('no-options-hint');
+            const hint = document.getElementById('options-hint');
+            const radios = document.querySelectorAll('.correct-radio');
+            const checkboxes = document.querySelectorAll('.correct-checkbox');
+            const labels = document.querySelectorAll('.correct-label');
+            const map = { '0': 'single', '1': 'multiple', '2': 'single', '3': 'fill', '4': 'none', '5': 'none' };
+            function apply() {
+                const mode = map[select.value] || 'single';
+                const hasOptions = mode !== 'none';
+                optionsSection.style.display = hasOptions ? '' : 'none';
+                noOptionsHint.style.display = hasOptions ? 'none' : '';
+                hint.textContent = mode === 'multiple'
+                    ? '(2-4 个选项，选择一个或多个正确答案)'
+                    : mode === 'fill'
+                        ? '(每个选项都是一个可接受答案)'
+                        : '(2-4 个选项，标记一个为正确答案)';
+                radios.forEach(r => r.style.display = mode === 'single' ? '' : 'none');
+                checkboxes.forEach(c => c.style.display = (mode === 'multiple' || mode === 'fill') ? '' : 'none');
+                labels.forEach(l => l.style.display = mode === 'single' || mode === 'multiple' ? '' : 'none');
+            }
+            select.addEventListener('change', apply);
+            apply();
+        })();
+    </script>
+}

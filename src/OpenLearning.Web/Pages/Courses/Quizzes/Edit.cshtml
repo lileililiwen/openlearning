@@ -33,7 +33,10 @@
 <div class="card shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <strong>Questions (@quiz.Questions.Count)</strong>
-        <a class="btn btn-sm btn-primary" asp-page="/Courses/Quizzes/Questions/Create" asp-route-quizId="@quiz.Id">Add question</a>
+        <span class="d-inline-flex gap-2">
+            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Quizzes/ImportFromBank" asp-route-quizId="@quiz.Id">从题库导入</a>
+            <a class="btn btn-sm btn-primary" asp-page="/Courses/Quizzes/Questions/Create" asp-route-quizId="@quiz.Id">Add question</a>
+        </span>
     </div>
     <ul class="list-group list-group-flush">
         @if (quiz.Questions.Count == 0)
