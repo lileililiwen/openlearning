@@ -9,7 +9,10 @@
         <h1 class="h3 mb-1">Coupons</h1>
         <p class="text-muted mb-0">Discount codes students can apply at checkout.</p>
     </div>
-    <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Admin home</a>
+    <span class="d-inline-flex gap-2">
+        <a class="btn btn-outline-primary" asp-page="/Admin/Coupons/Import">Bulk import</a>
+        <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Admin home</a>
+    </span>
 </div>
 
 @if (TempData["Message"] is string message)

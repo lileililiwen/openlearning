@@ -1,0 +1,65 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Coupons.ImportJobsModel
+@{
+    ViewData["Title"] = "优惠券导入任务";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">优惠券导入任务</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-page="/Admin/Coupons/Import">返回批量导入</a>
+</div>
+
+@if (Model.Jobs.Count == 0)
+{
+    <div class="alert alert-info">暂无导入任务。</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>状态</th>
+                        <th>总行数</th>
+                        <th>成功</th>
+                        <th>失败</th>
+                        <th>创建时间</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var job in Model.Jobs)
+                    {
+                        <tr>
+                            <td>
+                                @if (job.Status == OpenLearning.CouponIO.Models.CouponImportJobStatus.Success)
+                                {
+                                    <span class="badge bg-success">@OpenLearning.Web.Pages.Admin.Coupons.ImportJobsModel.StatusLabel(job.Status)</span>
+                                }
+                                else if (job.Status == OpenLearning.CouponIO.Models.CouponImportJobStatus.Failed)
+                                {
+                                    <span class="badge bg-danger">@OpenLearning.Web.Pages.Admin.Coupons.ImportJobsModel.StatusLabel(job.Status)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@OpenLearning.Web.Pages.Admin.Coupons.ImportJobsModel.StatusLabel(job.Status)</span>
+                                }
+                            </td>
+                            <td>@job.TotalRows</td>
+                            <td>@job.SuccessRows</td>
+                            <td>@job.ErrorRows</td>
+                            <td>@job.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="text-end">
+                                @if (job.ErrorFileKey is not null)
+                                {
+                                    <a class="btn btn-sm btn-outline-danger" href="/files/@job.ErrorFileKey">错误文件</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

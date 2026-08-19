@@ -50,6 +50,7 @@ public sealed class ModuleArchitectureTests
         "OpenLearning.StudentIO",
         "OpenLearning.GradeExport",
         "OpenLearning.CourseOutlineIO",
+        "OpenLearning.CouponIO",
         "OpenLearning.Exams",
         "OpenLearning.Navigation",
         "OpenLearning.Classes",
@@ -127,6 +128,15 @@ public sealed class ModuleArchitectureTests
                 "OpenLearning.AsyncIO",
                 "OpenLearning.Auth",
                 "OpenLearning.CourseManagement",
+                "OpenLearning.Logging",
+                "OpenLearning.Storage",
+                "OpenLearning.SystemConfig",
+            },
+            ["OpenLearning.CouponIO"] = new[]
+            {
+                "OpenLearning.AsyncIO",
+                "OpenLearning.Auth",
+                "OpenLearning.Ecommerce",
                 "OpenLearning.Logging",
                 "OpenLearning.Storage",
                 "OpenLearning.SystemConfig",

@@ -13,6 +13,7 @@ using OpenLearning.Chat;
 using OpenLearning.Chat.Hubs;
 using OpenLearning.Classes;
 using OpenLearning.Community;
+using OpenLearning.CouponIO;
 using OpenLearning.CourseManagement;
 using OpenLearning.CourseOutlineIO;
 using OpenLearning.Data;
@@ -158,6 +159,7 @@ builder.Services.AddQuestionIOModule();
 builder.Services.AddStudentIOModule();
 builder.Services.AddGradeExportModule();
 builder.Services.AddCourseOutlineIOModule();
+builder.Services.AddCouponIOModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();

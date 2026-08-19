@@ -1,0 +1,79 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Coupons.ImportModel
+@{
+    ViewData["Title"] = "批量导入优惠券";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">批量导入优惠券</h1>
+    <div>
+        <a class="btn btn-outline-secondary btn-sm" asp-page="/Admin/Coupons">返回优惠券管理</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-page="/Admin/Coupons/ImportJobs">导入任务</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-page="/Admin/Coupons/Template">下载模板</a>
+    </div>
+</div>
+
+<p class="text-muted small">
+    一次上传即可创建多条优惠券（仅新增，不修改既有代码）。代码全局唯一，重复或已存在的代码会按行报错。超过 200 行时自动转为异步导入，完成后通过站内信通知。每位管理员每小时最多导入 5 次。
+</p>
+
+@if (Model.Outcome is not null)
+{
+    @if (Model.Outcome.Kind == OpenLearning.CouponIO.Services.CouponImportOutcomeKind.Error)
+    {
+        <div class="alert alert-danger">@Model.Outcome.Message</div>
+    }
+    else if (Model.Outcome.Kind == OpenLearning.CouponIO.Services.CouponImportOutcomeKind.RateLimited)
+    {
+        <div class="alert alert-warning">@Model.Outcome.Message</div>
+    }
+    else if (Model.Outcome.Kind == OpenLearning.CouponIO.Services.CouponImportOutcomeKind.Submitted)
+    {
+        <div class="alert alert-success">
+            任务已提交，完成后将通过站内信通知。
+            <a asp-page="/Admin/Coupons/ImportJobs">查看导入任务</a>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-@(Model.Outcome.Errors.Count == 0 ? "success" : "warning")">
+            导入完成：共 @Model.Outcome.TotalRows 行，成功 @Model.Outcome.SuccessRows 行，失败 @Model.Outcome.Errors.Count 行。
+        </div>
+        @if (Model.Outcome.Errors.Count > 0)
+        {
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white"><strong>错误明细</strong></div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr><th>行号</th><th>字段</th><th>原因</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var error in Model.Outcome.Errors)
+                            {
+                                <tr><td>@error.RowIndex</td><td>@error.Field</td><td>@error.Message</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white"><strong>上传优惠券文件</strong></div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label" asp-for="UploadFile">Excel 文件（.xlsx，≤5MB）</label>
+                <input asp-for="UploadFile" type="file" class="form-control" accept=".xlsx" />
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="ForceAsync" id="force-async" value="true" />
+                <label class="form-check-label" for="force-async">强制异步导入（小文件也作为后台任务）</label>
+            </div>
+            <button type="submit" class="btn btn-primary">上传并导入</button>
+        </form>
+    </div>
+</div>

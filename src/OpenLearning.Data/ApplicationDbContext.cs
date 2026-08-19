@@ -7,6 +7,7 @@ using OpenLearning.Auth.Models;
 using OpenLearning.Certificates.Models;
 using OpenLearning.Chat.Models;
 using OpenLearning.Classes.Models;
+using OpenLearning.CouponIO.Models;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseOutlineIO.Models;
 using OpenLearning.Distribution.Models;
@@ -169,6 +170,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<OutlineRowError> OutlineRowErrors => Set<OutlineRowError>();
 
+    public DbSet<CouponImportJob> CouponImportJobs => Set<CouponImportJob>();
+
+    public DbSet<CouponImportRowError> CouponImportRowErrors => Set<CouponImportRowError>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -209,5 +214,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(StudentImportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(GradeExportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(OutlineImportJob).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(CouponImportJob).Assembly);
     }
 }
