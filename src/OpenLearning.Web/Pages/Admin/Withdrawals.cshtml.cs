@@ -12,7 +12,7 @@ using OpenLearning.Settlement.Services;
 
 namespace OpenLearning.Web.Pages.Admin;
 
-[Authorize(Policy = Policies.RequireAdmin)]
+[Authorize(Policy = Policies.RequireFinanceOrAdmin)]
 public class WithdrawalsModel : PageModel
 {
     private readonly SettlementService _settlement;

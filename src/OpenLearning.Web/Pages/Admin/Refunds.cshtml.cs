@@ -10,7 +10,7 @@ using OpenLearning.Settlement.Services;
 
 namespace OpenLearning.Web.Pages.Admin;
 
-[Authorize(Policy = Policies.RequireAdmin)]
+[Authorize(Policy = Policies.RequireFinanceOrAdmin)]
 public class RefundsModel : PageModel
 {
     private readonly OrderService _orders;

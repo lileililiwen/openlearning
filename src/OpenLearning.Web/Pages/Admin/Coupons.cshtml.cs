@@ -7,7 +7,7 @@ using OpenLearning.Ecommerce.Services;
 
 namespace OpenLearning.Web.Pages.Admin;
 
-[Authorize(Policy = Policies.RequireAdmin)]
+[Authorize(Policy = Policies.RequireFinanceOrAdmin)]
 public class CouponsModel : PageModel
 {
     private readonly CouponService _coupons;

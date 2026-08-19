@@ -18,7 +18,7 @@ public static class DbSeeder
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
-        foreach (var role in new[] { Roles.Admin, Roles.Instructor, Roles.Student })
+        foreach (var role in new[] { Roles.Admin, Roles.Instructor, Roles.Student, Roles.Finance, Roles.TeachingAssistant })
         {
             if (!await roleManager.RoleExistsAsync(role))
             {

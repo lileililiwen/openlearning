@@ -50,6 +50,15 @@ public static class AuthModuleExtensions
             options.AddPolicy(Policies.AdminMenuConfig, p => p
                 .RequireRole(Roles.Admin)
                 .AddRequirements(new NotSuspendedRequirement()));
+            options.AddPolicy(Policies.RequireFinance, p => p
+                .RequireRole(Roles.Finance)
+                .AddRequirements(new NotSuspendedRequirement()));
+            options.AddPolicy(Policies.RequireTeachingAssistant, p => p
+                .RequireRole(Roles.TeachingAssistant)
+                .AddRequirements(new NotSuspendedRequirement()));
+            options.AddPolicy(Policies.RequireFinanceOrAdmin, p => p
+                .RequireRole(Roles.Finance, Roles.Admin)
+                .AddRequirements(new NotSuspendedRequirement()));
         });
 
         services.AddScoped<AccountService>();
@@ -57,6 +66,7 @@ public static class AuthModuleExtensions
         services.AddScoped<UserService>();
         services.AddScoped<IdentityService>();
         services.AddScoped<PhoneCodeService>();
+        services.AddScoped<IClassAssignmentLookup, NullClassAssignmentLookup>();
         return services;
     }
 }

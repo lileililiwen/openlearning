@@ -1,0 +1,32 @@
+@page
+@model OpenLearning.Web.Pages.TA.IndexModel
+@{
+    ViewData["Title"] = "助教工作台";
+}
+
+<h1 class="h3 mb-4">助教工作台</h1>
+
+@if (Model.ClassIds.Count == 0)
+{
+    <div class="alert alert-info">
+        您尚未被分配任何班级。请联系管理员分配班级后再查看。
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-header bg-white"><strong>我的班级 (@Model.ClassIds.Count)</strong></div>
+        <ul class="list-group list-group-flush">
+            @foreach (var classId in Model.ClassIds)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>班级 #@classId</span>
+                    <span class="d-inline-flex gap-2">
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="/TA/Roster" asp-route-classId="@classId">花名册</a>
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="/TA/Reminders" asp-route-classId="@classId">提醒</a>
+                    </span>
+                </li>
+            }
+        </ul>
+    </div>
+}

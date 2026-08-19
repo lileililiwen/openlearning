@@ -13,12 +13,33 @@ public static class DefaultMenus
         tree.Groups.Add(StudentCourses());
         tree.Groups.Add(InstructorGroups());
         tree.Groups.Add(InstructorCourses());
+        tree.Groups.Add(TaGroups());
+        tree.Groups.Add(FinanceGroups());
         tree.Groups.Add(AdminGroups());
         tree.Groups.Add(AdminUsers());
         tree.Groups.Add(AdminCourses());
         tree.Groups.Add(AdminOps());
         tree.Groups.Add(AdminSystem());
         return tree;
+    }
+
+    private static MenuGroup TaGroups()
+    {
+        var group = new MenuGroup { Key = "ta.workbench", Label = "助教工作台", SortOrder = 25, IconKey = "bi-person-video3", AllowedRoles = Roles.TeachingAssistant };
+        group.Items.Add(new MenuItem { Key = "ta-index", GroupKey = group.Key, Label = "我的班级", Route = "/TA/Index", SortOrder = 1, IconKey = "bi-people", AllowedRoles = Roles.TeachingAssistant });
+        group.Items.Add(new MenuItem { Key = "ta-reminders", GroupKey = group.Key, Label = "班级提醒", Route = "/TA/Reminders", SortOrder = 2, IconKey = "bi-bell", AllowedRoles = Roles.TeachingAssistant });
+        return group;
+    }
+
+    private static MenuGroup FinanceGroups()
+    {
+        var group = new MenuGroup { Key = "finance.workbench", Label = "财务工作台", SortOrder = 45, IconKey = "bi-cash-stack", AllowedRoles = Roles.Finance };
+        group.Items.Add(new MenuItem { Key = "finance-orders", GroupKey = group.Key, Label = "订单管理", Route = "/Admin/Orders", SortOrder = 1, IconKey = "bi-receipt", AllowedRoles = Roles.Finance });
+        group.Items.Add(new MenuItem { Key = "finance-refunds", GroupKey = group.Key, Label = "退款审核", Route = "/Admin/Refunds", SortOrder = 2, IconKey = "bi-arrow-counterclockwise", AllowedRoles = Roles.Finance });
+        group.Items.Add(new MenuItem { Key = "finance-reconciliation", GroupKey = group.Key, Label = "对账报表", Route = "/Admin/Reconciliation", SortOrder = 3, IconKey = "bi-calculator", AllowedRoles = Roles.Finance });
+        group.Items.Add(new MenuItem { Key = "finance-withdrawals", GroupKey = group.Key, Label = "提现审核", Route = "/Admin/Withdrawals", SortOrder = 4, IconKey = "bi-cash-coin", AllowedRoles = Roles.Finance });
+        group.Items.Add(new MenuItem { Key = "finance-coupons", GroupKey = group.Key, Label = "优惠券", Route = "/Admin/Coupons", SortOrder = 5, IconKey = "bi-ticket-perforated", AllowedRoles = Roles.Finance });
+        return group;
     }
 
     private static MenuGroup StudentGroups()

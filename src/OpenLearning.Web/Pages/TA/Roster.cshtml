@@ -1,0 +1,13 @@
+@page
+@model OpenLearning.Web.Pages.TA.RosterModel
+@{
+    ViewData["Title"] = "班级花名册";
+}
+
+<h1 class="h3 mb-4">班级 #@Model.ClassId — 花名册</h1>
+
+<div class="alert alert-info">
+    班级花名册与学习进度由班级分组功能（class-groups）提供。该功能上线后，这里将展示分配到该班级的学员及其进度。
+</div>
+
+<a class="btn btn-outline-secondary" asp-page="/TA/Index">返回助教工作台</a>

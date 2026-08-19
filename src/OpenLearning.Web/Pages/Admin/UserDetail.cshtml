@@ -53,7 +53,7 @@
                     </form>
                 </div>
                 <hr />
-                @foreach (var role in new[] { Roles.Student, Roles.Instructor })
+                @foreach (var role in new[] { Roles.Student, Roles.Instructor, Roles.Finance, Roles.TeachingAssistant })
                 {
                     var hasRole = Model.Detail!.Roles.Contains(role);
                     <div class="d-flex justify-content-between align-items-center py-1">

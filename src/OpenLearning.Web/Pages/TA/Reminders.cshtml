@@ -1,0 +1,13 @@
+@page
+@model OpenLearning.Web.Pages.TA.RemindersModel
+@{
+    ViewData["Title"] = "班级提醒";
+}
+
+<h1 class="h3 mb-4">班级 #@Model.ClassId — 发送提醒</h1>
+
+<div class="alert alert-info">
+    班级提醒由班级分组功能（class-groups）提供。该功能上线后，这里将允许您向班级内选定的学员发送通知提醒。
+</div>
+
+<a class="btn btn-outline-secondary" asp-page="/TA/Index">返回助教工作台</a>

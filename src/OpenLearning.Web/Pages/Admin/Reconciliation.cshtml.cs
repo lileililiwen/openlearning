@@ -9,7 +9,7 @@ using OpenLearning.Web.Pages.Admin.Reports;
 
 namespace OpenLearning.Web.Pages.Admin;
 
-[Authorize(Policy = Policies.RequireAdmin)]
+[Authorize(Policy = Policies.RequireFinanceOrAdmin)]
 public class ReconciliationModel : PageModel
 {
     private readonly OrderService _orders;

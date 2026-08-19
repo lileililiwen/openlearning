@@ -89,9 +89,9 @@ public class UserManagementService
     /// <summary>Adds or removes a non-Admin role; takes effect on the next request.</summary>
     public async Task<(bool Ok, string? Error)> SetRoleAsync(string userId, string role, bool add)
     {
-        if (role != Roles.Student && role != Roles.Instructor)
+        if (role is not (Roles.Student or Roles.Instructor or Roles.Finance or Roles.TeachingAssistant))
         {
-            return (false, "Only the Student and Instructor roles can be changed.");
+            return (false, "That role cannot be changed here.");
         }
 
         var user = await _userManager.FindByIdAsync(userId);
