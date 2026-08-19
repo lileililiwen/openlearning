@@ -1,0 +1,106 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Assignments.DetailModel
+@{
+    ViewData["Title"] = Model.Assignment?.Title ?? "Assignment";
+    var assignment = Model.Assignment;
+    var submission = Model.Submission;
+}
+
+@if (assignment is null)
+{
+    <div class="alert alert-danger">Assignment not found.</div>
+}
+else
+{
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@assignment.CourseId">Course</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Assignments/Index" asp-route-courseId="@assignment.CourseId">Assignments</a></li>
+        <li class="breadcrumb-item active">@assignment.Title</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="h4 mb-1">@assignment.Title</h1>
+                <div class="text-muted small mb-3">
+                    Due: @(assignment.DueAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "No due date")
+                </div>
+                <div class="mb-4" style="white-space: pre-wrap">@assignment.Instructions</div>
+
+                @if (Model.IsOwner)
+                {
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-outline-primary" asp-page="/Courses/Assignments/Submissions" asp-route-id="@assignment.Id">View submissions</a>
+                        <a class="btn btn-outline-secondary" asp-page="/Courses/Assignments/Edit" asp-route-id="@assignment.Id">Edit</a>
+                    </div>
+                }
+                else if (Model.IsEnrolled)
+                {
+                    <form method="post" asp-page-handler="Submit" asp-route-id="@assignment.Id" enctype="multipart/form-data">
+                        @if (submission?.GradedAt is not null && !assignment.AllowResubmitAfterGrading)
+                        {
+                            <div class="alert alert-info">
+                                This assignment has been graded and resubmission is not allowed.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <label asp-for="Input.Text" class="form-label">Your answer</label>
+                                <textarea asp-for="Input.Text" class="form-control" rows="8"
+                                          placeholder="Write your submission here…">@submission?.Text</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Input.File" class="form-label">Attach a file (optional)</label>
+                                <input asp-for="Input.File" class="form-control" type="file" />
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                @(submission is null ? "Submit" : "Resubmit")
+                            </button>
+                        }
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (submission is not null)
+    {
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Your submission</h2>
+                    <p class="small text-muted mb-2">Submitted @submission.SubmittedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</p>
+                    @if (!string.IsNullOrWhiteSpace(submission.Text))
+                    {
+                        <div class="mb-3" style="white-space: pre-wrap">@submission.Text</div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(submission.FileUrl))
+                    {
+                        <p><a href="@submission.FileUrl" target="_blank" rel="noopener">View attached file</a></p>
+                    }
+                    @if (submission.GradedAt is not null)
+                    {
+                        <hr />
+                        <div class="mb-1"><strong>Score:</strong> @submission.Score/100</div>
+                        @if (!string.IsNullOrWhiteSpace(submission.Feedback))
+                        {
+                            <div class="mb-1"><strong>Feedback:</strong></div>
+                            <div style="white-space: pre-wrap">@submission.Feedback</div>
+                        }
+                        <div class="text-muted small mt-2">Graded @submission.GradedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning mb-0">Pending grading.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+}

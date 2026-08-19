@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assessments.Services;
+using OpenLearning.Assignments.Models;
+using OpenLearning.Assignments.Services;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
 using OpenLearning.Certificates.Models;
@@ -44,6 +46,7 @@ public class IndexModel : PageModel
     private readonly CertificateService _certificates;
     private readonly NotificationService _notifications;
     private readonly MembershipService _memberships;
+    private readonly AssignmentService _assignments;
     private readonly DbContext _db;
 
     public IndexModel(
@@ -55,6 +58,7 @@ public class IndexModel : PageModel
         CertificateService certificates,
         NotificationService notifications,
         MembershipService memberships,
+        AssignmentService assignments,
         DbContext db)
     {
         _enrollments = enrollments;
@@ -65,6 +69,7 @@ public class IndexModel : PageModel
         _certificates = certificates;
         _notifications = notifications;
         _memberships = memberships;
+        _assignments = assignments;
         _db = db;
     }
 
@@ -80,6 +85,9 @@ public class IndexModel : PageModel
 
     public Membership? ActiveMembership { get; set; }
 
+    /// <summary>Assignments for enrolled courses that are due but not yet graded/submitted.</summary>
+    public int AssignmentsDue { get; set; }
+
     public async Task OnGetAsync()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -87,6 +95,7 @@ public class IndexModel : PageModel
         DisplayName = user?.DisplayName ?? User.Identity?.Name ?? string.Empty;
 
         var enrollments = await _enrollments.GetStudentEnrollmentsAsync(userId);
+        await LoadAssignmentsDueAsync(userId, enrollments.Select(e => e.CourseId).ToList());
         var earnedCourseIds = await _certificates.GetEarnedCourseIdsAsync(userId);
         foreach (var enrollment in enrollments)
         {
@@ -137,6 +146,35 @@ public class IndexModel : PageModel
             .Distinct()
             .ToList();
         Recommendations = await _courses.GetRecommendationsAsync(categories, enrolledCourseIds, 6);
+    }
+
+    /// <summary>Counts assignments in enrolled courses that are due and not yet submitted.</summary>
+    private async Task LoadAssignmentsDueAsync(string userId, List<int> courseIds)
+    {
+        if (courseIds.Count == 0)
+        {
+            return;
+        }
+
+        var assignments = await _db.Set<Assignment>()
+            .Where(a => courseIds.Contains(a.CourseId))
+            .ToListAsync();
+        var due = new List<Assignment>();
+        foreach (var assignment in assignments)
+        {
+            if (assignment.DueAt is not null && assignment.DueAt < DateTime.UtcNow)
+            {
+                continue; // past due no longer counts as "due"
+            }
+
+            var submission = await _assignments.GetSubmissionAsync(assignment.Id, userId);
+            if (submission is null)
+            {
+                due.Add(assignment);
+            }
+        }
+
+        AssignmentsDue = due.Count;
     }
 
     /// <summary>

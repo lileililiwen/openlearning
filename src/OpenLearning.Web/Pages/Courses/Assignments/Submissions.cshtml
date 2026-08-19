@@ -1,0 +1,88 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Assignments.SubmissionsModel
+@{
+    ViewData["Title"] = "Submissions · " + (Model.Assignment?.Title ?? "");
+    var assignment = Model.Assignment;
+}
+
+@if (assignment is null)
+{
+    <div class="alert alert-danger">Assignment not found.</div>
+}
+else
+{
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@assignment.CourseId">Course</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Assignments/Index" asp-route-courseId="@assignment.CourseId">Assignments</a></li>
+        <li class="breadcrumb-item active">Submissions</li>
+    </ol>
+</nav>
+
+<div class="mb-4">
+    <h1 class="h3 mb-1">Submissions — @assignment.Title</h1>
+    <p class="text-muted mb-0">@Model.Submissions.Count submission@(Model.Submissions.Count == 1 ? "" : "s"), @Model.Ungraded ungraded.</p>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Submissions.Count == 0)
+{
+    <div class="alert alert-info">No submissions yet.</div>
+}
+else
+{
+    @foreach (var submission in Model.Submissions)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <strong>@(Model.StudentNames.GetValueOrDefault(submission.StudentId) ?? submission.StudentId)</strong>
+                        <div class="text-muted small">Submitted @submission.SubmittedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                    </div>
+                    @if (submission.GradedAt is not null)
+                    {
+                        <span class="badge bg-success">Graded: @submission.Score/100</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Ungraded</span>
+                    }
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(submission.Text))
+                {
+                    <div class="mb-2" style="white-space: pre-wrap">@submission.Text</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(submission.FileUrl))
+                {
+                    <p class="mb-2"><a href="@submission.FileUrl" target="_blank" rel="noopener">View attached file</a></p>
+                }
+
+                <form method="post" asp-page-handler="Grade" asp-route-submissionId="@submission.Id">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-auto">
+                            <input name="score" type="number" min="0" max="100" value="@submission.Score"
+                                   class="form-control form-control-sm" style="width: 90px" placeholder="Score" />
+                        </div>
+                        <div class="col">
+                            <input name="feedback" value="@submission.Feedback" class="form-control form-control-sm"
+                                   placeholder="Feedback" />
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-primary">@(submission.GradedAt is null ? "Grade" : "Update grade")</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+}
+}

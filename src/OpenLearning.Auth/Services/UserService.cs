@@ -18,6 +18,16 @@ public class UserService
         _db = db;
     }
 
+    /// <summary>Loads users by their ids (used to resolve submission student names).</summary>
+    public Task<List<ApplicationUser?>> GetByIdsAsync(IEnumerable<string> ids)
+    {
+        var idList = ids.ToList();
+        return _db.Set<ApplicationUser>().AsNoTracking()
+            .Where(u => idList.Contains(u.Id))
+            .Cast<ApplicationUser?>()
+            .ToListAsync();
+    }
+
     /// <summary>Signups per day in the range.</summary>
     public async Task<List<(DateTime Day, int Count)>> GetSignupsOverTimeAsync(DateTime? from, DateTime? to)
     {

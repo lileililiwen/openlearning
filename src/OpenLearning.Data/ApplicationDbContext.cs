@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assessments.Models;
+using OpenLearning.Assignments.Models;
 using OpenLearning.Auth.Models;
 using OpenLearning.Certificates.Models;
 using OpenLearning.Chat.Models;
@@ -103,6 +104,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<HomepageFeature> HomepageFeatures => Set<HomepageFeature>();
 
+    public DbSet<Assignment> Assignments => Set<Assignment>();
+
+    public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -127,5 +132,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Setting).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(MembershipPlan).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Banner).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Assignment).Assembly);
     }
 }

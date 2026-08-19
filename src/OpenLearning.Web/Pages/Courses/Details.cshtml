@@ -296,6 +296,7 @@
                         <div class="progress-bar" role="progressbar" style="width: @Model.ProgressPercent%"></div>
                     </div>
                     <a class="btn btn-primary w-100 mb-2" asp-page="/Courses/Details" asp-route-id="@course.Id">Continue learning</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Assignments/Index" asp-route-courseId="@course.Id">Assignments</a>
                     @if (Model.Certificate is not null)
                     {
                         <a class="btn btn-success w-100 mb-2" asp-page="/Certificates/View" asp-route-id="@Model.Certificate.Id">
@@ -336,6 +337,7 @@
                 {
                     <hr />
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Edit" asp-route-id="@course.Id">Edit course</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Assignments/Index" asp-route-courseId="@course.Id">Assignments</a>
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Reviews" asp-route-id="@course.Id">Reviews</a>
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Orders" asp-route-id="@course.Id">Orders</a>
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Chat" asp-route-id="@course.Id">Course chat</a>

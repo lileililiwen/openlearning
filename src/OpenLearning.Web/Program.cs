@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Assessments;
+using OpenLearning.Assignments;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
 using OpenLearning.Certificates;
@@ -116,6 +117,7 @@ builder.Services.AddStorageModule(
 builder.Services.AddLoggingModule(builder.Configuration.GetValue("Logging:RetentionDays", 90));
 builder.Services.AddMembershipsModule();
 builder.Services.AddOperationsModule();
+builder.Services.AddAssignmentsModule();
 // After AddNotificationsModule so the template renderer override wins.
 builder.Services.AddSystemConfigModule();
 builder.Services.AddSignalR();
