@@ -9,6 +9,10 @@ public class QuizAttemptAnswerConfiguration : IEntityTypeConfiguration<QuizAttem
     public void Configure(EntityTypeBuilder<QuizAttemptAnswer> builder)
     {
         builder.HasIndex(a => a.AttemptId);
+        builder.Property(a => a.SelectedOptionIds).HasMaxLength(200);
+        builder.Property(a => a.TextAnswer).HasMaxLength(2000);
+        builder.Property(a => a.FileAnswerUrl).HasMaxLength(1000);
+        builder.Property(a => a.GradingFeedback).HasMaxLength(2000);
         builder.HasOne(a => a.Attempt)
                .WithMany(a => a.Answers)
                .HasForeignKey(a => a.AttemptId)
@@ -20,6 +24,6 @@ public class QuizAttemptAnswerConfiguration : IEntityTypeConfiguration<QuizAttem
         builder.HasOne(a => a.AnswerOption)
                .WithMany()
                .HasForeignKey(a => a.AnswerOptionId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.SetNull);
     }
 }

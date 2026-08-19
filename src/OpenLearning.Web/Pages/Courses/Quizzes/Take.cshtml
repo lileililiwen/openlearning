@@ -41,7 +41,7 @@
 }
 else
 {
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         <input type="hidden" asp-for="QuizId" />
         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
@@ -53,15 +53,46 @@ else
                     <h5 class="card-title">
                         Question @index
                         <span class="badge bg-secondary">@question.Points pt</span>
+                        <span class="badge bg-light text-dark border">@question.QuestionType</span>
                     </h5>
                     <p class="mb-3">@question.Text</p>
-                    @foreach (var option in question.AnswerOptions.OrderBy(o => o.OrderIndex))
+
+                    @if (question.QuestionType is OpenLearning.Assessments.Models.QuestionType.SingleChoice or OpenLearning.Assessments.Models.QuestionType.TrueFalse)
                     {
-                        <div class="form-check mb-1">
-                            <input class="form-check-input" type="radio" name="Answers[@question.Id]"
-                                   value="@option.Id" id="q@(question.Id)-o@(option.Id)" required />
-                            <label class="form-check-label" for="q@(question.Id)-o@(option.Id)">@option.Text</label>
-                        </div>
+                        foreach (var option in question.AnswerOptions.OrderBy(o => o.OrderIndex))
+                        {
+                            <div class="form-check mb-1">
+                                <input class="form-check-input" type="radio" name="Answers[@question.Id]"
+                                       value="@option.Id" id="q@(question.Id)-o@(option.Id)" required />
+                                <label class="form-check-label" for="q@(question.Id)-o@(option.Id)">@option.Text</label>
+                            </div>
+                        }
+                    }
+                    else if (question.QuestionType == OpenLearning.Assessments.Models.QuestionType.MultipleChoice)
+                    {
+                        <p class="text-muted small">Select one or more answers.</p>
+                        foreach (var option in question.AnswerOptions.OrderBy(o => o.OrderIndex))
+                        {
+                            <div class="form-check mb-1">
+                                <input class="form-check-input" type="checkbox" name="Multiple[@question.Id]"
+                                       value="@option.Id" id="q@(question.Id)-o@(option.Id)" />
+                                <label class="form-check-label" for="q@(question.Id)-o@(option.Id)">@option.Text</label>
+                            </div>
+                        }
+                    }
+                    else if (question.QuestionType == OpenLearning.Assessments.Models.QuestionType.FillBlank)
+                    {
+                        <input class="form-control" type="text" name="TextAnswers[@question.Id]"
+                               placeholder="Type your answer" required />
+                    }
+                    else if (question.QuestionType == OpenLearning.Assessments.Models.QuestionType.ShortAnswer)
+                    {
+                        <textarea class="form-control" name="TextAnswers[@question.Id]" rows="4"
+                                  placeholder="Write your answer" required></textarea>
+                    }
+                    else if (question.QuestionType == OpenLearning.Assessments.Models.QuestionType.FileUpload)
+                    {
+                        <input class="form-control" type="file" name="Files[@question.Id]" required />
                     }
                 </div>
             </div>

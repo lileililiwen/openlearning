@@ -6,6 +6,7 @@
     var quiz = attempt.Quiz!;
     var answers = attempt.Answers.OrderBy(a => a.Question!.OrderIndex).ToList();
     var correctCount = answers.Count(a => a.IsCorrect);
+    var pendingCount = answers.Count(a => a.Question!.QuestionType is OpenLearning.Assessments.Models.QuestionType.ShortAnswer or OpenLearning.Assessments.Models.QuestionType.FileUpload && !a.IsGraded);
 }
 
 <nav aria-label="breadcrumb">
@@ -17,6 +18,14 @@
         <li class="breadcrumb-item active" aria-current="page">@quiz.Title</li>
     </ol>
 </nav>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">
@@ -31,9 +40,19 @@
             }
             else if (attempt.MaxScore > 0)
             {
-                <span class="badge bg-primary fs-6">@correctCount of @answers.Count correct</span>
+                <span class="badge bg-primary fs-6">@correctCount of @answers.Count objective correct</span>
+            }
+            @if (pendingCount > 0)
+            {
+                <span class="badge bg-warning text-dark fs-6 ms-1">@pendingCount awaiting grading</span>
             }
         </div>
+        @if (pendingCount > 0)
+        {
+            <p class="text-muted small mb-2">
+                Manual questions are excluded from the score until graded. Grading a manual question adds it to the total.
+            </p>
+        }
         <div class="progress progress-thin">
             <div class="progress-bar" role="progressbar"
                  style="width: @(attempt.MaxScore > 0 ? (int)Math.Round(attempt.Score * 100.0 / attempt.MaxScore) : 0)%"></div>
@@ -44,39 +63,139 @@
 @foreach (var answer in answers)
 {
     var question = answer.Question!;
-    var selectedOption = question.AnswerOptions.FirstOrDefault(o => o.Id == answer.AnswerOptionId);
-    var correctOption = question.AnswerOptions.FirstOrDefault(o => o.IsCorrect);
+    var isManual = question.QuestionType is OpenLearning.Assessments.Models.QuestionType.ShortAnswer or OpenLearning.Assessments.Models.QuestionType.FileUpload;
     <div class="card shadow-sm mb-3">
         <div class="card-body">
-            <div class="d-flex justify-content-between">
-                <h5 class="card-title">@question.Text</h5>
-                <span class="badge @(answer.IsCorrect ? "bg-success" : "bg-danger")">
-                    @(answer.IsCorrect ? "+" + question.Points : "0") / @question.Points pt
-                </span>
-            </div>
-            <p class="mb-1">
-                <span class="text-muted">Your answer:</span>
-                @if (selectedOption is not null)
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="card-title mb-0">
+                    @question.Text
+                    <span class="badge bg-light text-dark border ms-1">@question.QuestionType</span>
+                </h5>
+                @if (isManual)
                 {
-                    <span class="@(answer.IsCorrect ? "text-success" : "text-danger")">@selectedOption.Text</span>
+                    @if (answer.IsGraded)
+                    {
+                        <span class="badge bg-primary">@answer.GradedScore / @question.Points pt</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Pending grading</span>
+                    }
                 }
                 else
                 {
-                    <span class="text-danger">No answer</span>
+                    <span class="badge @(answer.IsCorrect ? "bg-success" : "bg-danger")">
+                        @(answer.IsCorrect ? "+" + question.Points : "0") / @question.Points pt
+                    </span>
                 }
-            </p>
-            @if (!answer.IsCorrect && correctOption is not null)
+            </div>
+
+            @if (question.QuestionType is OpenLearning.Assessments.Models.QuestionType.SingleChoice or OpenLearning.Assessments.Models.QuestionType.TrueFalse)
             {
-                <p class="mb-0">
-                    <span class="text-muted">Correct answer:</span>
-                    <span class="text-success">@correctOption.Text</span>
+                var selectedOption = question.AnswerOptions.FirstOrDefault(o => o.Id == answer.AnswerOptionId);
+                <p class="mb-1">
+                    <span class="text-muted">Your answer:</span>
+                    <span class="@(answer.IsCorrect ? "text-success" : "text-danger")">@(selectedOption?.Text ?? "No answer")</span>
                 </p>
+                if (!answer.IsCorrect)
+                {
+                    var correctOption = question.AnswerOptions.FirstOrDefault(o => o.IsCorrect);
+                    if (correctOption is not null)
+                    {
+                        <p class="mb-0"><span class="text-muted">Correct answer:</span> <span class="text-success">@correctOption.Text</span></p>
+                    }
+                }
+            }
+            else if (question.QuestionType == OpenLearning.Assessments.Models.QuestionType.MultipleChoice)
+            {
+                var selectedIds = (answer.SelectedOptionIds ?? string.Empty)
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Where(s => int.TryParse(s, out _)).Select(int.Parse).ToHashSet();
+                var selectedTexts = question.AnswerOptions.Where(o => selectedIds.Contains(o.Id)).Select(o => o.Text).ToList();
+                <p class="mb-1">
+                    <span class="text-muted">Your answer:</span>
+                    @if (selectedTexts.Count == 0)
+                    {
+                        <span class="text-danger">No answer</span>
+                    }
+                    else
+                    {
+                        <span class="@(answer.IsCorrect ? "text-success" : "text-danger")">@string.Join(", ", selectedTexts)</span>
+                    }
+                </p>
+                if (!answer.IsCorrect)
+                {
+                    <p class="mb-0">
+                        <span class="text-muted">Correct answer:</span>
+                        <span class="text-success">@string.Join(", ", question.AnswerOptions.Where(o => o.IsCorrect).Select(o => o.Text))</span>
+                    </p>
+                }
+            }
+            else if (question.QuestionType is OpenLearning.Assessments.Models.QuestionType.FillBlank or OpenLearning.Assessments.Models.QuestionType.ShortAnswer)
+            {
+                var isFillBlank = question.QuestionType == OpenLearning.Assessments.Models.QuestionType.FillBlank;
+                var textClass = string.Empty;
+                if (isFillBlank)
+                {
+                    textClass = answer.IsCorrect ? "text-success" : "text-danger";
+                }
+                <p class="mb-1">
+                    <span class="text-muted">Your answer:</span>
+                    <span class="@textClass">@(answer.TextAnswer ?? "No answer")</span>
+                </p>
+                if (isFillBlank && !answer.IsCorrect)
+                {
+                    <p class="mb-0">
+                        <span class="text-muted">Correct answer:</span>
+                        <span class="text-success">@string.Join(" / ", question.AnswerOptions.Where(o => o.IsCorrect).Select(o => o.Text))</span>
+                    </p>
+                }
+            }
+            else if (question.QuestionType == OpenLearning.Assessments.Models.QuestionType.FileUpload)
+            {
+                <p class="mb-1">
+                    <span class="text-muted">Your answer:</span>
+                    @if (string.IsNullOrEmpty(answer.FileAnswerUrl))
+                    {
+                        <span class="text-danger">No file</span>
+                    }
+                    else
+                    {
+                        <a href="@answer.FileAnswerUrl" target="_blank" rel="noopener">View attached file</a>
+                    }
+                </p>
+            }
+
+            @if (answer.IsGraded && !string.IsNullOrWhiteSpace(answer.GradingFeedback))
+            {
+                <div class="alert alert-secondary py-2 small mb-2">Feedback: @answer.GradingFeedback</div>
+            }
+
+            @if (Model.IsInstructor && isManual && !answer.IsGraded)
+            {
+                <form method="post" asp-page-handler="Grade" asp-route-answerId="@answer.Id" class="mt-2 border-top pt-2">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-auto">
+                            <input name="score" type="number" min="0" max="@question.Points" value="@question.Points"
+                                   class="form-control form-control-sm" style="width: 90px" placeholder="Score" />
+                        </div>
+                        <div class="col">
+                            <input name="feedback" class="form-control form-control-sm" placeholder="Feedback (optional)" />
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-primary">Grade</button>
+                        </div>
+                    </div>
+                </form>
             }
         </div>
     </div>
 }
 
 <div class="d-flex gap-2">
-    <a class="btn btn-outline-primary" asp-page="/Courses/Quizzes/Take" asp-route-id="@quiz.Id">Try again</a>
+    @if (!Model.IsInstructor)
+    {
+        <a class="btn btn-outline-primary" asp-page="/Courses/Quizzes/Take" asp-route-id="@quiz.Id">Try again</a>
+    }
     <a class="btn btn-outline-secondary" asp-page="/Courses/Details" asp-route-id="@quiz.CourseId">Back to course</a>
 </div>

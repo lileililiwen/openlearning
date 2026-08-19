@@ -29,9 +29,9 @@ public class QuestionService
     }
 
     public async Task<(Question? Question, string? Error)> AddAsync(
-        int quizId, string ownerId, string text, int points, List<AnswerOptionInput> options)
+        int quizId, string ownerId, string text, int points, QuestionType questionType, List<AnswerOptionInput> options)
     {
-        if (!TryValidateOptions(options, out var validationError))
+        if (!TryValidateOptions(questionType, options, out var validationError))
         {
             return (null, validationError);
         }
@@ -49,7 +49,14 @@ public class QuestionService
             .Select(q => (int?)q.OrderIndex)
             .MaxAsync() ?? 0;
 
-        var question = new Question { QuizId = quizId, Text = text, OrderIndex = nextOrder + 1, Points = points };
+        var question = new Question
+        {
+            QuizId = quizId,
+            Text = text,
+            QuestionType = questionType,
+            OrderIndex = nextOrder + 1,
+            Points = points,
+        };
         for (var i = 0; i < options.Count; i++)
         {
             question.AnswerOptions.Add(new AnswerOption
@@ -66,9 +73,9 @@ public class QuestionService
     }
 
     public async Task<(bool Ok, string? Error)> UpdateAsync(
-        int questionId, string ownerId, string text, int points, List<AnswerOptionInput> options)
+        int questionId, string ownerId, string text, int points, QuestionType questionType, List<AnswerOptionInput> options)
     {
-        if (!TryValidateOptions(options, out var validationError))
+        if (!TryValidateOptions(questionType, options, out var validationError))
         {
             return (false, validationError);
         }
@@ -84,6 +91,7 @@ public class QuestionService
 
         question.Text = text;
         question.Points = points;
+        question.QuestionType = questionType;
         _db.Set<AnswerOption>().RemoveRange(question.AnswerOptions);
         question.AnswerOptions.Clear();
         for (var i = 0; i < options.Count; i++)
@@ -115,15 +123,53 @@ public class QuestionService
         return true;
     }
 
-    private static bool TryValidateOptions(List<AnswerOptionInput> options, out string? error)
+    private static bool TryValidateOptions(QuestionType type, List<AnswerOptionInput> options, out string? error)
     {
+        if (type is QuestionType.ShortAnswer or QuestionType.FileUpload)
+        {
+            if (options.Count > 0)
+            {
+                error = "This question type does not use answer options.";
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
+
+        if (type == QuestionType.FillBlank)
+        {
+            if (options.Count is < 1 or > 4)
+            {
+                error = "Provide between 1 and 4 acceptable answers.";
+                return false;
+            }
+
+            if (!options.Any(o => o.IsCorrect))
+            {
+                error = "Mark at least one answer as acceptable.";
+                return false;
+            }
+
+            error = null;
+            return true;
+        }
+
         if (options.Count is < 2 or > 4)
         {
             error = "A question must have between 2 and 4 answer options.";
             return false;
         }
 
-        if (options.Count(o => o.IsCorrect) != 1)
+        if (type == QuestionType.MultipleChoice)
+        {
+            if (!options.Any(o => o.IsCorrect))
+            {
+                error = "Select at least one correct answer.";
+                return false;
+            }
+        }
+        else if (options.Count(o => o.IsCorrect) != 1)
         {
             error = "Exactly one answer option must be marked correct.";
             return false;

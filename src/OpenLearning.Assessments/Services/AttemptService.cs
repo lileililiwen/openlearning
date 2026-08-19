@@ -24,8 +24,15 @@ public class AttemptService
                 .FirstOrDefaultAsync(q => q.Id == quizId);
     }
 
+    /// <summary>One student answer to a question, shaped per question type.</summary>
+    public sealed record QuizAnswerInput(
+        int? OptionId,
+        string? SelectedOptionIds,
+        string? TextAnswer,
+        string? FileAnswerUrl);
+
     public async Task<(int? AttemptId, string? Error)> SubmitAsync(
-        string studentId, int quizId, Dictionary<int, int> answers)
+        string studentId, int quizId, Dictionary<int, QuizAnswerInput> answers)
     {
         var quiz = await _db.Set<Quiz>()
             .Include(q => q.Questions.OrderBy(x => x.OrderIndex))
@@ -53,26 +60,13 @@ public class AttemptService
             return (null, "Please answer every question before submitting.");
         }
 
-        var maxScore = questions.Sum(q => q.Points);
-        var score = 0;
         var attemptAnswers = new List<QuizAttemptAnswer>();
-
         foreach (var question in questions)
         {
-            var selectedOptionId = answers[question.Id];
-            var isCorrect = question.AnswerOptions.Any(o => o.Id == selectedOptionId && o.IsCorrect);
-            if (isCorrect)
-            {
-                score += question.Points;
-            }
-
-            attemptAnswers.Add(new QuizAttemptAnswer
-            {
-                QuestionId = question.Id,
-                AnswerOptionId = selectedOptionId,
-                IsCorrect = isCorrect,
-            });
+            attemptAnswers.Add(BuildAnswer(question, answers[question.Id]));
         }
+
+        var (score, maxScore) = ComputeScores(attemptAnswers);
 
         var attempt = new QuizAttempt
         {
@@ -86,6 +80,160 @@ public class AttemptService
         _db.Set<QuizAttempt>().Add(attempt);
         await _db.SaveChangesAsync();
         return (attempt.Id, null);
+    }
+
+    /// <summary>
+    /// Instructor grades a manual (short-answer / file-upload) answer with a
+    /// score and feedback, then the attempt's total score is recalculated.
+    /// </summary>
+    public async Task<(bool Ok, string? Error)> GradeAsync(int answerId, int score, string? feedback, string graderId)
+    {
+        var answer = await _db.Set<QuizAttemptAnswer>()
+            .Include(a => a.Question)
+            .Include(a => a.Attempt)!.ThenInclude(at => at!.Quiz)!.ThenInclude(q => q!.Course)
+            .FirstOrDefaultAsync(a => a.Id == answerId);
+        if (answer is null)
+        {
+            return (false, "Answer not found.");
+        }
+
+        var question = answer.Question!;
+        if (question.QuestionType is not (QuestionType.ShortAnswer or QuestionType.FileUpload))
+        {
+            return (false, "Only short-answer and file-upload questions are graded manually.");
+        }
+
+        if (answer.Attempt?.Quiz?.Course is null || answer.Attempt.Quiz.Course.InstructorId != graderId)
+        {
+            return (false, "You do not own this course.");
+        }
+
+        if (score < 0 || score > question.Points)
+        {
+            return (false, $"Score must be between 0 and {question.Points}.");
+        }
+
+        answer.IsGraded = true;
+        answer.GradedScore = score;
+        answer.GradingFeedback = string.IsNullOrWhiteSpace(feedback) ? null : feedback.Trim();
+        await _db.SaveChangesAsync();
+
+        await RecalculateAsync(answer.AttemptId);
+        return (true, null);
+    }
+
+    /// <summary>Recomputes an attempt's Score/MaxScore from its answers.</summary>
+    public async Task RecalculateAsync(int attemptId)
+    {
+        var attempt = await _db.Set<QuizAttempt>()
+            .Include(a => a.Answers).ThenInclude(x => x.Question)
+            .FirstOrDefaultAsync(a => a.Id == attemptId);
+        if (attempt is null)
+        {
+            return;
+        }
+
+        var (score, maxScore) = ComputeScores(attempt.Answers);
+        attempt.Score = score;
+        attempt.MaxScore = maxScore;
+        await _db.SaveChangesAsync();
+    }
+
+    private static QuizAttemptAnswer BuildAnswer(Question question, QuizAnswerInput input)
+    {
+        var answer = new QuizAttemptAnswer { QuestionId = question.Id, Question = question };
+
+        switch (question.QuestionType)
+        {
+            case QuestionType.SingleChoice:
+            case QuestionType.TrueFalse:
+                answer.AnswerOptionId = input.OptionId;
+                answer.IsCorrect = question.AnswerOptions.Any(o => o.Id == input.OptionId && o.IsCorrect);
+                break;
+            case QuestionType.MultipleChoice:
+                var selected = ParseIds(input.SelectedOptionIds);
+                var correctIds = question.AnswerOptions.Where(o => o.IsCorrect).Select(o => o.Id).ToHashSet();
+                answer.SelectedOptionIds = string.Join(",", selected);
+                answer.IsCorrect = selected.SetEquals(correctIds);
+                break;
+            case QuestionType.FillBlank:
+                answer.TextAnswer = input.TextAnswer;
+                answer.IsCorrect = IsFillBlankMatch(question, input.TextAnswer);
+                break;
+            case QuestionType.ShortAnswer:
+                answer.TextAnswer = input.TextAnswer;
+                break;
+            case QuestionType.FileUpload:
+                answer.FileAnswerUrl = input.FileAnswerUrl;
+                break;
+        }
+
+        return answer;
+    }
+
+    /// <summary>
+    /// Auto-scored objective questions count toward Score/MaxScore immediately;
+    /// manual questions only count once graded.
+    /// </summary>
+    private static (int Score, int MaxScore) ComputeScores(IEnumerable<QuizAttemptAnswer> answers)
+    {
+        var score = 0;
+        var maxScore = 0;
+        foreach (var answer in answers)
+        {
+            var question = answer.Question!;
+            if (question.QuestionType is QuestionType.ShortAnswer or QuestionType.FileUpload)
+            {
+                if (answer.IsGraded)
+                {
+                    maxScore += question.Points;
+                    score += answer.GradedScore ?? 0;
+                }
+
+                continue;
+            }
+
+            maxScore += question.Points;
+            if (answer.IsCorrect)
+            {
+                score += question.Points;
+            }
+        }
+
+        return (score, maxScore);
+    }
+
+    private static HashSet<int> ParseIds(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return new HashSet<int>();
+        }
+
+        return value
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(s => int.TryParse(s, out _))
+            .Select(int.Parse)
+            .ToHashSet();
+    }
+
+    /// <summary>Trim, collapse inner whitespace, and lowercase for comparison.</summary>
+    private static string Normalize(string value)
+    {
+        return string.Concat(value.Trim().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)).ToLowerInvariant();
+    }
+
+    private static bool IsFillBlankMatch(Question question, string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return false;
+        }
+
+        var normalized = Normalize(text);
+        return question.AnswerOptions
+            .Where(o => o.IsCorrect)
+            .Any(o => Normalize(o.Text) == normalized);
     }
 
     public Task<List<QuizAttempt>> GetAttemptsForQuizAsync(int quizId, string ownerId)
@@ -143,6 +291,15 @@ public class AttemptService
                 .Include(a => a.Answers).ThenInclude(x => x.Question).ThenInclude(q => q!.AnswerOptions)
                 .FirstOrDefaultAsync(a => a.Id == attemptId
                     && (a.StudentId == viewerId || a.Quiz!.Course!.InstructorId == viewerId));
+    }
+
+    /// <summary>Loads one answer with its attempt, scoped to the student or course instructor.</summary>
+    public Task<QuizAttemptAnswer?> GetAnswerForAttemptAsync(int answerId, string viewerId)
+    {
+        return _db.Set<QuizAttemptAnswer>().AsNoTracking()
+            .Include(a => a.Attempt)!.ThenInclude(at => at!.Quiz)!.ThenInclude(q => q!.Course)
+            .FirstOrDefaultAsync(a => a.Id == answerId
+                && (a.Attempt!.StudentId == viewerId || a.Attempt.Quiz!.Course!.InstructorId == viewerId));
     }
 
     /// <summary>

@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenLearning.Auth\OpenLearning.Auth.csproj" />
+    <ProjectReference Include="..\..\src\OpenLearning.Assessments\OpenLearning.Assessments.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Chat\OpenLearning.Chat.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.CourseManagement\OpenLearning.CourseManagement.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Enrollment\OpenLearning.Enrollment.csproj" />

@@ -10,6 +10,8 @@ public class Question
 
     public string Text { get; set; } = string.Empty;
 
+    public QuestionType QuestionType { get; set; } = QuestionType.SingleChoice;
+
     public int OrderIndex { get; set; }
 
     public int Points { get; set; } = 1;

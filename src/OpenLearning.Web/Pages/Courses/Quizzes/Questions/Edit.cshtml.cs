@@ -36,9 +36,13 @@ public class EditModel : PageModel
         [Range(1, 100, ErrorMessage = "Points must be between 1 and 100.")]
         public int Points { get; set; } = 1;
 
+        public QuestionType QuestionType { get; set; } = QuestionType.SingleChoice;
+
         public List<string> Options { get; set; } = new();
 
         public int? CorrectIndex { get; set; }
+
+        public List<int> CorrectIndexes { get; set; } = new();
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -59,11 +63,13 @@ public class EditModel : PageModel
         Id = id;
         Input.Text = question.Text;
         Input.Points = question.Points;
+        Input.QuestionType = question.QuestionType;
 
         var options = question.AnswerOptions.OrderBy(o => o.OrderIndex).ToList();
         Input.Options = options.Select(o => o.Text).ToList();
-        var correctIndex = options.FindIndex(o => o.IsCorrect);
-        Input.CorrectIndex = correctIndex >= 0 ? correctIndex : null;
+        Input.CorrectIndex = options.FindIndex(o => o.IsCorrect);
+        Input.CorrectIndex = Input.CorrectIndex >= 0 ? Input.CorrectIndex : null;
+        Input.CorrectIndexes = options.Where(o => o.IsCorrect).Select(o => o.OrderIndex - 1).ToList();
         while (Input.Options.Count < 4)
         {
             Input.Options.Add(string.Empty);
@@ -81,9 +87,16 @@ public class EditModel : PageModel
             return Page();
         }
 
-        if (!Input.CorrectIndex.HasValue)
+        if (Input.QuestionType is QuestionType.SingleChoice or QuestionType.TrueFalse && !Input.CorrectIndex.HasValue)
         {
             ModelState.AddModelError(string.Empty, "Select which answer option is correct.");
+            Question = await _questions.GetByIdAsync(Id);
+            return Page();
+        }
+
+        if (Input.QuestionType == QuestionType.MultipleChoice && Input.CorrectIndexes.Count == 0)
+        {
+            ModelState.AddModelError(string.Empty, "Select at least one correct answer.");
             Question = await _questions.GetByIdAsync(Id);
             return Page();
         }
@@ -97,11 +110,18 @@ public class EditModel : PageModel
                 continue;
             }
 
-            options.Add(new AnswerOptionInput(text, i == Input.CorrectIndex));
+            var isCorrect = Input.QuestionType switch
+            {
+                QuestionType.SingleChoice or QuestionType.TrueFalse => i == Input.CorrectIndex,
+                QuestionType.MultipleChoice => Input.CorrectIndexes.Contains(i),
+                QuestionType.FillBlank => true, // every provided answer is acceptable
+                _ => false,
+            };
+            options.Add(new AnswerOptionInput(text, isCorrect));
         }
 
         var (ok, error) = await _questions.UpdateAsync(
-            Id, userId, Input.Text, Input.Points, options);
+            Id, userId, Input.Text, Input.Points, Input.QuestionType, options);
 
         if (!ok)
         {
