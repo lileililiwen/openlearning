@@ -34,6 +34,7 @@ using OpenLearning.Notifications.Email;
 using OpenLearning.Operations;
 using OpenLearning.Progress;
 using OpenLearning.Progress.Services;
+using OpenLearning.QuestionIO;
 using OpenLearning.Ratings;
 using OpenLearning.Scorm;
 using OpenLearning.Scorm.Services;
@@ -150,6 +151,7 @@ builder.Services.AddInvoicingModule();
 builder.Services.AddAsyncIOModule();
 builder.Services.AddJob<OpenLearning.AsyncIO.Jobs.AsyncIOJobDispatcher>();
 builder.Services.AddJob<OpenLearning.AsyncIO.Jobs.AsyncIOCleanupJob>();
+builder.Services.AddQuestionIOModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();

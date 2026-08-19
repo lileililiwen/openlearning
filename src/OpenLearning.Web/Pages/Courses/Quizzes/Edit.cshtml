@@ -35,6 +35,10 @@
         <strong>Questions (@quiz.Questions.Count)</strong>
         <span class="d-inline-flex gap-2">
             <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Quizzes/ImportFromBank" asp-route-quizId="@quiz.Id">从题库导入</a>
+            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Quizzes/Import" asp-route-quizId="@quiz.Id">导入Excel</a>
+            <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Quizzes/ImportAsync" asp-route-quizId="@quiz.Id">异步导入</a>
+            <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Quizzes/Export" asp-route-quizId="@quiz.Id">导出</a>
+            <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Quizzes/ImportJobs">导入任务</a>
             <a class="btn btn-sm btn-primary" asp-page="/Courses/Quizzes/Questions/Create" asp-route-quizId="@quiz.Id">Add question</a>
         </span>
     </div>

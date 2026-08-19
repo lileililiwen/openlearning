@@ -9,6 +9,7 @@ public class AsyncIOJobConfiguration : IEntityTypeConfiguration<AsyncIOJob>
     public void Configure(EntityTypeBuilder<AsyncIOJob> builder)
     {
         builder.Property(j => j.Kind).HasMaxLength(100).IsRequired();
+        builder.Property(j => j.Payload).HasMaxLength(2000);
         builder.Property(j => j.FileKey).HasMaxLength(500).IsRequired();
         builder.Property(j => j.ResultFileKey).HasMaxLength(500);
         builder.Property(j => j.ErrorFileKey).HasMaxLength(500);

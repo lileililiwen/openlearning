@@ -1,5 +1,13 @@
 namespace OpenLearning.Assessments.Models;
 
+/// <summary>Difficulty band used by the import/export surface.</summary>
+public enum QuestionDifficulty
+{
+    Easy = 0,
+    Medium = 1,
+    Hard = 2,
+}
+
 public class Question
 {
     public int Id { get; set; }
@@ -28,6 +36,17 @@ public class Question
 
     /// <summary>Set when an admin archives a bank question (hidden from import/search).</summary>
     public DateTime? ArchivedAt { get; set; }
+
+    /// <summary>External stable id used by Excel imports for re-import (update) matching.</summary>
+    public string? RowId { get; set; }
+
+    public QuestionDifficulty Difficulty { get; set; } = QuestionDifficulty.Easy;
+
+    /// <summary>Optional knowledge-tag text (import/export column).</summary>
+    public string? KnowledgeTag { get; set; }
+
+    /// <summary>Optional instructor explanation shown after answering (import/export column).</summary>
+    public string? Explanation { get; set; }
 
     public ICollection<AnswerOption> AnswerOptions { get; set; } = new List<AnswerOption>();
 }

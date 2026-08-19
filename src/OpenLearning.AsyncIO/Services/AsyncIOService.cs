@@ -23,8 +23,14 @@ public interface IAsyncIOProcessor
 {
     string Kind { get; }
 
+    /// <summary>
+    /// True when the job carries a source file the processor must read
+    /// (imports); false for export jobs that produce output only.
+    /// </summary>
+    bool NeedsSourceFile { get; }
+
     Task<(bool Ok, string? Error, int TotalRows, int SuccessRows)> ProcessAsync(
-        AsyncIOJob job, Stream fileStream, CancellationToken cancellationToken);
+        AsyncIOJob job, Stream? fileStream, CancellationToken cancellationToken);
 }
 
 /// <summary>

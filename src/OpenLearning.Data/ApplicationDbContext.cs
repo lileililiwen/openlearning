@@ -20,6 +20,7 @@ using OpenLearning.Moderation.Models;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Operations.Models;
 using OpenLearning.Progress.Models;
+using OpenLearning.QuestionIO.Models;
 using OpenLearning.Ratings.Models;
 using OpenLearning.Scorm.Models;
 using OpenLearning.Settlement.Models;
@@ -151,6 +152,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<JobRun> JobRuns => Set<JobRun>();
 
+    public DbSet<QuestionImportJob> QuestionImportJobs => Set<QuestionImportJob>();
+
+    public DbSet<QuestionRowError> QuestionRowErrors => Set<QuestionRowError>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -187,5 +192,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(DistributorProfile).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Invoice).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(AsyncIOJob).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(QuestionImportJob).Assembly);
     }
 }

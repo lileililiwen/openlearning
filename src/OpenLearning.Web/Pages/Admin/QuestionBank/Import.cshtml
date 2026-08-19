@@ -1,0 +1,89 @@
+@page
+@model OpenLearning.Web.Pages.Admin.QuestionBank.ImportModel
+@using OpenLearning.QuestionIO.Models
+@{
+    ViewData["Title"] = "题库导入";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">题库导入</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-page="/Admin/QuestionBank/Index">返回题库管理</a>
+</div>
+
+<p class="text-muted small">使用与测验导入相同的模板，并填写额外的 <strong>BankTopic</strong> 列作为题库主题。</p>
+
+@if (Model.Outcome?.Kind == OpenLearning.QuestionIO.Services.QuestionImportOutcomeKind.Error)
+{
+    <div class="alert alert-danger">@Model.Outcome.Error</div>
+}
+
+@if (Model.Outcome?.Kind == OpenLearning.QuestionIO.Services.QuestionImportOutcomeKind.RateLimited)
+{
+    <div class="alert alert-warning">@Model.Outcome.Error（请稍后再试）</div>
+}
+
+@if (Model.Outcome?.Kind == OpenLearning.QuestionIO.Services.QuestionImportOutcomeKind.Submitted)
+{
+    <div class="alert alert-success">
+        任务已提交，完成后将通过站内信通知。
+        <a asp-page="/AsyncIO/Detail" asp-route-id="@Model.Outcome.JobId">查看任务进度</a>
+    </div>
+}
+
+@if (Model.Outcome?.Kind == OpenLearning.QuestionIO.Services.QuestionImportOutcomeKind.Completed)
+{
+    <div class="alert @(Model.Outcome.Errors.Count == 0 ? "alert-success" : "alert-warning")">
+        导入完成：成功 @Model.Outcome.SuccessCount 行，失败 @Model.Outcome.Errors.Count 行（共 @Model.Outcome.TotalRows 行）。
+    </div>
+
+    @if (Model.Outcome.Errors.Count > 0)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-white"><strong>错误明细</strong></div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>行号</th>
+                            <th>字段</th>
+                            <th>原因</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in Model.Outcome.Errors)
+                        {
+                            <tr>
+                                <td>@e.RowIndex</td>
+                                <td>@e.Field</td>
+                                <td>@e.Message</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>上传 Excel 导入题库</strong>
+        <a asp-page="/QuestionIO/Template" asp-route-bank="true" class="btn btn-sm btn-outline-primary">下载题库模板</a>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label asp-for="ExcelFile" class="form-label">Excel 文件（.xlsx，最大 10 MB）</label>
+                <input asp-for="ExcelFile" type="file" class="form-control" accept=".xlsx" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">导入模式</label>
+                <select asp-for="Mode" class="form-select">
+                    <option value="@QuestionImportMode.Append">追加（仅新增）</option>
+                    <option value="@QuestionImportMode.UpdateOrAppend">更新或追加（按 RowId 匹配更新）</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">导入</button>
+        </form>
+    </div>
+</div>

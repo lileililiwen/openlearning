@@ -1,0 +1,61 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Quizzes.ExportModel
+@{
+    ViewData["Title"] = "导出题目";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">导出题目</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-page="/Courses/Quizzes/Edit" asp-route-id="@Model.QuizId">返回测验编辑</a>
+</div>
+
+@if (Model.Quiz is not null)
+{
+    <p class="text-muted small">测验：<strong>@Model.Quiz.Title</strong>。超过 5000 行时自动转为异步导出，完成后通过站内信通知。</p>
+}
+
+@if (Model.JobId is not null)
+{
+    <div class="alert alert-success">
+        导出任务已提交，完成后将通过站内信通知。
+        <a asp-page="/AsyncIO/Detail" asp-route-id="@Model.JobId">查看任务进度</a>
+    </div>
+}
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white"><strong>按条件导出</strong></div>
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" name="quizId" value="@Model.QuizId" />
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" asp-for="QuestionType">题型</label>
+                    <select asp-for="QuestionType" class="form-select">
+                        <option value="">全部</option>
+                        @foreach (var type in Enum.GetValues<QuestionType>())
+                        {
+                            <option value="@type">@type</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" asp-for="Difficulty">难度</label>
+                    <select asp-for="Difficulty" class="form-select">
+                        <option value="">全部</option>
+                        @foreach (var difficulty in Enum.GetValues<QuestionDifficulty>())
+                        {
+                            <option value="@difficulty">@difficulty</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" asp-for="KnowledgeTag">知识点标签</label>
+                    <input asp-for="KnowledgeTag" class="form-control" placeholder="可选" />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">导出 Excel</button>
+        </form>
+    </div>
+</div>

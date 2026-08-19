@@ -1,0 +1,65 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Quizzes.ImportJobsModel
+@{
+    ViewData["Title"] = "导入任务";
+}
+
+<h1 class="h3 mb-4">导入任务</h1>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-info">暂无导入任务。</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>状态</th>
+                        <th>行数</th>
+                        <th>成功</th>
+                        <th>失败</th>
+                        <th>提交时间</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var job in Model.Items)
+                    {
+                        <tr>
+                            <td>@job.Id</td>
+                            <td>
+                                @if (job.Status == OpenLearning.AsyncIO.Models.AsyncIOJobStatus.Success)
+                                {
+                                    <span class="badge bg-success">@job.Status</span>
+                                }
+                                else if (job.Status == OpenLearning.AsyncIO.Models.AsyncIOJobStatus.Failed)
+                                {
+                                    <span class="badge bg-danger">@job.Status</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@job.Status</span>
+                                }
+                            </td>
+                            <td>@job.TotalRows</td>
+                            <td>@job.SuccessRows</td>
+                            <td>@job.ErrorRows</td>
+                            <td>@job.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" asp-page="/AsyncIO/Detail" asp-route-id="@job.Id">详情</a>
+                                @if (!string.IsNullOrEmpty(job.ErrorFileKey))
+                                {
+                                    <a class="btn btn-sm btn-outline-danger" href="/files/@job.ErrorFileKey">错误文件</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

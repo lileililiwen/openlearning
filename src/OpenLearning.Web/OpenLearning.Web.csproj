@@ -45,6 +45,7 @@
     <ProjectReference Include="..\OpenLearning.Invoicing\OpenLearning.Invoicing.csproj" />
     <ProjectReference Include="..\OpenLearning.AsyncIO\OpenLearning.AsyncIO.csproj" />
     <ProjectReference Include="..\OpenLearning.Live\OpenLearning.Live.csproj" />
+    <ProjectReference Include="..\OpenLearning.QuestionIO\OpenLearning.QuestionIO.csproj" />
     <ProjectReference Include="..\OpenLearning.Jobs\OpenLearning.Jobs.csproj" />
   </ItemGroup>
 

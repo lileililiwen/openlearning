@@ -1,0 +1,61 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Quizzes.ImportAsyncModel
+@using OpenLearning.QuestionIO.Models
+@{
+    ViewData["Title"] = "异步导入题目";
+    var rateLimited = Model.Outcome?.Kind == OpenLearning.QuestionIO.Services.QuestionImportOutcomeKind.RateLimited;
+    var submitted = Model.Outcome?.Kind == OpenLearning.QuestionIO.Services.QuestionImportOutcomeKind.Submitted;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">异步导入题目</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-page="/Courses/Quizzes/Edit" asp-route-id="@Model.QuizId">返回测验编辑</a>
+</div>
+
+@if (Model.Quiz is not null)
+{
+    <p class="text-muted small">测验：<strong>@Model.Quiz.Title</strong>。大文件（超过 200 行）建议使用异步导入。</p>
+}
+
+@if (Model.Outcome?.Kind == OpenLearning.QuestionIO.Services.QuestionImportOutcomeKind.Error)
+{
+    <div class="alert alert-danger">@Model.Outcome.Error</div>
+}
+
+@if (rateLimited)
+{
+    <div class="alert alert-warning">@Model.Outcome!.Error（请稍后再试）</div>
+}
+
+@if (submitted)
+{
+    <div class="alert alert-success">
+        任务已提交，完成后将通过站内信通知。
+        <a asp-page="/AsyncIO/Detail" asp-route-id="@Model.Outcome!.JobId">查看任务进度</a>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>上传 Excel 异步导入</strong>
+        <a asp-page="/QuestionIO/Template" class="btn btn-sm btn-outline-primary">下载模板</a>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="quizId" value="@Model.QuizId" />
+            <div class="mb-3">
+                <label asp-for="ExcelFile" class="form-label">Excel 文件（.xlsx，最大 10 MB）</label>
+                <input asp-for="ExcelFile" type="file" class="form-control" accept=".xlsx" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">导入模式</label>
+                <select asp-for="Mode" class="form-select">
+                    <option value="@QuestionImportMode.Append">追加（仅新增）</option>
+                    <option value="@QuestionImportMode.UpdateOrAppend">更新或追加（按 RowId 匹配更新）</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">提交异步导入</button>
+            <a class="btn btn-outline-secondary" asp-page="/Courses/Quizzes/Import" asp-route-quizId="@Model.QuizId">同步导入</a>
+        </form>
+    </div>
+</div>

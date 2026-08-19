@@ -17,6 +17,9 @@ public class AsyncIOJob
 
     public string Kind { get; set; } = string.Empty;
 
+    /// <summary>Consumer-specific parameters (e.g. export filters) serialized as JSON.</summary>
+    public string? Payload { get; set; }
+
     public string FileKey { get; set; } = string.Empty;
 
     public string? ResultFileKey { get; set; }

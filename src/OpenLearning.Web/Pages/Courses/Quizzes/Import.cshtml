@@ -1,0 +1,133 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Quizzes.ImportModel
+@using OpenLearning.QuestionIO.Models
+@{
+    ViewData["Title"] = "导入题目";
+    var isSync = Model.Outcome?.Kind == OpenLearning.QuestionIO.Services.QuestionImportOutcomeKind.Completed;
+    var isAsync = Model.Outcome?.Kind == OpenLearning.QuestionIO.Services.QuestionImportOutcomeKind.Submitted;
+    var rateLimited = Model.Outcome?.Kind == OpenLearning.QuestionIO.Services.QuestionImportOutcomeKind.RateLimited;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">导入题目</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-page="/Courses/Quizzes/Edit" asp-route-id="@Model.QuizId">返回测验编辑</a>
+</div>
+
+@if (Model.Quiz is not null)
+{
+    <p class="text-muted small">测验：<strong>@Model.Quiz.Title</strong>。文件不超过 200 行时同步导入，超过后自动转为异步导入。</p>
+}
+
+@if (Model.Outcome?.Kind == OpenLearning.QuestionIO.Services.QuestionImportOutcomeKind.Error)
+{
+    <div class="alert alert-danger">@Model.Outcome.Error</div>
+}
+
+@if (rateLimited)
+{
+    <div class="alert alert-warning">@Model.Outcome!.Error（请稍后再试）</div>
+}
+
+@if (isAsync)
+{
+    <div class="alert alert-success">
+        任务已提交，完成后将通过站内信通知。
+        <a asp-page="/AsyncIO/Detail" asp-route-id="@Model.Outcome!.JobId">查看任务进度</a>
+    </div>
+}
+
+@if (isSync)
+{
+    <div class="alert @(Model.Outcome!.Errors.Count == 0 ? "alert-success" : "alert-warning")">
+        导入完成：成功 @Model.Outcome.SuccessCount 行，失败 @Model.Outcome.Errors.Count 行（共 @Model.Outcome.TotalRows 行）。
+    </div>
+
+    @if (Model.Outcome.Errors.Count > 0)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-white"><strong>错误明细</strong></div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>行号</th>
+                            <th>字段</th>
+                            <th>原因</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in Model.Outcome.Errors)
+                        {
+                            <tr>
+                                <td>@e.RowIndex</td>
+                                <td>@e.Field</td>
+                                <td>@e.Message</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-white"><strong>预览（@Model.Outcome.Preview.Count 行）</strong></div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>行号</th>
+                        <th>题干</th>
+                        <th>题型</th>
+                        <th>结果</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Outcome.Preview)
+                    {
+                        <tr class="@(p.Ok ? "" : "table-warning")">
+                            <td>@p.RowIndex</td>
+                            <td>@p.Stem</td>
+                            <td>@p.QuestionType</td>
+                            <td>
+                                @if (p.Ok)
+                                {
+                                    <span class="badge bg-success">成功</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger" title="@p.Error">失败</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>上传 Excel 导入</strong>
+        <a asp-page="/QuestionIO/Template" class="btn btn-sm btn-outline-primary">下载模板</a>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="quizId" value="@Model.QuizId" />
+            <div class="mb-3">
+                <label asp-for="ExcelFile" class="form-label">Excel 文件（.xlsx，最大 10 MB）</label>
+                <input asp-for="ExcelFile" type="file" class="form-control" accept=".xlsx" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">导入模式</label>
+                <select asp-for="Mode" class="form-select">
+                    <option value="@QuestionImportMode.Append">追加（仅新增）</option>
+                    <option value="@QuestionImportMode.UpdateOrAppend">更新或追加（按 RowId 匹配更新）</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">导入</button>
+            <a class="btn btn-outline-secondary" asp-page="/Courses/Quizzes/ImportAsync" asp-route-quizId="@Model.QuizId">异步导入</a>
+        </form>
+    </div>
+</div>

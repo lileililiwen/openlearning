@@ -60,27 +60,36 @@ public sealed class AsyncIOJobDispatcher : IJob
             await _service.MarkRunningAsync(job.Id);
             try
             {
-                var (file, stream) = await _storage.OpenAsync(job.FileKey);
-                if (file is null || stream is null)
+                (bool Ok, string? Error, int TotalRows, int SuccessRows) result;
+                if (processor.NeedsSourceFile)
                 {
-                    await _service.FailAsync(job.Id, "The source file is missing.");
-                    await AuditAsync(job);
-                    continue;
+                    var (file, stream) = await _storage.OpenAsync(job.FileKey);
+                    if (file is null || stream is null)
+                    {
+                        await _service.FailAsync(job.Id, "The source file is missing.");
+                        await AuditAsync(job);
+                        continue;
+                    }
+
+                    using (stream)
+                    {
+                        result = await processor.ProcessAsync(job, stream, cancellationToken);
+                    }
+                }
+                else
+                {
+                    result = await processor.ProcessAsync(job, null, cancellationToken);
                 }
 
-                using (stream)
+                if (result.Ok)
                 {
-                    var (ok, error, total, success) = await processor.ProcessAsync(job, stream, cancellationToken);
-                    if (ok)
-                    {
-                        await _service.CompleteAsync(job.Id, total, success, total - success);
-                        await AuditAsync(job);
-                    }
-                    else
-                    {
-                        await _service.FailAsync(job.Id, error ?? "Processing failed.");
-                        await AuditAsync(job);
-                    }
+                    await _service.CompleteAsync(job.Id, result.TotalRows, result.SuccessRows, result.TotalRows - result.SuccessRows);
+                    await AuditAsync(job);
+                }
+                else
+                {
+                    await _service.FailAsync(job.Id, result.Error ?? "Processing failed.");
+                    await AuditAsync(job);
                 }
             }
             catch (Exception ex)
