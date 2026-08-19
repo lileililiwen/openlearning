@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Ecommerce.Services;
+using OpenLearning.Settlement.Services;
 
 namespace OpenLearning.Web.Pages.Courses;
 
@@ -11,10 +12,12 @@ namespace OpenLearning.Web.Pages.Courses;
 public class CheckoutModel : PageModel
 {
     private readonly OrderService _orders;
+    private readonly SettlementService _settlement;
 
-    public CheckoutModel(OrderService orders)
+    public CheckoutModel(OrderService orders, SettlementService settlement)
     {
         _orders = orders;
+        _settlement = settlement;
     }
 
     public Order? Order { get; set; }
@@ -52,7 +55,15 @@ public class CheckoutModel : PageModel
         }
 
         var (ok, error) = await _orders.ConfirmPaymentAsync(orderId, userId);
-        if (!ok)
+        if (ok)
+        {
+            // Credit the course instructor for the paid order (Web composition).
+            if (order.Course?.InstructorId is { Length: > 0 } instructorId)
+            {
+                await _settlement.CreditAsync(instructorId, order.CourseId, order.Amount, $"Order #{orderId}");
+            }
+        }
+        else
         {
             TempData["Message"] = error;
             TempData["MessageType"] = "danger";

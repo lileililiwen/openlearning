@@ -385,6 +385,15 @@ public class OrderService
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
+    /// <summary>Orders created in one cart checkout (for settlement crediting).</summary>
+    public Task<List<Order>> GetOrdersByCheckoutIdAsync(Guid checkoutId)
+    {
+        return _db.Set<Order>().AsNoTracking()
+            .Where(o => o.CartCheckoutId == checkoutId)
+            .Include(o => o.Course)
+            .ToListAsync();
+    }
+
     /// <summary>One row of the reconciliation report.</summary>
     public sealed record ReconRow(
         int CourseId,
@@ -459,6 +468,7 @@ public class OrderService
         decimal TotalPaid,
         decimal TotalDiscount,
         int PointsAwarded,
+        Guid? CheckoutId,
         string? Error);
 
     /// <summary>
@@ -476,7 +486,7 @@ public class OrderService
             .ToListAsync();
         if (items.Count == 0)
         {
-            return new CheckoutResult(0, 0m, 0m, 0, "Your cart is empty.");
+            return new CheckoutResult(0, 0m, 0m, 0, null, "Your cart is empty.");
         }
 
         // Validate every item before creating any orders.
@@ -484,22 +494,22 @@ public class OrderService
         {
             if (course is null || course.Status != CourseStatus.Published)
             {
-                return new CheckoutResult(0, 0m, 0m, 0, $"{course?.Title ?? "A course"} is not available for purchase.");
+                return new CheckoutResult(0, 0m, 0m, 0, null, $"{course?.Title ?? "A course"} is not available for purchase.");
             }
 
             if (course.Price is null or <= 0)
             {
-                return new CheckoutResult(0, 0m, 0m, 0, $"'{course.Title}' is free — enroll directly.");
+                return new CheckoutResult(0, 0m, 0m, 0, null, $"'{course.Title}' is free — enroll directly.");
             }
 
             if (course.InstructorId == studentId)
             {
-                return new CheckoutResult(0, 0m, 0m, 0, "You own one of the courses in your cart.");
+                return new CheckoutResult(0, 0m, 0m, 0, null, "You own one of the courses in your cart.");
             }
 
             if (await _enrollments.IsEnrolledAsync(studentId, course.Id))
             {
-                return new CheckoutResult(0, 0m, 0m, 0, $"You are already enrolled in '{course.Title}'.");
+                return new CheckoutResult(0, 0m, 0m, 0, null, $"You are already enrolled in '{course.Title}'.");
             }
         }
 
@@ -509,7 +519,7 @@ public class OrderService
             var (found, error) = await _coupons.ValidateAsync(couponCode, studentId);
             if (found is null)
             {
-                return new CheckoutResult(0, 0m, 0m, 0, error);
+                return new CheckoutResult(0, 0m, 0m, 0, null, error);
             }
 
             coupon = found;
@@ -572,7 +582,7 @@ public class OrderService
             var (enrolled, enrollError) = await _enrollments.EnrollAsync(studentId, order.CourseId);
             if (!enrolled)
             {
-                return new CheckoutResult(0, 0m, 0m, 0, enrollError ?? "Failed to enroll after payment.");
+                return new CheckoutResult(0, 0m, 0m, 0, null, enrollError ?? "Failed to enroll after payment.");
             }
 
             totalPaid += order.Amount;
@@ -602,6 +612,6 @@ public class OrderService
         }
 
         await _cart.ClearAsync(studentId);
-        return new CheckoutResult(items.Count, totalPaid, totalDiscount, pointsAwarded, null);
+        return new CheckoutResult(items.Count, totalPaid, totalDiscount, pointsAwarded, checkoutId, null);
     }
 }

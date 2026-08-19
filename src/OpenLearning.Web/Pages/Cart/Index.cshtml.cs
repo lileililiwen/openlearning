@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Ecommerce.Services;
+using OpenLearning.Settlement.Services;
 
 namespace OpenLearning.Web.Pages.Cart;
 
@@ -14,12 +15,14 @@ public class IndexModel : PageModel
     private readonly CartService _cart;
     private readonly OrderService _orders;
     private readonly LedgerService _ledger;
+    private readonly SettlementService _settlement;
 
-    public IndexModel(CartService cart, OrderService orders, LedgerService ledger)
+    public IndexModel(CartService cart, OrderService orders, LedgerService ledger, SettlementService settlement)
     {
         _cart = cart;
         _orders = orders;
         _ledger = ledger;
+        _settlement = settlement;
     }
 
     public List<CartItem> Items { get; set; } = new();
@@ -60,6 +63,20 @@ public class IndexModel : PageModel
             TempData["Message"] = result.Error;
             TempData["MessageType"] = "danger";
             return RedirectToPage();
+        }
+
+        // Credit each course's instructor for the paid orders (Web composition —
+        // the ecommerce module cannot reference the settlement module).
+        if (result.CheckoutId is not null)
+        {
+            var createdOrders = await _orders.GetOrdersByCheckoutIdAsync(result.CheckoutId.Value);
+            foreach (var order in createdOrders)
+            {
+                if (order.Course?.InstructorId is { Length: > 0 } instructorId)
+                {
+                    await _settlement.CreditAsync(instructorId, order.CourseId, order.Amount, $"Order #{order.Id}");
+                }
+            }
         }
 
         TempData["Message"] =

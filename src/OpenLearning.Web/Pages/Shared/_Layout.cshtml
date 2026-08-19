@@ -79,6 +79,9 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Courses/Create">New Course</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Instructor/Revenue">Revenue</a>
+                        </li>
                     }
                     @if (User.IsInRole(Roles.Admin))
                     {
@@ -114,6 +117,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Admin/Refunds">Refunds</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Admin/Withdrawals">Withdrawals</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Admin/Reconciliation">Reconciliation</a>

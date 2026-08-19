@@ -1,0 +1,189 @@
+@page
+@model OpenLearning.Web.Pages.Instructor.RevenueModel
+@{
+    ViewData["Title"] = "Revenue";
+    var minWithdrawal = OpenLearning.Web.Pages.Instructor.RevenueModel.MinWithdrawal;
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Revenue</h1>
+        <p class="text-muted mb-0">Earnings, settlement balance, and withdrawals.</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="/Dashboard/Teacher">Teacher dashboard</a>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Total earned</div>
+                <div class="h3 mb-0">@Model.Total.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Available to withdraw</div>
+                <div class="h3 mb-0">@Model.Available.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Minimum withdrawal</div>
+                <div class="h3 mb-0">@minWithdrawal.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Earnings per course</h2>
+                @if (Model.PerCourse.Count == 0)
+                {
+                    <p class="text-muted mb-0">No earnings yet.</p>
+                }
+                else
+                {
+                    <table class="table table-sm mb-0">
+                        <tbody>
+                            @foreach (var (courseId, title, amount) in Model.PerCourse)
+                            {
+                                <tr>
+                                    <td>
+                                        <a asp-page="/Courses/Details" asp-route-id="@courseId">@title</a>
+                                    </td>
+                                    <td class="text-end fw-semibold">@amount.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Earnings per month</h2>
+                @if (Model.PerPeriod.Count == 0)
+                {
+                    <p class="text-muted mb-0">No earnings yet.</p>
+                }
+                else
+                {
+                    <table class="table table-sm mb-0">
+                        <tbody>
+                            @foreach (var (period, amount) in Model.PerPeriod)
+                            {
+                                <tr>
+                                    <td>@period</td>
+                                    <td class="text-end">@amount.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Recent ledger</h2>
+                @if (Model.Ledger.Count == 0)
+                {
+                    <p class="text-muted mb-0">No ledger activity.</p>
+                }
+                else
+                {
+                    <table class="table table-sm mb-0">
+                        <tbody>
+                            @foreach (var entry in Model.Ledger)
+                            {
+                                <tr>
+                                    <td class="small">@entry.CreatedAt.ToString("yyyy-MM-dd HH:mm") — @entry.Reason</td>
+                                    <td class="text-end fw-semibold @(entry.Amount < 0 ? "text-danger" : "")">@entry.Amount.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Request withdrawal</h2>
+                @if (Model.Available >= minWithdrawal)
+                {
+                    <form method="post" asp-page-handler="Withdraw">
+                        <div class="mb-3">
+                            <label class="form-label" for="Amount">Amount</label>
+                            <input name="Amount" id="Amount" type="number" min="0.01" step="0.01" max="@Model.Available" class="form-control" />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Request withdrawal</button>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-info mb-0">You need at least @minWithdrawal.ToString("C") available to request a withdrawal.</div>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Withdrawal history</h2>
+                @if (Model.Withdrawals.Count == 0)
+                {
+                    <p class="text-muted mb-0">No withdrawal requests.</p>
+                }
+                else
+                {
+                    <table class="table table-sm mb-0">
+                        <tbody>
+                            @foreach (var withdrawal in Model.Withdrawals)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">@withdrawal.Amount.ToString("C")</div>
+                                        <div class="text-muted small">@withdrawal.RequestedAt.ToString("yyyy-MM-dd")</div>
+                                    </td>
+                                    <td class="text-end">
+                                        @if (withdrawal.Status == OpenLearning.Settlement.Models.WithdrawalStatus.Paid)
+                                        {
+                                            <span class="badge bg-success">Paid</span>
+                                        }
+                                        else if (withdrawal.Status == OpenLearning.Settlement.Models.WithdrawalStatus.Rejected)
+                                        {
+                                            <span class="badge bg-danger">Rejected</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>

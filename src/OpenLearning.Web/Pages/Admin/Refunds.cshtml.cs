@@ -6,6 +6,7 @@ using OpenLearning.Ecommerce.Models;
 using OpenLearning.Ecommerce.Services;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Notifications.Services;
+using OpenLearning.Settlement.Services;
 
 namespace OpenLearning.Web.Pages.Admin;
 
@@ -13,13 +14,13 @@ namespace OpenLearning.Web.Pages.Admin;
 public class RefundsModel : PageModel
 {
     private readonly OrderService _orders;
-    private readonly LedgerService _ledger;
+    private readonly SettlementService _settlement;
     private readonly NotificationService _notifications;
 
-    public RefundsModel(OrderService orders, LedgerService ledger, NotificationService notifications)
+    public RefundsModel(OrderService orders, SettlementService settlement, NotificationService notifications)
     {
         _orders = orders;
-        _ledger = ledger;
+        _settlement = settlement;
         _notifications = notifications;
     }
 
@@ -41,10 +42,10 @@ public class RefundsModel : PageModel
         var (ok, error) = await _orders.ReviewRefundAsync(id, approve: true);
         if (ok)
         {
-            // Reverse the instructor's earned amount and notify the student.
+            // Reverse the instructor's earned amount in the settlement ledger.
             if (order.Course?.InstructorId is { Length: > 0 } instructorId)
             {
-                await _ledger.AddBalanceAsync(instructorId, -order.Amount, $"Refund order #{id}");
+                await _settlement.CreditAsync(instructorId, order.CourseId, -order.Amount, $"Refund order #{id}");
             }
 
             await _notifications.CreateAsync(

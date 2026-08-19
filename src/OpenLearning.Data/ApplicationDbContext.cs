@@ -14,6 +14,7 @@ using OpenLearning.Operations.Models;
 using OpenLearning.Progress.Models;
 using OpenLearning.Ratings.Models;
 using OpenLearning.Scorm.Models;
+using OpenLearning.Settlement.Models;
 using OpenLearning.Storage.Models;
 using OpenLearning.StudyTools.Models;
 using OpenLearning.SystemConfig.Models;
@@ -72,6 +73,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<PointsLedger> PointsLedgers => Set<PointsLedger>();
 
     public DbSet<InvoiceRequest> InvoiceRequests => Set<InvoiceRequest>();
+
+    public DbSet<SettlementLedger> SettlementLedgers => Set<SettlementLedger>();
+
+    public DbSet<WithdrawalRequest> WithdrawalRequests => Set<WithdrawalRequest>();
 
     public DbSet<ScormPackage> ScormPackages => Set<ScormPackage>();
 
@@ -155,5 +160,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Banner).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Assignment).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LessonNote).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(SettlementLedger).Assembly);
     }
 }

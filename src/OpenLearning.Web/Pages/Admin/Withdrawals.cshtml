@@ -1,0 +1,63 @@
+@page
+@model OpenLearning.Web.Pages.Admin.WithdrawalsModel
+@{
+    ViewData["Title"] = "Withdrawal Requests";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Withdrawal Requests</h1>
+        <p class="text-muted mb-0">Mark instructor payout requests as paid or rejected.</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Admin home</a>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Requests.Count == 0)
+{
+    <div class="alert alert-info">No pending withdrawal requests.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Instructor</th>
+                    <th class="text-end">Amount</th>
+                    <th>Requested</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var request in Model.Requests)
+                {
+                    <tr>
+                        <td>@(Model.InstructorNames.GetValueOrDefault(request.InstructorId) ?? request.InstructorId)</td>
+                        <td class="text-end fw-semibold">@request.Amount.ToString("C")</td>
+                        <td>@request.RequestedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-2">
+                                <form method="post" asp-page-handler="Approve" asp-route-id="@request.Id"
+                                      onsubmit="return confirm('Mark this withdrawal as paid?');">
+                                    <button type="submit" class="btn btn-sm btn-success">Mark paid</button>
+                                </form>
+                                <form method="post" asp-page-handler="Reject" asp-route-id="@request.Id"
+                                      onsubmit="return confirm('Reject this withdrawal request?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
