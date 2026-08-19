@@ -1,0 +1,47 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Classes.CreateModel
+@{
+    ViewData["Title"] = "创建班级";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <h1 class="h3 mb-4">创建班级</h1>
+
+        <form method="post" class="card shadow-sm">
+            <div class="card-body p-4">
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                <input type="hidden" asp-for="CourseId" />
+
+                <div class="mb-3">
+                    <label asp-for="Input.Name" class="form-label">班级名称</label>
+                    <input asp-for="Input.Name" class="form-control" autofocus placeholder="如：2026 春季班" />
+                    <span asp-validation-for="Input.Name" class="text-danger small"></span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Input.StartsAt" class="form-label">开始时间</label>
+                        <input asp-for="Input.StartsAt" type="datetime-local" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Input.EndsAt" class="form-label">结束时间</label>
+                        <input asp-for="Input.EndsAt" type="datetime-local" class="form-control" />
+                    </div>
+                </div>
+                <div class="mb-3 mt-3">
+                    <label asp-for="Input.Capacity" class="form-label">容量（留空表示不限）</label>
+                    <input asp-for="Input.Capacity" type="number" min="1" class="form-control" style="max-width: 200px" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">创建班级</button>
+                    <a class="btn btn-outline-secondary" asp-page="/Courses/Classes/Index" asp-route-courseId="@Model.CourseId">取消</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

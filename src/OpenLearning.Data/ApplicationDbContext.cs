@@ -5,6 +5,7 @@ using OpenLearning.Assignments.Models;
 using OpenLearning.Auth.Models;
 using OpenLearning.Certificates.Models;
 using OpenLearning.Chat.Models;
+using OpenLearning.Classes.Models;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Exams.Models;
@@ -163,5 +164,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(LessonNote).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(SettlementLedger).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Exam).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(ClassGroup).Assembly);
     }
 }

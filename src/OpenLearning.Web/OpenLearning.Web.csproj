@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenLearning.Assessments\OpenLearning.Assessments.csproj" />
+    <ProjectReference Include="..\OpenLearning.Classes\OpenLearning.Classes.csproj" />
     <ProjectReference Include="..\OpenLearning.Ecommerce\OpenLearning.Ecommerce.csproj" />
     <ProjectReference Include="..\OpenLearning.Exams\OpenLearning.Exams.csproj" />
     <ProjectReference Include="..\OpenLearning.Navigation\OpenLearning.Navigation.csproj" />

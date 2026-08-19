@@ -1,5 +1,5 @@
 @page
-@model OpenLearning.Web.Pages.TA.RosterModel
+@model OpenLearning.Web.Pages.Courses.Classes.RosterModel
 @{
     ViewData["Title"] = "班级花名册";
     var c = Model.ClassGroup!;
@@ -7,12 +7,15 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3 mb-0">@c.Name — 花名册 (@Model.Rows.Count)</h1>
-    <a class="btn btn-outline-secondary btn-sm" asp-page="/TA/Index">返回助教工作台</a>
+    <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-primary" asp-page-handler="ExportCsv" asp-route-id="@c.Id">导出 CSV</a>
+        <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Classes/Manage" asp-route-id="@c.Id">返回管理</a>
+    </div>
 </div>
 
 @if (Model.Rows.Count == 0)
 {
-    <div class="alert alert-info">该班级暂无学员。</div>
+    <div class="alert alert-info">该班级还没有学员。使用「加入班级」将学员加入此班级。</div>
 }
 else
 {

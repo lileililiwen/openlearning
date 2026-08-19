@@ -1,0 +1,111 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Classes.ManageModel
+@{
+    ViewData["Title"] = "班级管理";
+    var c = Model.ClassGroup!;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">班级：@c.Name</h1>
+    <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Classes/Edit" asp-route-id="@c.Id">编辑设置</a>
+        <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Classes/Index" asp-route-courseId="@c.CourseId">返回列表</a>
+    </div>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <strong>助教与讲师分配</strong>
+                <span>
+                    @if (c.EffectiveStatus == ClassGroupStatus.Closed)
+                    {
+                        <form method="post" asp-page-handler="Close" asp-route-id="@c.Id" asp-route-close="false" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-success">重新开放</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="Close" asp-route-id="@c.Id" asp-route-close="true" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">关闭班级</button>
+                        </form>
+                    }
+                </span>
+            </div>
+            <ul class="list-group list-group-flush">
+                @if (Model.Assignments.Count == 0)
+                {
+                    <li class="list-group-item text-muted">尚未分配任何助教或讲师。</li>
+                }
+                else
+                {
+                    foreach (var a in Model.Assignments)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@a.Role — @a.UserId</span>
+                            <form method="post" asp-page-handler="Revoke" asp-route-id="@c.Id" asp-route-assignmentId="@a.Id" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">移除</button>
+                            </form>
+                        </li>
+                    }
+                }
+            </ul>
+            @if (Model.TaCandidates.Count > 0)
+            {
+                <div class="card-body border-top">
+                    <form method="post" asp-page-handler="Assign" asp-route-id="@c.Id" class="row g-2 align-items-center">
+                        <div class="col">
+                            <select name="userId" class="form-select form-select-sm">
+                                @foreach (var u in Model.TaCandidates)
+                                {
+                                    <option value="@u.Id">@(u.DisplayName) (@u.Email)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <select name="role" class="form-select form-select-sm">
+                                @foreach (var role in Enum.GetValues<ClassAssignmentRole>())
+                                {
+                                    <option value="@((int)role)">@role.ToString()</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-primary">分配</button>
+                        </div>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="card-body text-muted small">暂无 TeachingAssistant 角色的用户可选。</div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><strong>班级公告</strong></div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="Announce" asp-route-id="@c.Id">
+                    <div class="mb-2">
+                        <input name="title" class="form-control form-control-sm" placeholder="公告标题" />
+                    </div>
+                    <div class="mb-2">
+                        <textarea name="body" class="form-control" rows="3" placeholder="公告内容"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">发送给班级学员</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Services;
+using OpenLearning.Classes.Models;
+using OpenLearning.Classes.Services;
 
 namespace OpenLearning.Web.Pages.TA;
 
@@ -11,13 +13,19 @@ namespace OpenLearning.Web.Pages.TA;
 public class RosterModel : PageModel
 {
     private readonly IClassAssignmentLookup _lookup;
+    private readonly ClassGroupService _classes;
+    private readonly ClassRosterService _roster;
 
-    public RosterModel(IClassAssignmentLookup lookup)
+    public RosterModel(IClassAssignmentLookup lookup, ClassGroupService classes, ClassRosterService roster)
     {
         _lookup = lookup;
+        _classes = classes;
+        _roster = roster;
     }
 
-    public int ClassId { get; set; }
+    public ClassGroup? ClassGroup { get; set; }
+
+    public List<ClassRosterRow> Rows { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync(int classId)
     {
@@ -27,7 +35,13 @@ public class RosterModel : PageModel
             return Forbid();
         }
 
-        ClassId = classId;
+        ClassGroup = await _classes.GetByIdAsync(classId);
+        if (ClassGroup is null)
+        {
+            return NotFound();
+        }
+
+        Rows = await _roster.GetRosterAsync(classId);
         return Page();
     }
 }

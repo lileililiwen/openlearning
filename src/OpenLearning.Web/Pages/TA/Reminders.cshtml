@@ -2,12 +2,34 @@
 @model OpenLearning.Web.Pages.TA.RemindersModel
 @{
     ViewData["Title"] = "班级提醒";
+    var c = Model.ClassGroup!;
 }
 
-<h1 class="h3 mb-4">班级 #@Model.ClassId — 发送提醒</h1>
-
-<div class="alert alert-info">
-    班级提醒由班级分组功能（class-groups）提供。该功能上线后，这里将允许您向班级内选定的学员发送通知提醒。
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">@c.Name — 发送提醒</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-page="/TA/Index">返回助教工作台</a>
 </div>
 
-<a class="btn btn-outline-secondary" asp-page="/TA/Index">返回助教工作台</a>
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm" style="max-width: 640px">
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label">提醒标题</label>
+                <input name="title" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">提醒内容</label>
+                <textarea name="body" class="form-control" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">发送给班级学员</button>
+        </form>
+    </div>
+</div>

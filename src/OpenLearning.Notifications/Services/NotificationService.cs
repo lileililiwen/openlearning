@@ -5,6 +5,7 @@ using OpenLearning.Notifications.Channels;
 using OpenLearning.Notifications.Configuration;
 using OpenLearning.Notifications.Email;
 using OpenLearning.Notifications.Models;
+using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
 
 namespace OpenLearning.Notifications.Services;
 
@@ -216,6 +217,26 @@ public class NotificationService
     public Task<int> GetUnreadCountAsync(string userId)
     {
         return _db.Set<Notification>().CountAsync(n => n.UserId == userId && !n.IsRead);
+    }
+
+    /// <summary>Sends a class-scoped announcement to every student enrolled in the class.</summary>
+    public async Task SendClassAnnouncementAsync(int classGroupId, string title, string body, string senderId)
+    {
+        var studentIds = await _db.Set<EnrollmentEntity>()
+            .Where(e => e.ClassGroupId == classGroupId)
+            .Select(e => e.StudentId)
+            .Distinct()
+            .ToListAsync();
+        foreach (var studentId in studentIds)
+        {
+            await CreateAsync(
+                studentId,
+                NotificationType.Announcement,
+                title,
+                body,
+                null,
+                new Dictionary<string, string> { ["SenderId"] = senderId });
+        }
     }
 
     /// <summary>Marks a single notification read; only its owner may do so.</summary>

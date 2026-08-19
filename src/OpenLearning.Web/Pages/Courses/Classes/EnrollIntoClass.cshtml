@@ -1,0 +1,75 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Classes.EnrollIntoClassModel
+@{
+    ViewData["Title"] = "加入班级";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">将学员加入班级</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-page="/Courses/Classes/Index" asp-route-courseId="@Model.CourseId">返回班级列表</a>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Classes.Count == 0)
+{
+    <div class="alert alert-warning">该课程还没有班级，请先创建班级。</div>
+}
+else if (Model.Enrollments.Count == 0)
+{
+    <div class="alert alert-info">该课程还没有学员。</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>学员</th>
+                        <th>邮箱</th>
+                        <th>当前班级</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in Model.Enrollments)
+                    {
+                        <tr>
+                            <td>@(e.Student?.DisplayName ?? e.StudentId)</td>
+                            <td>@(e.Student?.Email ?? "")</td>
+                            <td>
+                                @if (e.ClassGroupId is int currentId)
+                                {
+                                    <span class="badge bg-info text-dark">@(Model.Classes.FirstOrDefault(c => c.Id == currentId)?.Name ?? $"#{currentId}")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">未加入班级</span>
+                                }
+                            </td>
+                            <td>
+                                <form method="post" asp-route-courseId="@Model.CourseId" asp-route-enrollmentId="@e.Id" class="d-flex gap-2">
+                                    <select name="classGroupId" class="form-select form-select-sm" style="max-width: 220px">
+                                        <option value="">请选择班级</option>
+                                        @foreach (var c in Model.Classes)
+                                        {
+                                            <option value="@c.Id" selected="@(e.ClassGroupId == c.Id)">@c.Name</option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">保存</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -6,27 +6,43 @@
 
 <h1 class="h3 mb-4">助教工作台</h1>
 
-@if (Model.ClassIds.Count == 0)
+@if (Model.Classes.Count == 0)
 {
     <div class="alert alert-info">
-        您尚未被分配任何班级。请联系管理员分配班级后再查看。
+        您尚未被分配任何班级。请联系课程负责人或管理员将您加入班级。
     </div>
 }
 else
 {
     <div class="card shadow-sm">
-        <div class="card-header bg-white"><strong>我的班级 (@Model.ClassIds.Count)</strong></div>
-        <ul class="list-group list-group-flush">
-            @foreach (var classId in Model.ClassIds)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>班级 #@classId</span>
-                    <span class="d-inline-flex gap-2">
-                        <a class="btn btn-sm btn-outline-secondary" asp-page="/TA/Roster" asp-route-classId="@classId">花名册</a>
-                        <a class="btn btn-sm btn-outline-secondary" asp-page="/TA/Reminders" asp-route-classId="@classId">提醒</a>
-                    </span>
-                </li>
-            }
-        </ul>
+        <div class="card-header bg-white"><strong>我的班级 (@Model.Classes.Count)</strong></div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>班级</th>
+                        <th>课程</th>
+                        <th>开始</th>
+                        <th>结束</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.Classes)
+                    {
+                        <tr>
+                            <td>@c.Name</td>
+                            <td>@(c.Course?.Title ?? $"课程 #{c.CourseId}")</td>
+                            <td>@c.StartsAt.ToString("yyyy-MM-dd")</td>
+                            <td>@c.EndsAt.ToString("yyyy-MM-dd")</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" asp-page="/TA/Roster" asp-route-classId="@c.Id">花名册</a>
+                                <a class="btn btn-sm btn-outline-secondary" asp-page="/TA/Reminders" asp-route-classId="@c.Id">提醒</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 }

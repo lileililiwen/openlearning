@@ -10,6 +10,7 @@ using OpenLearning.Auth.Models;
 using OpenLearning.Certificates;
 using OpenLearning.Chat;
 using OpenLearning.Chat.Hubs;
+using OpenLearning.Classes;
 using OpenLearning.CourseManagement;
 using OpenLearning.Data;
 using OpenLearning.Ecommerce;
@@ -108,6 +109,7 @@ if (!string.IsNullOrWhiteSpace(builder.Configuration["Authentication:GitHub:Clie
 builder.Services.AddAuthModule();
 builder.Services.AddCourseManagementModule();
 builder.Services.AddEnrollmentModule();
+builder.Services.AddClassesModule();
 builder.Services.AddProgressModule();
 builder.Services.AddAssessmentsModule();
 builder.Services.AddExamsModule();

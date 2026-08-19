@@ -1,0 +1,63 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Classes.IndexModel
+@{
+    ViewData["Title"] = "班级管理";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">班级管理</h1>
+    <a class="btn btn-sm btn-primary" asp-page="/Courses/Classes/Create" asp-route-courseId="@Model.CourseId">创建班级</a>
+</div>
+
+@if (Model.Classes.Count == 0)
+{
+    <div class="alert alert-info">该课程还没有班级。创建一个班级以管理期次与助教。</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>开始</th>
+                        <th>结束</th>
+                        <th>状态</th>
+                        <th>容量</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.Classes)
+                    {
+                        <tr>
+                            <td>@c.Name</td>
+                            <td>@c.StartsAt.ToString("yyyy-MM-dd")</td>
+                            <td>@c.EndsAt.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                @switch (c.EffectiveStatus)
+                                {
+                                    case ClassGroupStatus.Open:
+                                        <span class="badge bg-success">开放中</span>
+                                        break;
+                                    case ClassGroupStatus.Closed:
+                                        <span class="badge bg-secondary">已结束</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-warning text-dark">未开始</span>
+                                        break;
+                                }
+                            </td>
+                            <td>@(c.Capacity?.ToString() ?? "不限")</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Classes/Manage" asp-route-id="@c.Id">管理</a>
+                                <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Classes/Roster" asp-route-id="@c.Id">花名册</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
