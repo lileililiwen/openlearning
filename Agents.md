@@ -256,28 +256,86 @@ When asked to implement a feature or spec:
 
 ### 7.1 Shipped & archived (implemented)
 
-Source of truth in `openspec/specs/` (10 capabilities): user-auth,
-course-management, course-structure, enrollment, progress-tracking,
-lms-core, assessments, ecommerce, scorm-content, live-chat. Frozen
-copies under `openspec/changes/archive/`.
+Source of truth in `openspec/specs/` — **49 capabilities** across the
+core LMS, content, assessments, ecommerce, finance, notifications,
+quality, and operations layers. Frozen change copies under
+`openspec/changes/archive/2026-08-18-*` and `2026-08-19-*`.
+
+The 10-capability MVP (`user-auth`, `course-management`,
+`course-structure`, `enrollment`, `progress-tracking`, `lms-core`,
+`assessments`, `ecommerce`, `scorm-content`, `live-chat`) plus the
+follow-on capabilities (dashboards, user-management, instructor-onboarding,
+teacher-roster, course-discovery, ratings-reviews, certificates,
+notifications, platform-analytics, system-config, operations-config,
+memberships, account-login-extras, account-settings, study-tools,
+study-duration, lesson-preview, video-player, assignments,
+finance-admin, instructor-revenue, commerce-extras) are all shipped.
 
 ### 7.2 Pending changes (implement in this order — "minor sequence")
 
+The historical sequence (`dashboards`, `user-management`, `teacher-roster`,
+`course-discovery`, `ratings-reviews`, `certificates`, `notifications`,
+`user-profiles`, `platform-analytics`) is **shipped and archived** under
+`openspec/changes/archive/2026-08-18-*` and `2026-08-19-*`. The current
+pending backlog is grouped below by layer; within each group follow the
+listed order.
+
+#### A. Roles, navigation, lifecycle (3)
+
 | Order | Change | Capabilities | One-line summary |
 |---|---|---|---|
-| 1 | `dashboards` | student-dashboard, teacher-dashboard, platform-dashboard | Role-aware landings + `LessonAccess` resume tracking (SELECTED NEXT — start here) |
-| 2 | `user-management` | user-management, instructor-onboarding | Admin user mgmt, role assignment, suspension; instructor application/approval |
-| 3 | `teacher-roster` | teacher-roster | Enrolled roster + per-student progress + withdraw |
-| 4 | `course-discovery` | course-discovery (+ MODIFIED course-management) | Search, filter, sort, pagination; course metadata |
-| 5 | `ratings-reviews` | ratings-reviews | Student ratings/reviews + moderation |
-| 6 | `certificates` | certificates | Auto issuance at 100% + printable |
-| 7 | `notifications` | notifications | In-app inbox, announcements, optional email |
-| 8 | `user-profiles` | user-profiles | Profile edit, change/reset password, public instructor pages |
-| 9 | `platform-analytics` | platform-analytics | Revenue/enrollment/user reports + CSV export |
+| 1 | `navigation-chrome` | navigation-chrome, menu-config (+ MODIFIED lms-core, notifications) | Sidebar + topbar + breadcrumb; admin-managed menu tree |
+| 2 | `ta-and-finance-roles` | ta-and-finance-roles (+ MODIFIED user-management, lms-core, finance-admin) | Add TA and Finance roles, decouple from Admin |
+| 3 | `class-groups` | class-groups (+ MODIFIED course-management, enrollment, teacher-roster, qa-community, notifications) | Class groups under a course; TA scoping; class Q&A + announcements |
 
-Each pending change has its four canonical docs complete and ready
-for `apply`. The `dashboards` change introduces the `LessonAccess`
-table in the Progress module, which `teacher-roster` depends on.
+#### B. Domain extensions already in flight (6)
+
+| Order | Change | Capabilities | One-line summary |
+|---|---|---|---|
+| 4 | `question-types` | question-types (+ MODIFIED assessments) | Single / multiple / true-false / fill-blank / short-answer / file-upload |
+| 5 | `question-bank-admin` | question-bank-admin (+ MODIFIED assessments) | Central bank; admin CRUD; instructor import |
+| 6 | `exams` | exams (+ MODIFIED assessments) | Formal exams with timer, anti-switch, results, incorrect log |
+| 7 | `incorrect-answer-log` | incorrect-answer-log (+ MODIFIED assessments, exams) | Persistent wrong-answer log + practice mode + bookmarks |
+| 8 | `qa-community` | qa-community | Course Q&A + class-group posts with replies |
+| 9 | `review-followups` | review-followups (+ MODIFIED ratings-reviews) | Threaded comments under a review |
+| 10 | `content-review` | content-review (+ MODIFIED course-management, ratings-reviews, qa-community) | Course review workflow; report queue; violation handling |
+| 11 | `live-streaming` | live-streaming (+ MODIFIED live-chat, file-storage) | Scheduled live sessions + chat + co-hosting + check-ins + replays |
+
+#### C. Time, finance, billing (5)
+
+| Order | Change | Capabilities | One-line summary |
+|---|---|---|---|
+| 12 | `job-scheduler` | job-scheduler (+ MODIFIED logging) | Cron substrate with persistent Job / JobRun, idempotency, lock, admin UI |
+| 13 | `course-access-period` | course-access-period (+ MODIFIED enrollment, memberships, progress-tracking, certificates, course-management) | `Enrollment.AccessExpiresAt`, manual + scheduled revocation, re-enroll |
+| 14 | `scheduled-business-jobs` | scheduled-business-jobs (+ MODIFIED ecommerce, commerce-extras, assignments, exams, study-duration, platform-analytics, logging) | 14 batch jobs (close-unpaid, refund-timeout, expiry, reminders, stats, settlement, coupon deactivation, log archive, IO cleanup) wired to `job-scheduler` |
+| 15 | `affiliate-distribution` | affiliate-distribution (+ MODIFIED ecommerce, navigation-chrome) | Distributor role, share links, attribution, commission ledger, payout review |
+| 16 | `invoice-management` | invoice-management (+ MODIFIED commerce-extras, finance-admin, ta-and-finance-roles) | Finance-side invoice issuance, void, red-letter, sequential numbering |
+
+#### D. Bulk IO and reporting (6)
+
+| Order | Change | Capabilities | One-line summary |
+|---|---|---|---|
+| 17 | `async-io-jobs` | async-io-jobs (+ MODIFIED notification-events-extensions) | Shared async IO substrate: storage, status, error file, retention, notifications |
+| 18 | `notification-events-extensions` | notification-events-extensions (+ MODIFIED notifications, assignments, exams, class-groups, course-access-period, commerce-extras, account-settings, async-io-jobs, student-bulk-import) | All missing notification event types (assignment.graded, exam.starting-soon, due-soon / due-missed, class.starting-soon, expiry events, refund / order events, invoice lifecycle, IO events, account.welcome, enrollment.granted-bulk) and `Notification.ClassGroupId` |
+| 19 | `question-import-export` | question-import-export (+ MODIFIED assessments, question-types, question-bank-admin, notification-events-extensions) | Excel import / export of questions; sync ≤200, async via `async-io-jobs`; Append + UpdateOrAppend modes; partial success; bank variant |
+| 20 | `student-bulk-import` | student-bulk-import (+ MODIFIED user-management, enrollment, account-login-extras, notification-events-extensions) | Bulk student account creation + bulk enrollment; three row-action modes; welcome notification |
+| 21 | `grade-export` | grade-export (+ MODIFIED assignments, assessments, exams, ta-and-finance-roles) | Streaming Excel export of submissions / attempts / rosters; sync ≤1000, async >1000; no import |
+| 22 | `course-outline-import-export` | course-outline-import-export (+ MODIFIED course-structure) | Excel import / export of course modules + lessons; metadata only (no media); Append + Replace modes |
+| 23 | `coupon-bulk-import` | coupon-bulk-import (+ MODIFIED commerce-extras, async-io-jobs) | Bulk coupon creation via Excel; append-only; unique-code enforcement |
+
+#### Dependency summary
+
+- Layer A is the chrome + roles; layer D depends on layer A (TA scope, finance pages, sidebar) and on layer B (questions / exams / assignments / Q&A exist).
+- Layer B is largely independent; live-streaming depends on live-chat (already shipped).
+- Layer C depends on layer A (TA scope for finance pages) and on layer B (exams / assessments exist for scheduled jobs).
+- Layer D depends on layer C's `job-scheduler` (the IO substrate uses it for retries / locks) and on layer B for the entities being imported / exported.
+- `notification-events-extensions` is centralised — it depends on everything else. Implement it last within its layer group so the templates and recipients are stable.
+
+#### A note on §3.3
+
+Section 3.3 still applies: implement one change at a time, in this list's
+order; archive and land via PR before starting the next. The grouping
+above is for *reading*, not for parallel work.
 
 ### 7.3 Deferred roadmap
 
