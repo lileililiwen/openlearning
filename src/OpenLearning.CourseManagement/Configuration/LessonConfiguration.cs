@@ -12,6 +12,7 @@ public class LessonConfiguration : IEntityTypeConfiguration<Lesson>
         builder.Property(l => l.VideoUrl).HasMaxLength(1000);
         builder.Property(l => l.VideoPosterUrl).HasMaxLength(1000);
         builder.Property(l => l.SubtitleUrl).HasMaxLength(1000);
+        builder.Property(l => l.ContentUrlRef).HasMaxLength(2000);
         builder.HasIndex(l => new { l.ModuleId, l.OrderIndex });
         builder.HasOne(l => l.Module)
                .WithMany(m => m.Lessons)

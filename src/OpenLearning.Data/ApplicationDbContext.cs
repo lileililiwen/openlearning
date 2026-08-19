@@ -8,6 +8,7 @@ using OpenLearning.Certificates.Models;
 using OpenLearning.Chat.Models;
 using OpenLearning.Classes.Models;
 using OpenLearning.CourseManagement.Models;
+using OpenLearning.CourseOutlineIO.Models;
 using OpenLearning.Distribution.Models;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Exams.Models;
@@ -164,6 +165,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<GradeExportJob> GradeExportJobs => Set<GradeExportJob>();
 
+    public DbSet<OutlineImportJob> OutlineImportJobs => Set<OutlineImportJob>();
+
+    public DbSet<OutlineRowError> OutlineRowErrors => Set<OutlineRowError>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -203,5 +208,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(QuestionImportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(StudentImportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(GradeExportJob).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(OutlineImportJob).Assembly);
     }
 }

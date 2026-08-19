@@ -49,6 +49,7 @@ public sealed class ModuleArchitectureTests
         "OpenLearning.QuestionIO",
         "OpenLearning.StudentIO",
         "OpenLearning.GradeExport",
+        "OpenLearning.CourseOutlineIO",
         "OpenLearning.Exams",
         "OpenLearning.Navigation",
         "OpenLearning.Classes",
@@ -118,6 +119,15 @@ public sealed class ModuleArchitectureTests
                 "OpenLearning.Jobs",
                 "OpenLearning.Logging",
                 "OpenLearning.Progress",
+                "OpenLearning.Storage",
+                "OpenLearning.SystemConfig",
+            },
+            ["OpenLearning.CourseOutlineIO"] = new[]
+            {
+                "OpenLearning.AsyncIO",
+                "OpenLearning.Auth",
+                "OpenLearning.CourseManagement",
+                "OpenLearning.Logging",
                 "OpenLearning.Storage",
                 "OpenLearning.SystemConfig",
             },

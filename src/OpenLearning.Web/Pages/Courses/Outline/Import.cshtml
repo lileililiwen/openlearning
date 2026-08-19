@@ -1,0 +1,117 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Outline.ImportModel
+@{
+    ViewData["Title"] = "导入课程大纲";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">导入课程大纲</h1>
+    <div>
+        <a class="btn btn-outline-secondary btn-sm" asp-page="/Courses/Edit" asp-route-id="@Model.CourseId">返回课程编辑</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-page="/Courses/Outline/ImportJobs" asp-route-courseId="@Model.CourseId">导入任务</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-page="/Courses/Outline/Export" asp-route-courseId="@Model.CourseId">导出大纲</a>
+    </div>
+</div>
+
+@if (Model.Course is not null)
+{
+    <p class="text-muted small">
+        课程：<strong>@Model.Course.Title</strong>。仅导入模块与课时的元数据（标题、顺序、内容地址文本引用），不含视频等媒体。超过 200 行时自动转为异步导入，完成后通过站内信通知。
+    </p>
+}
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+@if (Model.Outcome is not null)
+{
+    @if (Model.Outcome.Kind == OpenLearning.CourseOutlineIO.Services.OutlineImportOutcomeKind.Error)
+    {
+        <div class="alert alert-danger">@Model.Outcome.Message</div>
+    }
+    else if (Model.Outcome.Kind == OpenLearning.CourseOutlineIO.Services.OutlineImportOutcomeKind.Submitted)
+    {
+        <div class="alert alert-success">
+            任务已提交，完成后将通过站内信通知。
+            <a asp-page="/Courses/Outline/ImportJobs" asp-route-courseId="@Model.CourseId">查看导入任务</a>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-@(Model.Outcome.Errors.Count == 0 ? "success" : "warning")">
+            导入完成：共 @Model.Outcome.TotalRows 行，成功 @Model.Outcome.SuccessRows 行，失败 @Model.Outcome.Errors.Count 行。
+        </div>
+        @if (Model.Outcome.Errors.Count > 0)
+        {
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white"><strong>错误明细</strong></div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr><th>行号</th><th>字段</th><th>原因</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var error in Model.Outcome.Errors)
+                            {
+                                <tr><td>@error.RowIndex</td><td>@error.Field</td><td>@error.Message</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>上传大纲文件</strong>
+        <a class="btn btn-sm btn-outline-primary" asp-page="/CourseOutlineIO/Template">下载模板</a>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="CourseId" value="@Model.CourseId" />
+            <div class="mb-3">
+                <label class="form-label" asp-for="UploadFile">Excel 文件（.xlsx，≤5MB）</label>
+                <input asp-for="UploadFile" type="file" class="form-control" accept=".xlsx" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">导入模式</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="Mode" id="mode-append" value="append" checked />
+                    <label class="form-check-label" for="mode-append">追加（Append）—— 只新增模块和课时，保留现有大纲</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="Mode" id="mode-replace" value="replace" />
+                    <label class="form-check-label" for="mode-replace">替换（Replace）—— 清空现有模块和课时后重新导入</label>
+                </div>
+                @if (Model.ReplacePreview is not null)
+                {
+                    <p class="text-muted small mt-2" id="replace-preview" style="display:none">
+                        替换将删除该课程下 <strong>@Model.ReplacePreview.ModuleCount</strong> 个模块、<strong>@Model.ReplacePreview.LessonCount</strong> 个课时；课程本身、学员、测验与作业均保留。
+                    </p>
+                }
+                <div class="form-check mt-2" id="confirm-replace-wrap" style="display:none">
+                    <input class="form-check-input" type="checkbox" name="ConfirmReplace" id="confirm-replace" value="true" />
+                    <label class="form-check-label text-danger" for="confirm-replace">我确认要替换该课程的大纲</label>
+                </div>
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="ForceAsync" id="force-async" value="true" />
+                <label class="form-check-label" for="force-async">强制异步导入（小文件也作为后台任务）</label>
+            </div>
+            <button type="submit" class="btn btn-primary">上传并导入</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('input[name="Mode"]').forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                var replace = document.querySelector('input[name="Mode"]:checked').value === 'replace';
+                document.getElementById('replace-preview').style.display = replace ? 'block' : 'none';
+                document.getElementById('confirm-replace-wrap').style.display = replace ? 'block' : 'none';
+            });
+        });
+    </script>
+}

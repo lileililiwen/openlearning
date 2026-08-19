@@ -21,6 +21,13 @@ public class Lesson
     /// <summary>Optional WebVTT subtitle track URL.</summary>
     public string? SubtitleUrl { get; set; }
 
+    /// <summary>
+    /// Imported text reference to external lesson content (Excel outline import
+    /// only). Informational — the player never embeds this; instructors attach
+    /// managed media via the lesson edit page.
+    /// </summary>
+    public string? ContentUrlRef { get; set; }
+
     /// <summary>When true, non-enrolled visitors of a published course can view this lesson.</summary>
     public bool IsPreview { get; set; }
 

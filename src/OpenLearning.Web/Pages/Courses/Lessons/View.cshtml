@@ -78,6 +78,15 @@
                 else
                 {
                     <hr />
+                    @if (string.IsNullOrWhiteSpace(Model.Lesson.Content)
+                        && string.IsNullOrWhiteSpace(Model.Lesson.ContentUrlRef))
+                    {
+                        <div class="alert alert-light border text-muted">尚未添加课件内容。教师可在课时编辑页添加视频或文档。</div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Lesson.ContentUrlRef))
+                    {
+                        <p class="text-muted small">内容引用（文本，未嵌入播放）：<code>@Model.Lesson.ContentUrlRef</code></p>
+                    }
                     <div class="lesson-content">
                         @Html.Raw(MarkdownRenderer.ToHtml(Model.Lesson.Content))
                     </div>

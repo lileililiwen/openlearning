@@ -14,6 +14,7 @@ using OpenLearning.Chat.Hubs;
 using OpenLearning.Classes;
 using OpenLearning.Community;
 using OpenLearning.CourseManagement;
+using OpenLearning.CourseOutlineIO;
 using OpenLearning.Data;
 using OpenLearning.Distribution;
 using OpenLearning.Ecommerce;
@@ -156,6 +157,7 @@ builder.Services.AddJob<OpenLearning.AsyncIO.Jobs.AsyncIOCleanupJob>();
 builder.Services.AddQuestionIOModule();
 builder.Services.AddStudentIOModule();
 builder.Services.AddGradeExportModule();
+builder.Services.AddCourseOutlineIOModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();
