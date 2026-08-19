@@ -67,6 +67,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Community", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Live", "src\OpenLearning.Live\OpenLearning.Live.csproj", "{403D29CF-355C-458F-AAC2-66A313F024D8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Jobs", "src\OpenLearning.Jobs\OpenLearning.Jobs.csproj", "{2050FCEE-B054-4BA2-873E-C5A2EF3EEEBF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

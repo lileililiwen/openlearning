@@ -1,0 +1,85 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Jobs.IndexModel
+@{
+    ViewData["Title"] = "Admin · Jobs";
+}
+
+<h1 class="h3 mb-4">Admin — Scheduled Jobs</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Jobs.Count == 0)
+{
+    <div class="alert alert-info">No scheduled jobs are registered yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Cron</th>
+                    <th>Enabled</th>
+                    <th>Last run</th>
+                    <th>Next run</th>
+                    <th>Last status</th>
+                    <th>7-day success</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var summary in Model.Jobs)
+                {
+                    var job = summary.Job;
+                    <tr>
+                        <td>
+                            <a asp-page="Detail" asp-route-id="@job.Id" class="fw-semibold text-decoration-none">@job.Key</a>
+                        </td>
+                        <td><code>@job.Cron</code></td>
+                        <td>
+                            @if (job.IsEnabled)
+                            {
+                                <span class="badge bg-success">Enabled</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Paused</span>
+                            }
+                        </td>
+                        <td>@(job.LastRunAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") ?? "—")</td>
+                        <td>@job.NextRunAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>
+                            @if (summary.LastStatus == JobRunStatus.Success)
+                            {
+                                <span class="badge bg-success">Success</span>
+                            }
+                            else if (summary.LastStatus == JobRunStatus.Failed)
+                            {
+                                <span class="badge bg-danger">Failed</span>
+                            }
+                            else if (summary.LastStatus == JobRunStatus.Skipped)
+                            {
+                                <span class="badge bg-warning text-dark">Skipped</span>
+                            }
+                            else if (summary.LastStatus == JobRunStatus.Running)
+                            {
+                                <span class="badge bg-primary">Running</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td>@OpenLearning.Web.Pages.Admin.Jobs.IndexModel.RateText(summary.SuccessRate)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

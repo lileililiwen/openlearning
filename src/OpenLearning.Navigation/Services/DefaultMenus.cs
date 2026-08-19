@@ -128,8 +128,9 @@ public static class DefaultMenus
         var group = new MenuGroup { Key = "admin.system", Label = "系统配置", SortOrder = 50, IconKey = "bi-gear", AllowedRoles = Roles.Admin };
         group.Items.Add(new MenuItem { Key = "system", GroupKey = group.Key, Label = "系统设置", Route = "/Admin/System", SortOrder = 1, IconKey = "bi-gear", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "menu-config", GroupKey = group.Key, Label = "导航菜单", Route = "/Admin/Menu", SortOrder = 2, IconKey = "bi-list-nested", AllowedRoles = Roles.Admin });
-        group.Items.Add(new MenuItem { Key = "ops-logs", GroupKey = group.Key, Label = "操作日志", Route = "/Admin/Logs/Operations", SortOrder = 3, IconKey = "bi-journal-text", AllowedRoles = Roles.Admin });
-        group.Items.Add(new MenuItem { Key = "error-logs", GroupKey = group.Key, Label = "错误日志", Route = "/Admin/Logs/Errors", SortOrder = 4, IconKey = "bi-bug", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "admin-jobs", GroupKey = group.Key, Label = "任务调度", Route = "/Admin/Jobs", SortOrder = 3, IconKey = "bi-clock-history", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "ops-logs", GroupKey = group.Key, Label = "操作日志", Route = "/Admin/Logs/Operations", SortOrder = 4, IconKey = "bi-journal-text", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "error-logs", GroupKey = group.Key, Label = "错误日志", Route = "/Admin/Logs/Errors", SortOrder = 5, IconKey = "bi-bug", AllowedRoles = Roles.Admin });
         return group;
     }
 }

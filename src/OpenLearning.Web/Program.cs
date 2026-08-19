@@ -17,6 +17,7 @@ using OpenLearning.Data;
 using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
 using OpenLearning.Exams;
+using OpenLearning.Jobs;
 using OpenLearning.Live;
 using OpenLearning.Live.Hubs;
 using OpenLearning.Logging;
@@ -140,6 +141,7 @@ builder.Services.AddSettlementModule();
 builder.Services.AddSystemConfigModule();
 builder.Services.AddModerationModule();
 builder.Services.AddLiveModule();
+builder.Services.AddJobsModule();
 builder.Services.AddSignalR();
 
 // Optional email channel: only used when Email:Enabled is true.

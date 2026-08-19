@@ -9,6 +9,7 @@ using OpenLearning.Classes.Models;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Exams.Models;
+using OpenLearning.Jobs.Models;
 using OpenLearning.Live.Models;
 using OpenLearning.Logging.Models;
 using OpenLearning.Memberships.Models;
@@ -142,6 +143,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<LiveSession> LiveSessions => Set<LiveSession>();
 
+    public DbSet<Job> Jobs => Set<Job>();
+
+    public DbSet<JobRun> JobRuns => Set<JobRun>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -174,5 +179,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(OpenLearning.Community.Models.Question).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(ContentReport).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LiveSession).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Job).Assembly);
     }
 }

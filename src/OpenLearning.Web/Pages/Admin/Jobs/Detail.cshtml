@@ -1,0 +1,116 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Jobs.DetailModel
+@{
+    ViewData["Title"] = "Admin · Job Detail";
+    var detail = Model.Detail!;
+    var job = detail.Job;
+}
+
+<h1 class="h3 mb-4">Job — @job.Key</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-2">Cron (UTC)</dt>
+            <dd class="col-sm-10"><code>@job.Cron</code></dd>
+            <dt class="col-sm-2">Status</dt>
+            <dd class="col-sm-10">
+                @if (job.IsEnabled)
+                {
+                    <span class="badge bg-success">Enabled</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Paused</span>
+                }
+            </dd>
+            <dt class="col-sm-2">Last run</dt>
+            <dd class="col-sm-10">@(job.LastRunAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") ?? "—")</dd>
+            <dt class="col-sm-2">Next run</dt>
+            <dd class="col-sm-10">@job.NextRunAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</dd>
+        </dl>
+        <hr />
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <form method="post" asp-page-handler="Run">
+                <input type="hidden" asp-for="Detail!.Job.Id" value="@job.Id" />
+                <button type="submit" class="btn btn-sm btn-primary">Run now</button>
+            </form>
+            @if (job.IsEnabled)
+            {
+                <form method="post" asp-page-handler="Pause" asp-route-id="@job.Id">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">Pause</button>
+                </form>
+            }
+            else
+            {
+                <form method="post" asp-page-handler="Resume" asp-route-id="@job.Id">
+                    <button type="submit" class="btn btn-sm btn-outline-success">Resume</button>
+                </form>
+            }
+            <form method="post" asp-page-handler="Cron" asp-route-id="@job.Id" class="d-flex gap-2">
+                <input name="cron" class="form-control form-control-sm" style="max-width: 240px"
+                       value="@job.Cron" required />
+                <button type="submit" class="btn btn-sm btn-outline-primary">Update cron</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<h2 class="h5 mb-3">Recent runs</h2>
+@if (detail.Runs.Count == 0)
+{
+    <div class="alert alert-info">No runs recorded yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>Started</th>
+                    <th>Finished</th>
+                    <th>Status</th>
+                    <th>Idempotency key</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var run in detail.Runs)
+                {
+                    <tr>
+                        <td>@run.StartedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>@(run.FinishedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") ?? "—")</td>
+                        <td>
+                            @if (run.Status == JobRunStatus.Success)
+                            {
+                                <span class="badge bg-success">Success</span>
+                            }
+                            else if (run.Status == JobRunStatus.Failed)
+                            {
+                                <span class="badge bg-danger">Failed</span>
+                            }
+                            else if (run.Status == JobRunStatus.Skipped)
+                            {
+                                <span class="badge bg-warning text-dark">Skipped</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary">Running</span>
+                            }
+                        </td>
+                        <td><code>@run.IdempotencyKey</code></td>
+                        <td class="text-danger small">@run.ErrorMessage</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

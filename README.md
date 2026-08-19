@@ -82,12 +82,15 @@ src/
 ├── OpenLearning.CourseManagement/  # Course / Module / Lesson aggregate + management services
 ├── OpenLearning.Enrollment/        # enrollment records and enroll/withdraw services
 ├── OpenLearning.Progress/          # lesson completions + per-course progress calculation
+├── OpenLearning.Jobs/              # persistent cron job registry, scheduler, and run history
 ├── OpenLearning.Data/              # central ApplicationDbContext (entity configs discovered
 │                                   #   from modules), migrations, startup seeding
 └── OpenLearning.Web/               # Razor Pages UI shell (feature folders under Pages/) + DI composition
 
 openspec/          # OpenSpec specifications and change proposals
 ```
+
+Scheduled jobs (registered by business modules via `AddJob<T>`) run on their cron schedules and record a `JobRun` row per execution. Admins can inspect jobs, run history, success rates, and pause/resume jobs under **Admin → 系统配置 → 任务调度** (`/Admin/Jobs`).
 
 ## Roadmap
 

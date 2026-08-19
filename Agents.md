@@ -44,6 +44,7 @@ src/
 ├── OpenLearning.Ecommerce/         # course pricing, orders, checkout
 ├── OpenLearning.Scorm/             # SCORM 1.2 packages + runtime
 ├── OpenLearning.Chat/              # SignalR course chat
+├── OpenLearning.Jobs/              # persistent cron job registry + scheduler + runs
 ├── OpenLearning.Data/              # central ApplicationDbContext, migrations, seeding
 └── OpenLearning.Web/               # Razor Pages UI shell + DI composition root
 ```
