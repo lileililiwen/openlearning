@@ -165,5 +165,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(SettlementLedger).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Exam).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(ClassGroup).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(OpenLearning.Community.Models.Question).Assembly);
     }
 }

@@ -1,0 +1,75 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Community.IndexModel
+@{
+    ViewData["Title"] = "课程社区";
+    var course = Model.Course!;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">首页</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a></li>
+        <li class="breadcrumb-item active" aria-current="page">课程社区</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-4">课程社区</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<form method="post" class="card shadow-sm mb-4">
+    <div class="card-body p-4">
+        <input type="hidden" asp-for="CourseId" />
+        <div class="mb-2">
+            <textarea asp-for="Body" class="form-control" rows="3" placeholder="分享你的想法…"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">发布动态</button>
+    </div>
+</form>
+
+@if (Model.Posts.Count == 0)
+{
+    <div class="alert alert-info">还没有动态。</div>
+}
+else
+{
+    foreach (var post in Model.Posts)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <p class="text-muted small mb-2">
+                        @(post.Author?.DisplayName ?? post.AuthorId) · @post.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                    </p>
+                    @if (Model.IsAdmin)
+                    {
+                        <form method="post" asp-page-handler="Delete" asp-route-postId="@post.Id" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
+                        </form>
+                    }
+                </div>
+                <p class="mb-2" style="white-space: pre-line">@post.Body</p>
+
+                @foreach (var reply in post.Replies.OrderBy(r => r.CreatedAt))
+                {
+                    <div class="border-top pt-2 mt-2 small">
+                        <strong>@(reply.Author?.DisplayName ?? reply.AuthorId)</strong>
+                        <span class="text-muted ms-1">· @reply.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                        <div style="white-space: pre-line">@reply.Body</div>
+                    </div>
+                }
+
+                <form method="post" asp-page-handler="Reply" asp-route-postId="@post.Id" class="mt-2 d-flex gap-2">
+                    <input name="replyBody" class="form-control form-control-sm" placeholder="回复…" />
+                    <button type="submit" class="btn btn-sm btn-outline-primary">回复</button>
+                </form>
+            </div>
+        </div>
+    }
+}

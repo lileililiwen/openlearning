@@ -1,0 +1,88 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Qa.IndexModel
+@{
+    ViewData["Title"] = "课程问答";
+    var course = Model.Course!;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">首页</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a></li>
+        <li class="breadcrumb-item active" aria-current="page">课程问答</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-4">课程问答</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.IsOwner || Model.IsAdmin)
+{
+    <form method="post" class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+            <input type="hidden" asp-for="CourseId" />
+            <div class="mb-2">
+                <label asp-for="Input.Title" class="form-label">标题</label>
+                <input asp-for="Input.Title" class="form-control" />
+            </div>
+            <div class="mb-2">
+                <label asp-for="Input.Body" class="form-label">内容</label>
+                <textarea asp-for="Input.Body" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">发布问题</button>
+        </div>
+    </form>
+}
+
+@if (Model.Questions.Count == 0)
+{
+    <div class="alert alert-info">还没有问题，成为第一个提问的人吧。</div>
+}
+else
+{
+    foreach (var q in Model.Questions)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="card-title mb-1">@q.Title</h5>
+                    @if (Model.IsAdmin)
+                    {
+                        <form method="post" asp-page-handler="Delete" asp-route-questionId="@q.Id" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
+                        </form>
+                    }
+                </div>
+                <p class="text-muted small mb-2">@(q.Author?.DisplayName ?? q.AuthorId) · @q.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+                <p class="mb-2" style="white-space: pre-line">@q.Body</p>
+
+                @foreach (var reply in q.Replies.OrderBy(r => r.CreatedAt))
+                {
+                    var isInstructor = reply.AuthorId == course.InstructorId;
+                    <div class="border-top pt-2 mt-2 small">
+                        <strong>@(reply.Author?.DisplayName ?? reply.AuthorId)</strong>
+                        @if (isInstructor)
+                        {
+                            <span class="badge bg-primary ms-1">教师回答</span>
+                        }
+                        <span class="text-muted ms-1">· @reply.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                        <div style="white-space: pre-line">@reply.Body</div>
+                    </div>
+                }
+
+                <form method="post" asp-page-handler="Reply" asp-route-questionId="@q.Id" class="mt-2 d-flex gap-2">
+                    <input name="replyBody" class="form-control form-control-sm" placeholder="回复该问题…" />
+                    <button type="submit" class="btn btn-sm btn-outline-primary">回复</button>
+                </form>
+            </div>
+        </div>
+    }
+}
