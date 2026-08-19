@@ -20,6 +20,7 @@ using OpenLearning.Exams;
 using OpenLearning.Logging;
 using OpenLearning.Logging.Middleware;
 using OpenLearning.Memberships;
+using OpenLearning.Moderation;
 using OpenLearning.Navigation;
 using OpenLearning.Notifications;
 using OpenLearning.Notifications.Channels;
@@ -135,6 +136,7 @@ builder.Services.AddStudyToolsModule();
 builder.Services.AddSettlementModule();
 // After AddNotificationsModule so the template renderer override wins.
 builder.Services.AddSystemConfigModule();
+builder.Services.AddModerationModule();
 builder.Services.AddSignalR();
 
 // Optional email channel: only used when Email:Enabled is true.

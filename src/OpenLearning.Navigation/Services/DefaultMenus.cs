@@ -18,6 +18,7 @@ public static class DefaultMenus
         tree.Groups.Add(AdminGroups());
         tree.Groups.Add(AdminUsers());
         tree.Groups.Add(AdminCourses());
+        tree.Groups.Add(AdminModeration());
         tree.Groups.Add(AdminOps());
         tree.Groups.Add(AdminSystem());
         return tree;
@@ -99,6 +100,14 @@ public static class DefaultMenus
         group.Items.Add(new MenuItem { Key = "admin-course-list", GroupKey = group.Key, Label = "课程列表", Route = "/Admin/Courses", SortOrder = 1, IconKey = "bi-collection", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "categories", GroupKey = group.Key, Label = "分类管理", Route = "/Admin/Categories", SortOrder = 2, IconKey = "bi-tags", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "tags", GroupKey = group.Key, Label = "标签管理", Route = "/Admin/Tags", SortOrder = 3, IconKey = "bi-tag", AllowedRoles = Roles.Admin });
+        return group;
+    }
+
+    private static MenuGroup AdminModeration()
+    {
+        var group = new MenuGroup { Key = "admin.moderation", Label = "内容审核", SortOrder = 35, IconKey = "bi-shield-check", AllowedRoles = Roles.Admin };
+        group.Items.Add(new MenuItem { Key = "course-reviews", GroupKey = group.Key, Label = "课程审核", Route = "/Admin/CourseReviews", SortOrder = 1, IconKey = "bi-journal-check", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "content-reports", GroupKey = group.Key, Label = "内容举报", Route = "/Admin/ContentReports", SortOrder = 2, IconKey = "bi-flag", AllowedRoles = Roles.Admin });
         return group;
     }
 

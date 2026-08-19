@@ -74,6 +74,19 @@ else
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
                             </form>
                         }
+                        @if (Model.CurrentUserId is not null && Model.CurrentUserId != review.UserId && !User.IsInRole(Roles.Admin))
+                        {
+                            <details class="mt-2">
+                                <summary class="btn btn-sm btn-outline-warning d-inline-block">Report</summary>
+                                <form method="post" asp-page-handler="Report" asp-route-id="@Model.CourseId" class="mt-2">
+                                    <input type="hidden" name="contentType" value="Review" />
+                                    <input type="hidden" name="contentId" value="@review.Id" />
+                                    <input name="reason" class="form-control form-control-sm" maxlength="1000"
+                                           placeholder="Why are you reporting this review?" required />
+                                    <button type="submit" class="btn btn-sm btn-warning mt-1">Submit report</button>
+                                </form>
+                            </details>
+                        }
                     </li>
             }
         </ul>

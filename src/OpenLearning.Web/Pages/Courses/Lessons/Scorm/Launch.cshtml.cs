@@ -46,7 +46,7 @@ public class LaunchModel : PageModel
         var isOwner = userId is not null && course.InstructorId == userId;
         var isAdmin = User.IsInRole(Roles.Admin);
 
-        if (course.Status == CourseStatus.Draft && !isOwner && !isAdmin)
+        if (course.Status != CourseStatus.Published && !isOwner && !isAdmin)
         {
             return Forbid();
         }

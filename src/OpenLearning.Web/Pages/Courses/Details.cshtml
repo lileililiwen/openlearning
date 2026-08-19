@@ -22,6 +22,13 @@
     </ol>
 </nav>
 
+@if ((Model.IsOwner || Model.IsAdmin) && !course.IsPublished && !string.IsNullOrWhiteSpace(course.ReviewNote))
+{
+    <div class="alert alert-warning">
+        <strong>Review feedback:</strong> @course.ReviewNote
+    </div>
+}
+
 <div class="row g-4">
     <div class="col-lg-8">
         <h1 class="h2 mb-2">@course.Title</h1>
@@ -29,6 +36,10 @@
             @if (course.IsPublished)
             {
                 <span class="badge badge-published">Published</span>
+            }
+            else if (course.Status == CourseStatus.UnderReview)
+            {
+                <span class="badge bg-warning text-dark">Under Review</span>
             }
             else
             {
@@ -347,6 +358,19 @@
                                             </form>
                                         }
                                         <div>@comment.Body</div>
+                                        @if (Model.CurrentUserId is not null && Model.CurrentUserId != comment.AuthorId && !Model.IsAdmin)
+                                        {
+                                            <details class="mt-1">
+                                                <summary class="btn btn-link btn-sm text-muted p-0">Report</summary>
+                                                <form method="post" asp-page-handler="Report" asp-route-id="@course.Id" class="mt-1">
+                                                    <input type="hidden" name="contentType" value="ReviewComment" />
+                                                    <input type="hidden" name="contentId" value="@comment.Id" />
+                                                    <input name="reason" class="form-control form-control-sm" maxlength="1000"
+                                                           placeholder="Why are you reporting this comment?" required />
+                                                    <button type="submit" class="btn btn-sm btn-warning mt-1">Submit report</button>
+                                                </form>
+                                            </details>
+                                        }
                                     </div>
                                 }
                             </div>
@@ -357,6 +381,19 @@
                                 <input name="commentBody" class="form-control form-control-sm" placeholder="追评…" />
                                 <button type="submit" class="btn btn-sm btn-outline-primary">评论</button>
                             </form>
+                        }
+                        @if (Model.CurrentUserId is not null && Model.CurrentUserId != review.UserId && !Model.IsAdmin)
+                        {
+                            <details class="mt-2">
+                                <summary class="btn btn-sm btn-outline-warning d-inline-block">Report review</summary>
+                                <form method="post" asp-page-handler="Report" asp-route-id="@course.Id" class="mt-2">
+                                    <input type="hidden" name="contentType" value="Review" />
+                                    <input type="hidden" name="contentId" value="@review.Id" />
+                                    <input name="reason" class="form-control form-control-sm" maxlength="1000"
+                                           placeholder="Why are you reporting this review?" required />
+                                    <button type="submit" class="btn btn-sm btn-warning mt-1">Submit report</button>
+                                </form>
+                            </details>
                         }
                     </div>
                 }

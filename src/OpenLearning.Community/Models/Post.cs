@@ -22,6 +22,9 @@ public class Post
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>Hidden by an admin after a content report; excluded from all reads.</summary>
+    public bool IsHidden { get; set; }
+
     public ICollection<PostReply> Replies { get; set; } = new List<PostReply>();
 }
 
@@ -40,4 +43,7 @@ public class PostReply
     public string Body { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>Hidden by an admin after a content report; excluded from all reads.</summary>
+    public bool IsHidden { get; set; }
 }

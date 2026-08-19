@@ -54,9 +54,17 @@ else
                             {
                                 <span class="badge badge-published">Published</span>
                             }
+                            else if (course.Status == CourseStatus.UnderReview)
+                            {
+                                <span class="badge bg-warning text-dark">Under Review</span>
+                            }
                             else
                             {
                                 <span class="badge badge-draft">Draft</span>
+                            }
+                            @if (!course.IsPublished && !string.IsNullOrWhiteSpace(course.ReviewNote))
+                            {
+                                <div class="text-muted small mt-1">Review note: @course.ReviewNote</div>
                             }
                         </td>
                         <td>@course.Modules.Sum(m => m.Lessons.Count)</td>

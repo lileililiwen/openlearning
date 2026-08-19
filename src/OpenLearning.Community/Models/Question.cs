@@ -24,6 +24,9 @@ public class Question
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>Hidden by an admin after a content report; excluded from all reads.</summary>
+    public bool IsHidden { get; set; }
+
     public ICollection<QuestionReply> Replies { get; set; } = new List<QuestionReply>();
 }
 
@@ -42,4 +45,7 @@ public class QuestionReply
     public string Body { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>Hidden by an admin after a content report; excluded from all reads.</summary>
+    public bool IsHidden { get; set; }
 }

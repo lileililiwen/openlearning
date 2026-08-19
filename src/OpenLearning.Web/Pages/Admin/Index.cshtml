@@ -108,6 +108,10 @@
                                 {
                                     <span class="badge badge-draft ms-1">Draft</span>
                                 }
+                                else if (course.Status == CourseStatus.UnderReview)
+                                {
+                                    <span class="badge bg-warning text-dark ms-1">Under Review</span>
+                                }
                                 else
                                 {
                                     <span class="badge badge-published ms-1">Published</span>

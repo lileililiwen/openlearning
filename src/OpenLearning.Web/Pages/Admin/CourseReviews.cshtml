@@ -1,0 +1,59 @@
+@page
+@model OpenLearning.Web.Pages.Admin.CourseReviewsModel
+@{
+    ViewData["Title"] = "Admin · Course Reviews";
+}
+
+<h1 class="h3 mb-4">Admin — Course Review Queue</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Courses.Count == 0)
+{
+    <div class="alert alert-info">No courses are waiting for review.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var course in Model.Courses)
+        {
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h2 class="h5 mb-1">
+                                    <a asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a>
+                                    <span class="badge bg-warning text-dark ms-2">Under Review</span>
+                                </h2>
+                                <p class="text-muted small mb-2">
+                                    Instructor: @(course.Instructor?.DisplayName ?? course.InstructorId)
+                                    · Submitted: @course.UpdatedAt.ToString("yyyy-MM-dd HH:mm")
+                                </p>
+                                <p class="mb-0">@course.Description</p>
+                            </div>
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">View course</a>
+                        </div>
+                        <hr />
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <form method="post" asp-page-handler="Approve" asp-route-id="@course.Id">
+                                <button type="submit" class="btn btn-sm btn-success">Approve &amp; publish</button>
+                            </form>
+                            <form method="post" asp-page-handler="Reject" asp-route-id="@course.Id" class="d-flex gap-2">
+                                <input name="note" class="form-control form-control-sm" maxlength="1000"
+                                       placeholder="Rejection note (visible to the instructor)…" required />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

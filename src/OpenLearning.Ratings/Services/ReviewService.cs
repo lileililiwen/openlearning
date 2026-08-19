@@ -88,7 +88,7 @@ public class ReviewService
     public async Task<RatingAggregate> GetRatingAsync(int courseId)
     {
         var grouped = await _db.Set<Review>().AsNoTracking()
-            .Where(r => r.CourseId == courseId)
+            .Where(r => r.CourseId == courseId && !r.IsHidden)
             .GroupBy(_ => 1)
             .Select(g => new { Average = g.Average(r => (double)r.Rating), Count = g.Count() })
             .FirstOrDefaultAsync();
@@ -107,7 +107,7 @@ public class ReviewService
         }
 
         var grouped = await _db.Set<Review>().AsNoTracking()
-            .Where(r => ids.Contains(r.CourseId))
+            .Where(r => ids.Contains(r.CourseId) && !r.IsHidden)
             .GroupBy(r => r.CourseId)
             .Select(g => new
             {
@@ -125,7 +125,7 @@ public class ReviewService
         var reviews = await _db.Set<Review>().AsNoTracking()
             .Include(r => r.User)
             .Include(r => r.Comments).ThenInclude(c => c.Author)
-            .Where(r => r.CourseId == courseId)
+            .Where(r => r.CourseId == courseId && !r.IsHidden)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();
         return reviews
@@ -137,7 +137,7 @@ public class ReviewService
                 r.Rating,
                 r.Comment,
                 r.CreatedAt,
-                r.Comments.OrderBy(c => c.CreatedAt).ToList()))
+                r.Comments.Where(c => !c.IsHidden).OrderBy(c => c.CreatedAt).ToList()))
             .ToList();
     }
 

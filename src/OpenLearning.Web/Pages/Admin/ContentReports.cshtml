@@ -1,0 +1,76 @@
+@page
+@model OpenLearning.Web.Pages.Admin.ContentReportsModel
+@{
+    ViewData["Title"] = "Admin · Content Reports";
+}
+
+<h1 class="h3 mb-4">Admin — Content Report Queue</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Pending.Count == 0)
+{
+    <div class="alert alert-info">No open reports.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var item in Model.Pending)
+        {
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h2 class="h6 mb-1">
+                                    <span class="badge bg-secondary me-1">@OpenLearning.Web.Pages.Admin.ContentReportsModel.TypeLabel(item.Report.ContentType)</span>
+                                    <span class="text-muted small">#@item.Report.ContentId</span>
+                                </h2>
+                                <p class="text-muted small mb-2">
+                                    Reported by @item.ReporterName · @item.Report.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                                </p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <form method="post" asp-page-handler="Remove" asp-route-id="@item.Report.Id"
+                                      onsubmit="return confirm('Hide this content from everyone and resolve the report?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Remove content</button>
+                                </form>
+                                <form method="post" asp-page-handler="Dismiss" asp-route-id="@item.Report.Id">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Dismiss</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <p class="mb-1"><strong>Reason:</strong> @item.Report.Reason</p>
+
+                        @if (item.Preview is null)
+                        {
+                            <p class="text-muted small mb-0">
+                                <em>The reported content no longer exists — dismiss this report.</em>
+                            </p>
+                        }
+                        else
+                        {
+                            <div class="bg-light rounded p-2 small">
+                                <div class="text-muted">
+                                    Author: <strong>@item.Preview.AuthorName</strong>
+                                    @if (item.Preview.CourseId is int courseId)
+                                    {
+                                        <a asp-page="/Courses/Details" asp-route-id="@courseId" class="ms-2">View course</a>
+                                    }
+                                </div>
+                                <div class="mb-0" style="white-space: pre-line">@item.Preview.Snippet</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

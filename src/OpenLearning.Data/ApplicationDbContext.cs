@@ -11,6 +11,7 @@ using OpenLearning.Ecommerce.Models;
 using OpenLearning.Exams.Models;
 using OpenLearning.Logging.Models;
 using OpenLearning.Memberships.Models;
+using OpenLearning.Moderation.Models;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Operations.Models;
 using OpenLearning.Progress.Models;
@@ -136,6 +137,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
 
+    public DbSet<ContentReport> ContentReports => Set<ContentReport>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -166,5 +169,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Exam).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(ClassGroup).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(OpenLearning.Community.Models.Question).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(ContentReport).Assembly);
     }
 }

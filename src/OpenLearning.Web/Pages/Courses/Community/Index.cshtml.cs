@@ -7,6 +7,8 @@ using OpenLearning.Community.Services;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
 using OpenLearning.Enrollment.Services;
+using OpenLearning.Moderation.Models;
+using OpenLearning.Moderation.Services;
 
 namespace OpenLearning.Web.Pages.Courses.Community;
 
@@ -15,12 +17,14 @@ public class IndexModel : PageModel
     private readonly CommunityService _community;
     private readonly EnrollmentService _enrollments;
     private readonly CourseService _courses;
+    private readonly ContentReviewService _contentReview;
 
-    public IndexModel(CommunityService community, EnrollmentService enrollments, CourseService courses)
+    public IndexModel(CommunityService community, EnrollmentService enrollments, CourseService courses, ContentReviewService contentReview)
     {
         _community = community;
         _enrollments = enrollments;
         _courses = courses;
+        _contentReview = contentReview;
     }
 
     public Course? Course { get; set; }
@@ -32,6 +36,8 @@ public class IndexModel : PageModel
     public bool IsOwner { get; set; }
 
     public bool IsAdmin { get; set; }
+
+    public string? CurrentUserId { get; set; }
 
     [BindProperty]
     public int CourseId { get; set; }
@@ -50,6 +56,7 @@ public class IndexModel : PageModel
         }
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        CurrentUserId = userId;
         IsOwner = userId is not null && course.InstructorId == userId;
         IsAdmin = User.IsInRole(Roles.Admin);
         CanAccess = IsOwner || IsAdmin ||
@@ -92,5 +99,22 @@ public class IndexModel : PageModel
 
         await _community.DeletePostAsync(postId);
         return RedirectToPage(new { id = CourseId });
+    }
+
+    public async Task<IActionResult> OnPostReportAsync(int courseId, string contentType, int contentId, string reason)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return Challenge();
+        }
+
+        var type = Enum.TryParse<ReportedContentType>(contentType, out var parsed)
+            ? parsed
+            : ReportedContentType.Post;
+        var (ok, error) = await _contentReview.ReportAsync(userId, type, contentId, reason ?? string.Empty);
+        TempData["Message"] = ok ? "感谢举报，管理员将尽快处理。" : error;
+        TempData["MessageType"] = ok ? "success" : "danger";
+        return RedirectToPage(new { id = courseId });
     }
 }

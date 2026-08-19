@@ -133,47 +133,67 @@ public class CommunityService
     /// <summary>Questions visible to the user: course-wide plus the user's class groups in the course.</summary>
     public async Task<List<Question>> GetQuestionsAsync(int courseId, string? userId, bool isAdmin)
     {
+        List<Question> questions;
         if (isAdmin)
         {
-            return await _db.Set<Question>().AsNoTracking()
+            questions = await _db.Set<Question>().AsNoTracking()
                 .Include(q => q.Author)
                 .Include(q => q.Replies).ThenInclude(r => r.Author)
-                .Where(q => q.CourseId == courseId)
+                .Where(q => q.CourseId == courseId && !q.IsHidden)
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
+        }
+        else
+        {
+            var classIds = await GetUserClassIdsAsync(userId, courseId);
+            questions = await _db.Set<Question>().AsNoTracking()
+                .Include(q => q.Author)
+                .Include(q => q.Replies).ThenInclude(r => r.Author)
+                .Where(q => q.CourseId == courseId && !q.IsHidden
+                    && (q.ClassGroupId == null || (userId != null && classIds.Contains(q.ClassGroupId.Value))))
                 .OrderByDescending(q => q.CreatedAt)
                 .ToListAsync();
         }
 
-        var classIds = await GetUserClassIdsAsync(userId, courseId);
-        return await _db.Set<Question>().AsNoTracking()
-            .Include(q => q.Author)
-            .Include(q => q.Replies).ThenInclude(r => r.Author)
-            .Where(q => q.CourseId == courseId
-                && (q.ClassGroupId == null || (userId != null && classIds.Contains(q.ClassGroupId.Value))))
-            .OrderByDescending(q => q.CreatedAt)
-            .ToListAsync();
+        foreach (var question in questions)
+        {
+            question.Replies = question.Replies.Where(r => !r.IsHidden).OrderBy(r => r.CreatedAt).ToList();
+        }
+
+        return questions;
     }
 
     /// <summary>Posts visible to the user: course-wide plus the user's class groups in the course.</summary>
     public async Task<List<Post>> GetPostsAsync(int courseId, string? userId, bool isAdmin)
     {
+        List<Post> posts;
         if (isAdmin)
         {
-            return await _db.Set<Post>().AsNoTracking()
+            posts = await _db.Set<Post>().AsNoTracking()
                 .Include(p => p.Author)
                 .Include(p => p.Replies).ThenInclude(r => r.Author)
-                .Where(p => p.CourseId == courseId)
+                .Where(p => p.CourseId == courseId && !p.IsHidden)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
+        else
+        {
+            var classIds = await GetUserClassIdsAsync(userId, courseId);
+            posts = await _db.Set<Post>().AsNoTracking()
+                .Include(p => p.Author)
+                .Include(p => p.Replies).ThenInclude(r => r.Author)
+                .Where(p => p.CourseId == courseId && !p.IsHidden
+                    && (p.ClassGroupId == null || (userId != null && classIds.Contains(p.ClassGroupId.Value))))
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
         }
 
-        var classIds = await GetUserClassIdsAsync(userId, courseId);
-        return await _db.Set<Post>().AsNoTracking()
-            .Include(p => p.Author)
-            .Include(p => p.Replies).ThenInclude(r => r.Author)
-            .Where(p => p.CourseId == courseId
-                && (p.ClassGroupId == null || (userId != null && classIds.Contains(p.ClassGroupId.Value))))
-            .OrderByDescending(p => p.CreatedAt)
-            .ToListAsync();
+        foreach (var post in posts)
+        {
+            post.Replies = post.Replies.Where(r => !r.IsHidden).OrderBy(r => r.CreatedAt).ToList();
+        }
+
+        return posts;
     }
 
     public async Task<bool> IsOwnerAsync(int courseId, string userId)

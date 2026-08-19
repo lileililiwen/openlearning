@@ -1,3 +1,0 @@
-# review-followups
-
-gap spec

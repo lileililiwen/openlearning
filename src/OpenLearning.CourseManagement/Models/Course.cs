@@ -6,6 +6,9 @@ public enum CourseStatus
 {
     Draft = 0,
     Published = 1,
+
+    /// <summary>Submitted for review; an admin approves to publish or rejects back to draft.</summary>
+    UnderReview = 2,
 }
 
 public enum CourseLevel
@@ -37,6 +40,9 @@ public class Course
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>Admin note attached when a course is rejected during content review.</summary>
+    public string? ReviewNote { get; set; }
 
     // ===== Course discovery metadata =====
 

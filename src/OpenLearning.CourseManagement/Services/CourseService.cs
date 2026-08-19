@@ -222,10 +222,68 @@ public class CourseService
             }
         }
 
-        course.Status = status;
+        // Publishing routes through content review: the course goes UnderReview
+        // until an admin approves it. Re-publishing an already-published course
+        // is a no-op that keeps it visible.
+        if (status == CourseStatus.Published && course.Status != CourseStatus.Published)
+        {
+            course.Status = CourseStatus.UnderReview;
+        }
+        else
+        {
+            course.Status = status;
+        }
+
+        if (status == CourseStatus.Draft)
+        {
+            course.ReviewNote = null;
+        }
+
         course.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return (true, null);
+    }
+
+    /// <summary>Admin approves a course that is under review, publishing it.</summary>
+    public async Task<bool> ApproveAsync(int courseId, string note)
+    {
+        var course = await _db.Set<Course>().FirstOrDefaultAsync(c => c.Id == courseId);
+        if (course is null)
+        {
+            return false;
+        }
+
+        course.Status = CourseStatus.Published;
+        course.ReviewNote = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+        course.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>Admin rejects a course under review, sending it back to draft with a note.</summary>
+    public async Task<bool> RejectAsync(int courseId, string note)
+    {
+        var course = await _db.Set<Course>().FirstOrDefaultAsync(c => c.Id == courseId);
+        if (course is null)
+        {
+            return false;
+        }
+
+        course.Status = CourseStatus.Draft;
+        course.ReviewNote = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+        course.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>Courses waiting for content-review approval.</summary>
+    public Task<List<Course>> GetUnderReviewAsync()
+    {
+        return _db.Set<Course>().AsNoTracking()
+            .Where(c => c.Status == CourseStatus.UnderReview)
+            .Include(c => c.Instructor)
+            .OrderBy(c => c.UpdatedAt)
+            .ToListAsync();
     }
 
     public Task<int> GetLessonCountAsync(int courseId)

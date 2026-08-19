@@ -47,12 +47,27 @@ else
                     <p class="text-muted small mb-2">
                         @(post.Author?.DisplayName ?? post.AuthorId) · @post.CreatedAt.ToString("yyyy-MM-dd HH:mm")
                     </p>
-                    @if (Model.IsAdmin)
-                    {
-                        <form method="post" asp-page-handler="Delete" asp-route-postId="@post.Id" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
-                        </form>
-                    }
+                    <div class="d-flex gap-2">
+                        @if (Model.CurrentUserId is not null && Model.CurrentUserId != post.AuthorId && !Model.IsAdmin)
+                        {
+                            <details>
+                                <summary class="btn btn-sm btn-outline-warning">举报</summary>
+                                <form method="post" asp-page-handler="Report" asp-route-courseId="@course.Id" class="mt-2">
+                                    <input type="hidden" name="contentType" value="Post" />
+                                    <input type="hidden" name="contentId" value="@post.Id" />
+                                    <input name="reason" class="form-control form-control-sm" maxlength="1000"
+                                           placeholder="举报原因…" required />
+                                    <button type="submit" class="btn btn-sm btn-warning mt-1">提交举报</button>
+                                </form>
+                            </details>
+                        }
+                        @if (Model.IsAdmin)
+                        {
+                            <form method="post" asp-page-handler="Delete" asp-route-postId="@post.Id" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
+                            </form>
+                        }
+                    </div>
                 </div>
                 <p class="mb-2" style="white-space: pre-line">@post.Body</p>
 
@@ -61,6 +76,19 @@ else
                     <div class="border-top pt-2 mt-2 small">
                         <strong>@(reply.Author?.DisplayName ?? reply.AuthorId)</strong>
                         <span class="text-muted ms-1">· @reply.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                        @if (Model.CurrentUserId is not null && Model.CurrentUserId != reply.AuthorId && !Model.IsAdmin)
+                        {
+                            <details class="d-inline-block ms-2">
+                                <summary class="btn btn-link btn-sm text-muted p-0">举报</summary>
+                                <form method="post" asp-page-handler="Report" asp-route-courseId="@course.Id" class="mt-1">
+                                    <input type="hidden" name="contentType" value="PostReply" />
+                                    <input type="hidden" name="contentId" value="@reply.Id" />
+                                    <input name="reason" class="form-control form-control-sm" maxlength="1000"
+                                           placeholder="举报原因…" required />
+                                    <button type="submit" class="btn btn-sm btn-warning mt-1">提交举报</button>
+                                </form>
+                            </details>
+                        }
                         <div style="white-space: pre-line">@reply.Body</div>
                     </div>
                 }

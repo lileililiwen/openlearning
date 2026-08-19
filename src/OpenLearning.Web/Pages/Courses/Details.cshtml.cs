@@ -14,6 +14,8 @@ using OpenLearning.Enrollment.Services;
 using OpenLearning.Exams.Models;
 using OpenLearning.Exams.Services;
 using OpenLearning.Memberships.Services;
+using OpenLearning.Moderation.Models;
+using OpenLearning.Moderation.Services;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Notifications.Services;
 using OpenLearning.Progress.Services;
@@ -35,6 +37,7 @@ public class DetailsModel : PageModel
     private readonly CertificateService _certificates;
     private readonly NotificationService _notifications;
     private readonly MembershipService _memberships;
+    private readonly ContentReviewService _contentReview;
 
     public DetailsModel(
         CourseService courses,
@@ -47,7 +50,8 @@ public class DetailsModel : PageModel
         ReviewService reviews,
         CertificateService certificates,
         NotificationService notifications,
-        MembershipService memberships)
+        MembershipService memberships,
+        ContentReviewService contentReview)
     {
         _courses = courses;
         _enrollments = enrollments;
@@ -60,6 +64,7 @@ public class DetailsModel : PageModel
         _certificates = certificates;
         _notifications = notifications;
         _memberships = memberships;
+        _contentReview = contentReview;
     }
 
     public class ReviewInputModel
@@ -80,6 +85,8 @@ public class DetailsModel : PageModel
     public bool IsOwner { get; set; }
 
     public bool IsAdmin { get; set; }
+
+    public string? CurrentUserId { get; set; }
 
     public bool IsEnrolled { get; set; }
 
@@ -111,10 +118,11 @@ public class DetailsModel : PageModel
         }
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        CurrentUserId = userId;
         IsOwner = userId is not null && course.InstructorId == userId;
         IsAdmin = User.IsInRole(Roles.Admin);
 
-        if (course.Status == CourseStatus.Draft && !IsOwner && !IsAdmin)
+        if (course.Status != CourseStatus.Published && !IsOwner && !IsAdmin)
         {
             return Forbid();
         }
@@ -281,6 +289,23 @@ public class DetailsModel : PageModel
         await _reviews.DeleteCommentAsync(commentId);
         TempData["Message"] = "Comment removed.";
         TempData["MessageType"] = "success";
+        return RedirectToPage(new { id });
+    }
+
+    public async Task<IActionResult> OnPostReportAsync(int id, string contentType, int contentId, string reason)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return Challenge();
+        }
+
+        var type = Enum.TryParse<ReportedContentType>(contentType, out var parsed)
+            ? parsed
+            : ReportedContentType.Review;
+        var (ok, error) = await _contentReview.ReportAsync(userId, type, contentId, reason ?? string.Empty);
+        TempData["Message"] = ok ? "Thanks — your report was submitted for review." : error;
+        TempData["MessageType"] = ok ? "success" : "danger";
         return RedirectToPage(new { id });
     }
 

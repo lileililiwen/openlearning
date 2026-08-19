@@ -40,6 +40,7 @@
     <ProjectReference Include="..\OpenLearning.Assignments\OpenLearning.Assignments.csproj" />
     <ProjectReference Include="..\OpenLearning.StudyTools\OpenLearning.StudyTools.csproj" />
     <ProjectReference Include="..\OpenLearning.Settlement\OpenLearning.Settlement.csproj" />
+    <ProjectReference Include="..\OpenLearning.Moderation\OpenLearning.Moderation.csproj" />
   </ItemGroup>
 
 </Project>

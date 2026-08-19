@@ -1,3 +1,0 @@
-# qa-community
-
-gap spec

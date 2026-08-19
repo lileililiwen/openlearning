@@ -57,7 +57,7 @@ public class ChatModel : PageModel
 
         var isOwner = course.InstructorId == userId;
         var isAdmin = User.IsInRole(Roles.Admin);
-        if (course.Status == CourseStatus.Draft && !isOwner && !isAdmin)
+        if (course.Status != CourseStatus.Published && !isOwner && !isAdmin)
         {
             return Forbid();
         }
