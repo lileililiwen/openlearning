@@ -23,7 +23,8 @@
                 <option value="@OpenLearning.Storage.Models.FilePurpose.Document">文档</option>
             </select>
             <input type="text" name="Search" value="@Model.Search" class="form-control form-control-sm" placeholder="按文件名搜索" />
-            <button type="submit" class="btn btn-sm btn-primary">筛选</button>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i> 筛选</button>
+            <a class="btn btn-sm btn-outline-secondary" asp-page="/Resources/Picker" asp-route-target="@Model.Target" title="清除筛选条件"><i class="bi bi-x-circle"></i></a>
         </form>
 
         @if (Model.Items.Count == 0)
@@ -37,24 +38,24 @@
                 {
                     <div class="col-4 col-md-3">
                         <div class="card h-100">
-                            <div class="position-relative">
+                            <div class="position-relative resource-thumb">
                                 @if (item.File.Purpose == OpenLearning.Storage.Models.FilePurpose.Image)
                                 {
-                                    <img src="@item.Url" alt="@item.File.OriginalName" class="card-img-top" style="height: 90px; object-fit: cover" />
+                                    <img src="@item.Url" alt="@item.File.OriginalName" class="card-img-top" style="height: 90px; object-fit: cover" onerror="resourceThumbBroken(this)" />
+                                    <div class="resource-thumb-fallback"><i class="bi bi-image fs-3"></i></div>
                                 }
                                 else if (item.File.Purpose == OpenLearning.Storage.Models.FilePurpose.Video)
                                 {
-                                    <video class="card-img-top" style="height: 90px; object-fit: cover" src="@item.Url" muted></video>
+                                    <video class="card-img-top" style="height: 90px; object-fit: cover" src="@item.Url" muted preload="metadata" onerror="resourceThumbBroken(this)"></video>
+                                    <div class="resource-thumb-fallback"><i class="bi bi-film fs-3"></i></div>
                                 }
                                 else
                                 {
-                                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-muted" style="height: 90px">
-                                        <i class="bi bi-file-earmark-text fs-3"></i>
-                                    </div>
+                                    <div class="resource-thumb-fallback d-flex"><i class="bi bi-file-earmark-text fs-3"></i></div>
                                 }
                                 @if (item.File.IsShared)
                                 {
-                                    <span class="badge bg-primary position-absolute top-0 start-0 m-1">共享</span>
+                                    <span class="badge bg-primary position-absolute top-0 start-0 m-1" style="z-index: 3">共享</span>
                                 }
                             </div>
                             <div class="card-body p-2">
@@ -80,7 +81,27 @@
             }
         }
     </div>
+    <style>
+        .resource-thumb-fallback {
+            display: none;
+            height: 90px;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+        .resource-thumb-fallback.d-flex {
+            display: flex;
+        }
+    </style>
     <script>
+        function resourceThumbBroken(img) {
+            img.style.display = 'none';
+            var fallback = img.nextElementSibling;
+            if (fallback) {
+                fallback.style.display = 'flex';
+            }
+        }
         function pickResource(url) {
             var target = '@Html.Raw(Model.Target ?? string.Empty)';
             try {

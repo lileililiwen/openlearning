@@ -57,15 +57,16 @@
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <strong>我的资源（@Model.Total）</strong>
-        <form method="get" class="d-flex gap-2">
+        <form method="get" class="d-flex gap-2 align-items-center">
             <select name="Purpose" class="form-select form-select-sm" style="width: auto">
                 <option value="">全部类型</option>
                 <option value="@OpenLearning.Storage.Models.FilePurpose.Image">图片</option>
                 <option value="@OpenLearning.Storage.Models.FilePurpose.Video">视频</option>
                 <option value="@OpenLearning.Storage.Models.FilePurpose.Document">文档</option>
             </select>
-            <input type="text" name="Search" value="@Model.Search" class="form-control form-control-sm" placeholder="按文件名搜索" />
-            <button type="submit" class="btn btn-sm btn-primary">筛选</button>
+            <input type="text" name="Search" value="@Model.Search" class="form-control form-control-sm" style="width: 180px" placeholder="按文件名搜索" />
+            <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i> 筛选</button>
+            <a class="btn btn-sm btn-outline-secondary" asp-page="/Resources/Index" title="清除筛选条件"><i class="bi bi-x-circle"></i> 清除</a>
         </form>
     </div>
     <div class="card-body">
@@ -80,41 +81,44 @@
                 {
                     <div class="col-6 col-md-4 col-lg-3">
                         <div class="card h-100">
-                            <div class="position-relative">
+                            <div class="position-relative resource-thumb">
                                 @if (item.File.Purpose == OpenLearning.Storage.Models.FilePurpose.Image)
                                 {
-                                    <img src="@item.Url" alt="@item.File.OriginalName" class="card-img-top" style="height: 120px; object-fit: cover" />
+                                    <img src="@item.Url" alt="@item.File.OriginalName" class="card-img-top" style="height: 120px; object-fit: cover" onerror="resourceThumbBroken(this)" />
+                                    <div class="resource-thumb-fallback"><i class="bi bi-image fs-3"></i></div>
                                 }
                                 else if (item.File.Purpose == OpenLearning.Storage.Models.FilePurpose.Video)
                                 {
-                                    <video class="card-img-top" style="height: 120px; object-fit: cover" src="@item.Url" muted></video>
+                                    <video class="card-img-top" style="height: 120px; object-fit: cover" src="@item.Url" muted preload="metadata" onerror="resourceThumbBroken(this)"></video>
+                                    <div class="resource-thumb-fallback"><i class="bi bi-film fs-3"></i></div>
                                 }
                                 else
                                 {
-                                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-muted" style="height: 120px">
-                                        <i class="bi bi-file-earmark-text fs-1"></i>
-                                    </div>
+                                    <div class="resource-thumb-fallback d-flex"><i class="bi bi-file-earmark-text fs-3"></i></div>
                                 }
                                 @if (item.File.IsShared)
                                 {
-                                    <span class="badge bg-primary position-absolute top-0 start-0 m-1">共享</span>
+                                    <span class="badge bg-primary position-absolute top-0 start-0 m-1" style="z-index: 3">共享</span>
                                 }
                             </div>
                             <div class="card-body p-2">
                                 <div class="small text-truncate" title="@item.File.OriginalName">@item.File.OriginalName</div>
-                                <div class="small text-muted">@item.File.SizeBytes / 1024 / 1024 MB · @item.OwnerName</div>
-                                <div class="d-flex flex-wrap gap-1 mt-1">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="navigator.clipboard.writeText('@item.Url')">复制 URL</button>
+                                <div class="small text-muted">@(item.File.SizeBytes / 1024 / 1024) MB · @item.OwnerName</div>
+                                <div class="d-flex align-items-center gap-1 mt-1">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary resource-copy" data-url="@item.Url" title="复制 URL：@item.Url"><i class="bi bi-clipboard"></i></button>
                                     @if (Model.IsAdmin)
                                     {
                                         <form method="post" asp-page-handler="Share" asp-route-key="@item.File.Key" asp-route-shared="@(!item.File.IsShared)" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-outline-@(item.File.IsShared ? "secondary" : "primary")">@(item.File.IsShared ? "取消共享" : "共享")</button>
+                                            <button type="submit" class="btn btn-sm btn-outline-@(item.File.IsShared ? "secondary" : "primary")" title="@(item.File.IsShared ? "取消共享" : "设为共享")">
+                                                <i class="bi @(item.File.IsShared ? "bi-slash-circle" : "bi-share")"></i>
+                                            </button>
                                         </form>
                                     }
                                     <form method="post" asp-page-handler="Delete" asp-route-key="@item.File.Key" class="d-inline"
                                           onsubmit="return confirm('删除后引用该资源的页面将无法加载，确认删除？');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="删除"><i class="bi bi-trash"></i></button>
                                     </form>
+                                    <a class="ms-auto small text-muted resource-url" style="max-width: 110px" href="@item.Url" target="_blank" rel="noopener" title="打开 @item.Url">@item.Url</a>
                                 </div>
                             </div>
                         </div>
@@ -137,3 +141,40 @@
         }
     </div>
 </div>
+
+<style>
+    .resource-thumb-fallback {
+        display: none;
+        height: 120px;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        color: #6c757d;
+    }
+    .resource-thumb-fallback.d-flex {
+        display: flex;
+    }
+    .resource-url {
+        white-space: nowrap;
+        overflow: hidden;
+    }
+</style>
+<script>
+    function resourceThumbBroken(img) {
+        img.style.display = 'none';
+        var fallback = img.nextElementSibling;
+        if (fallback) {
+            fallback.style.display = 'flex';
+        }
+    }
+    document.querySelectorAll('.resource-copy').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            navigator.clipboard.writeText(btn.dataset.url).then(function () {
+                var icon = btn.querySelector('i');
+                var prev = icon.className;
+                icon.className = 'bi bi-check-lg text-success';
+                setTimeout(function () { icon.className = prev; }, 1200);
+            });
+        });
+    });
+</script>
