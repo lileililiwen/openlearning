@@ -367,7 +367,12 @@ app.MapGet("/files/{**key}", async (string key, HttpContext http, StorageService
         if (userId is null || (userId != file.OwnerId && !isAdmin))
         {
             await stream.DisposeAsync();
-            return Results.StatusCode(StatusCodes.Status403Forbidden);
+            var returnUrl = $"/files/{key}";
+            // A browser landing here deserves the friendly challenge/denied
+            // pages rather than a bare "Forbidden" text response.
+            return userId is null
+                ? Results.Redirect($"/Auth/Login?ReturnUrl={Uri.EscapeDataString(returnUrl)}")
+                : Results.Redirect($"/Auth/AccessDenied?ReturnUrl={Uri.EscapeDataString(returnUrl)}");
         }
     }
 
