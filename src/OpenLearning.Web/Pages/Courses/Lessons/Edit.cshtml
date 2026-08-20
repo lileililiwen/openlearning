@@ -34,19 +34,29 @@
                         </p>
                         <div class="mb-3">
                             <label asp-for="Input.VideoUrl" class="form-label"></label>
-                            <input asp-for="Input.VideoUrl" class="form-control" placeholder="/files/video/..." />
+                            <div class="input-group">
+                                <input asp-for="Input.VideoUrl" class="form-control" placeholder="/files/video/..." />
+                                <button type="button" class="btn btn-outline-secondary" onclick="openResourcePicker('Input_VideoUrl', 'video')">从资源库选择</button>
+                            </div>
                             <span asp-validation-for="Input.VideoUrl" class="text-danger small"></span>
                         </div>
                         <div class="mb-3">
                             <label asp-for="Input.VideoPosterUrl" class="form-label"></label>
-                            <input asp-for="Input.VideoPosterUrl" class="form-control" placeholder="/files/image/..." />
+                            <div class="input-group">
+                                <input asp-for="Input.VideoPosterUrl" class="form-control" placeholder="/files/image/..." />
+                                <button type="button" class="btn btn-outline-secondary" onclick="openResourcePicker('Input_VideoPosterUrl', 'image')">从资源库选择</button>
+                            </div>
                             <span asp-validation-for="Input.VideoPosterUrl" class="text-danger small"></span>
                         </div>
                         <div class="mb-0">
                             <label asp-for="Input.SubtitleUrl" class="form-label"></label>
-                            <input asp-for="Input.SubtitleUrl" class="form-control" placeholder="/files/subtitles/en.vtt" />
+                            <div class="input-group">
+                                <input asp-for="Input.SubtitleUrl" class="form-control" placeholder="/files/subtitles/en.vtt" />
+                                <button type="button" class="btn btn-outline-secondary" onclick="openResourcePicker('Input_SubtitleUrl', 'document')">从资源库选择</button>
+                            </div>
                             <span asp-validation-for="Input.SubtitleUrl" class="text-danger small"></span>
                         </div>
+                        @await Html.PartialAsync("_ResourcePicker")
                     </div>
                 </div>
 

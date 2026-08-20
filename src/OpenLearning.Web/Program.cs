@@ -39,6 +39,7 @@ using OpenLearning.Progress;
 using OpenLearning.Progress.Services;
 using OpenLearning.QuestionIO;
 using OpenLearning.Ratings;
+using OpenLearning.ResourceCenter;
 using OpenLearning.Scorm;
 using OpenLearning.Scorm.Services;
 using OpenLearning.Settlement;
@@ -160,6 +161,7 @@ builder.Services.AddStudentIOModule();
 builder.Services.AddGradeExportModule();
 builder.Services.AddCourseOutlineIOModule();
 builder.Services.AddCouponIOModule();
+builder.Services.AddResourceCenterModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();

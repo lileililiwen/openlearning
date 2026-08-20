@@ -1,0 +1,32 @@
+@* Shared resource-picker modal + helpers. Include this partial in any form that
+   has a URL field, then call openResourcePicker(inputId, purpose) from a button. *@
+<div class="modal fade" id="resourcePickerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">选择资源</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <iframe id="resourcePickerFrame" class="w-100 border-0" style="height: 70vh" src="about:blank" title="资源选择器"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    window.openResourcePicker = function (targetId, purpose) {
+        var modalEl = document.getElementById('resourcePickerModal');
+        if (!modalEl) { return; }
+        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        document.getElementById('resourcePickerFrame').src =
+            '/Resources/Picker?target=' + encodeURIComponent(targetId) + '&purpose=' + encodeURIComponent(purpose || '');
+        modal.show();
+    };
+    window.closeResourcePicker = function () {
+        var modalEl = document.getElementById('resourcePickerModal');
+        if (!modalEl) { return; }
+        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        document.getElementById('resourcePickerFrame').src = 'about:blank';
+        modal.hide();
+    };
+</script>

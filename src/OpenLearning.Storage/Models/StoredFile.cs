@@ -20,5 +20,11 @@ public class StoredFile
     /// <summary>True when the purpose is private (only the owner and admins may read it).</summary>
     public bool IsPrivate { get; set; }
 
+    /// <summary>
+    /// Admin-marked shared resource: visible to (and reusable by) every
+    /// authenticated user. Never true for private purposes.
+    /// </summary>
+    public bool IsShared { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

@@ -1,0 +1,139 @@
+@page
+@model OpenLearning.Web.Pages.Resources.IndexModel
+@{
+    ViewData["Title"] = "资源中心";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">资源中心</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-page="/Index">返回首页</a>
+</div>
+
+<p class="text-muted small">
+    上传图片、视频或文档，并在课程媒体、头像、横幅等 URL 字段中复用。共享资源对所有登录用户可见。
+</p>
+
+@if (Model.Message is not null)
+{
+    <div class="alert alert-@Model.MessageType alert-dismissible fade show" role="alert">
+        @Model.Message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.UploadedUrl is not null)
+{
+    <div class="alert alert-success">
+        已上传：<code>@Model.UploadedUrl</code>
+        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="navigator.clipboard.writeText('@Model.UploadedUrl')">复制 URL</button>
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white"><strong>上传资源</strong></div>
+    <div class="card-body">
+        <form method="post" asp-page-handler="Upload" enctype="multipart/form-data">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label" asp-for="UploadPurpose">类型</label>
+                    <select asp-for="UploadPurpose" class="form-select">
+                        <option value="@OpenLearning.Storage.Models.FilePurpose.Image">图片</option>
+                        <option value="@OpenLearning.Storage.Models.FilePurpose.Video">视频</option>
+                        <option value="@OpenLearning.Storage.Models.FilePurpose.Document">文档</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="UploadFile">文件</label>
+                    <input asp-for="UploadFile" type="file" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">上传</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>我的资源（@Model.Total）</strong>
+        <form method="get" class="d-flex gap-2">
+            <select name="Purpose" class="form-select form-select-sm" style="width: auto">
+                <option value="">全部类型</option>
+                <option value="@OpenLearning.Storage.Models.FilePurpose.Image">图片</option>
+                <option value="@OpenLearning.Storage.Models.FilePurpose.Video">视频</option>
+                <option value="@OpenLearning.Storage.Models.FilePurpose.Document">文档</option>
+            </select>
+            <input type="text" name="Search" value="@Model.Search" class="form-control form-control-sm" placeholder="按文件名搜索" />
+            <button type="submit" class="btn btn-sm btn-primary">筛选</button>
+        </form>
+    </div>
+    <div class="card-body">
+        @if (Model.Items.Count == 0)
+        {
+            <div class="alert alert-info mb-0">暂无资源。</div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card h-100">
+                            <div class="position-relative">
+                                @if (item.File.Purpose == OpenLearning.Storage.Models.FilePurpose.Image)
+                                {
+                                    <img src="@item.Url" alt="@item.File.OriginalName" class="card-img-top" style="height: 120px; object-fit: cover" />
+                                }
+                                else if (item.File.Purpose == OpenLearning.Storage.Models.FilePurpose.Video)
+                                {
+                                    <video class="card-img-top" style="height: 120px; object-fit: cover" src="@item.Url" muted></video>
+                                }
+                                else
+                                {
+                                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-muted" style="height: 120px">
+                                        <i class="bi bi-file-earmark-text fs-1"></i>
+                                    </div>
+                                }
+                                @if (item.File.IsShared)
+                                {
+                                    <span class="badge bg-primary position-absolute top-0 start-0 m-1">共享</span>
+                                }
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="small text-truncate" title="@item.File.OriginalName">@item.File.OriginalName</div>
+                                <div class="small text-muted">@item.File.SizeBytes / 1024 / 1024 MB · @item.OwnerName</div>
+                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="navigator.clipboard.writeText('@item.Url')">复制 URL</button>
+                                    @if (Model.IsAdmin)
+                                    {
+                                        <form method="post" asp-page-handler="Share" asp-route-key="@item.File.Key" asp-route-shared="@(!item.File.IsShared)" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-@(item.File.IsShared ? "secondary" : "primary")">@(item.File.IsShared ? "取消共享" : "共享")</button>
+                                        </form>
+                                    }
+                                    <form method="post" asp-page-handler="Delete" asp-route-key="@item.File.Key" class="d-inline"
+                                          onsubmit="return confirm('删除后引用该资源的页面将无法加载，确认删除？');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            @if (OpenLearning.Web.Pages.Resources.IndexModel.PageCount(Model.Total) > 1)
+            {
+                <nav class="mt-3">
+                    <ul class="pagination pagination-sm mb-0">
+                        @for (var p = 1; p <= OpenLearning.Web.Pages.Resources.IndexModel.PageCount(Model.Total); p++)
+                        {
+                            <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                                <a class="page-link" asp-page="/Resources/Index" asp-route-pageNumber="@p" asp-route-purpose="@Model.Purpose" asp-route-search="@Model.Search">@p</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+    </div>
+</div>

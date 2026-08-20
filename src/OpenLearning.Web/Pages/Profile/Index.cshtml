@@ -88,12 +88,16 @@
                     </div>
                     <div class="mb-3">
                         <label asp-for="ProfileInput.AvatarUrl" class="form-label"></label>
-                        <input asp-for="ProfileInput.AvatarUrl" class="form-control" placeholder="https://example.com/avatar.png" />
+                        <div class="input-group">
+                            <input asp-for="ProfileInput.AvatarUrl" class="form-control" placeholder="https://example.com/avatar.png" />
+                            <button type="button" class="btn btn-outline-secondary" onclick="openResourcePicker('ProfileInput_AvatarUrl', 'image')">从资源库选择</button>
+                        </div>
                         <span asp-validation-for="ProfileInput.AvatarUrl" class="text-danger small"></span>
-                        <div class="form-text">Avatar uploads are not supported yet — paste an image URL instead.</div>
+                        <div class="form-text">可粘贴外部图片地址，或从资源库选择已上传的图片。</div>
                     </div>
                     <button type="submit" class="btn btn-primary">Save profile</button>
                 </form>
+                @await Html.PartialAsync("_ResourcePicker")
             </div>
         </div>
 

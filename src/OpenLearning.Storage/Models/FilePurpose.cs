@@ -9,6 +9,8 @@ public enum FilePurpose
     Assignment,
     Answer,
     AsyncIO,
+    Image,
+    Document,
 }
 
 /// <summary>State of a media asset's rendition pipeline.</summary>

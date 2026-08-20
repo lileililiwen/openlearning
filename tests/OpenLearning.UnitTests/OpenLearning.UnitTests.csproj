@@ -52,6 +52,7 @@
     <ProjectReference Include="..\..\src\OpenLearning.GradeExport\OpenLearning.GradeExport.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.CourseOutlineIO\OpenLearning.CourseOutlineIO.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.CouponIO\OpenLearning.CouponIO.csproj" />
+    <ProjectReference Include="..\..\src\OpenLearning.ResourceCenter\OpenLearning.ResourceCenter.csproj" />
   </ItemGroup>
 
 </Project>

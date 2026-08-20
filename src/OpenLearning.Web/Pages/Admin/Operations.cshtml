@@ -43,7 +43,12 @@
             <h2 class="h5 mb-3">New banner</h2>
             <form method="post" asp-page-handler="CreateBanner" class="row g-2">
                 <div class="col-md-3"><input name="title" class="form-control" placeholder="Title" /></div>
-                <div class="col-md-3"><input name="imageUrl" class="form-control" placeholder="Image URL" /></div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input name="imageUrl" id="imageUrl" class="form-control" placeholder="Image URL" />
+                        <button type="button" class="btn btn-outline-secondary" onclick="openResourcePicker('imageUrl', 'image')">资源库</button>
+                    </div>
+                </div>
                 <div class="col-md-3"><input name="linkUrl" class="form-control" placeholder="Link URL" /></div>
                 <div class="col-md-2">
                     <select name="campaignId" class="form-select">
@@ -240,3 +245,4 @@ else
         </div>
     </div>
 }
+@await Html.PartialAsync("_ResourcePicker")
