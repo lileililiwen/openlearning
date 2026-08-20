@@ -74,9 +74,9 @@ public static class DefaultMenus
         var group = new MenuGroup { Key = "instructor.courses", Label = "课程管理", SortOrder = 20, IconKey = "bi-journal-bookmark", AllowedRoles = Roles.Instructor };
         group.Items.Add(new MenuItem { Key = "manage-courses", GroupKey = group.Key, Label = "我的课程", Route = "/Courses/Manage", SortOrder = 1, IconKey = "bi-collection", AllowedRoles = Roles.Instructor });
         group.Items.Add(new MenuItem { Key = "new-course", GroupKey = group.Key, Label = "创建课程", Route = "/Courses/Create", SortOrder = 2, IconKey = "bi-plus-circle", AllowedRoles = Roles.Instructor });
-        group.Items.Add(new MenuItem { Key = "roster", GroupKey = group.Key, Label = "学员管理", Route = "/Courses/Roster", SortOrder = 3, IconKey = "bi-people", AllowedRoles = Roles.Instructor });
+        group.Items.Add(new MenuItem { Key = "roster", GroupKey = group.Key, Label = "学员管理", Route = "/Courses/Roster/Index", SortOrder = 3, IconKey = "bi-people", AllowedRoles = Roles.Instructor });
         group.Items.Add(new MenuItem { Key = "grade-exports", GroupKey = group.Key, Label = "导出任务", Route = "/GradeExport/Jobs", SortOrder = 4, IconKey = "bi-file-earmark-arrow-down", AllowedRoles = Roles.Instructor });
-        group.Items.Add(new MenuItem { Key = "resources", GroupKey = group.Key, Label = "资源中心", Route = "/Resources", SortOrder = 5, IconKey = "bi-collection-play", AllowedRoles = Roles.Instructor });
+        group.Items.Add(new MenuItem { Key = "resources", GroupKey = group.Key, Label = "资源中心", Route = "/Resources/Index", SortOrder = 5, IconKey = "bi-collection-play", AllowedRoles = Roles.Instructor });
         return group;
     }
 
@@ -131,7 +131,7 @@ public static class DefaultMenus
         var group = new MenuGroup { Key = "admin.resources", Label = "资源管理", SortOrder = 40, IconKey = "bi-server", AllowedRoles = Roles.Admin };
         group.Items.Add(new MenuItem { Key = "operations", GroupKey = group.Key, Label = "运营配置", Route = "/Admin/Operations", SortOrder = 1, IconKey = "bi-megaphone", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "storage-settings", GroupKey = group.Key, Label = "存储设置", Route = "/Admin/Storage", SortOrder = 2, IconKey = "bi-hdd-rack", AllowedRoles = Roles.Admin });
-        group.Items.Add(new MenuItem { Key = "resources-admin", GroupKey = group.Key, Label = "资源中心", Route = "/Resources", SortOrder = 3, IconKey = "bi-collection-play", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "resources-admin", GroupKey = group.Key, Label = "资源中心", Route = "/Resources/Index", SortOrder = 3, IconKey = "bi-collection-play", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "orders", GroupKey = group.Key, Label = "订单管理", Route = "/Admin/Orders", SortOrder = 2, IconKey = "bi-receipt", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "refunds", GroupKey = group.Key, Label = "退款审核", Route = "/Admin/Refunds", SortOrder = 3, IconKey = "bi-arrow-counterclockwise", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "withdrawals", GroupKey = group.Key, Label = "提现审核", Route = "/Admin/Withdrawals", SortOrder = 4, IconKey = "bi-cash-coin", AllowedRoles = Roles.Admin });
