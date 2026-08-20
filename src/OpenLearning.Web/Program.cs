@@ -178,6 +178,7 @@ builder.Services.AddJob<OpenLearning.Web.Jobs.StudyDailyAggregateJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.InstructorSettlementCloseJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.CouponExpireDisabledJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.LogArchiveJob>();
+builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
 
 // Optional email channel: only used when Email:Enabled is true.

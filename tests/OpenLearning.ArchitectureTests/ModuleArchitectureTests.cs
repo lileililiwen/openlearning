@@ -75,7 +75,7 @@ public sealed class ModuleArchitectureTests
             ["OpenLearning.Certificates"] = new[] { "OpenLearning.Auth", "OpenLearning.CourseManagement", "OpenLearning.Enrollment", "OpenLearning.Progress" },
             ["OpenLearning.Notifications"] = new[] { "OpenLearning.Auth", "OpenLearning.CourseManagement", "OpenLearning.Enrollment" },
             ["OpenLearning.UserManagement"] = new[] { "OpenLearning.Auth", "OpenLearning.CourseManagement", "OpenLearning.Enrollment" },
-            ["OpenLearning.Storage"] = Array.Empty<string>(),
+            ["OpenLearning.Storage"] = new[] { "OpenLearning.SystemConfig" },
             ["OpenLearning.Logging"] = Array.Empty<string>(),
             ["OpenLearning.SystemConfig"] = new[] { "OpenLearning.Notifications" },
             ["OpenLearning.Memberships"] = Array.Empty<string>(),

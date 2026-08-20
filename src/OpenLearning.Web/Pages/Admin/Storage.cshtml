@@ -1,0 +1,176 @@
+@page
+@model OpenLearning.Web.Pages.Admin.StorageModel
+@{
+    ViewData["Title"] = "存储设置";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">存储设置</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-page="/Admin/Index">返回后台首页</a>
+</div>
+
+@if (Model.Message is not null)
+{
+    <div class="alert alert-@Model.MessageType alert-dismissible fade show" role="alert">
+        @Model.Message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Provider is not null && Model.Provider != "Local")
+{
+    <div class="alert alert-warning">
+        当前保存的后端为 <strong>@Model.Provider</strong>。切换存储策略会在应用<strong>重启后</strong>生效；已上传到其他后端的文件不会自动迁移。
+    </div>
+}
+
+<form method="post">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white"><strong>存储策略</strong></div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">后端类型</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Provider" id="p-local" value="Local" checked="@(Model.Provider == "Local")" />
+                        <label class="form-check-label" for="p-local">本地磁盘（Local）</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Provider" id="p-s3" value="S3" checked="@(Model.Provider == "S3")" />
+                        <label class="form-check-label" for="p-s3">S3 兼容（AWS 等）</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Provider" id="p-minio" value="MinIO" checked="@(Model.Provider == "MinIO")" />
+                        <label class="form-check-label" for="p-minio">MinIO（自建 OSS，内置 S3）</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Provider" id="p-oss" value="AliyunOss" checked="@(Model.Provider == "AliyunOss")" />
+                        <label class="form-check-label" for="p-oss">阿里云 OSS</label>
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">本地根目录：<code>@Model.LocalRoot</code></p>
+                </div>
+
+                <div class="col-md-8">
+                    <div id="s3-section" style="display:@(Model.Provider is "S3" or "MinIO" ? "block" : "none")">
+                        <h6 class="text-muted">S3 / MinIO 配置</h6>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label" asp-for="S3Endpoint">Endpoint</label>
+                                <input asp-for="S3Endpoint" class="form-control" placeholder="http://minio:9000" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" asp-for="S3Bucket">Bucket</label>
+                                <input asp-for="S3Bucket" class="form-control" placeholder="openlearning" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" asp-for="S3AccessKeyId">Access Key Id</label>
+                                <input asp-for="S3AccessKeyId" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" asp-for="S3Secret">Secret Access Key</label>
+                                <input asp-for="S3Secret" type="password" class="form-control" placeholder="@(Model.S3HasSecret ? "••••（已保存，留空保持不变）" : "")" />
+                                @if (Model.S3HasSecret)
+                                {
+                                    <div class="form-check mt-1">
+                                        <input class="form-check-input" type="checkbox" name="S3ClearSecret" id="s3-clear" value="true" />
+                                        <label class="form-check-label small" for="s3-clear">清除已保存的密钥</label>
+                                    </div>
+                                }
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" asp-for="S3Region">Region</label>
+                                <input asp-for="S3Region" class="form-control" />
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="S3PathStyle" id="s3-pathstyle" value="true" checked="@(Model.Provider == "MinIO" || Model.S3PathStyle)" disabled="@(Model.Provider == "MinIO" ? "disabled" : null)" />
+                                    <label class="form-check-label" for="s3-pathstyle">Path-style 寻址（MinIO 强制开启）</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="oss-section" style="display:@(Model.Provider == "AliyunOss" ? "block" : "none")">
+                        <h6 class="text-muted">阿里云 OSS 配置</h6>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label" asp-for="OssEndpoint">Endpoint（区域端点，不含 bucket）</label>
+                                <input asp-for="OssEndpoint" class="form-control" placeholder="oss-cn-hangzhou.aliyuncs.com" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" asp-for="OssBucket">Bucket</label>
+                                <input asp-for="OssBucket" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" asp-for="OssAccessKeyId">AccessKey ID</label>
+                                <input asp-for="OssAccessKeyId" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" asp-for="OssSecret">AccessKey Secret</label>
+                                <input asp-for="OssSecret" type="password" class="form-control" placeholder="@(Model.OssHasSecret ? "••••（已保存，留空保持不变）" : "")" />
+                                @if (Model.OssHasSecret)
+                                {
+                                    <div class="form-check mt-1">
+                                        <input class="form-check-input" type="checkbox" name="OssClearSecret" id="oss-clear" value="true" />
+                                        <label class="form-check-label small" for="oss-clear">清除已保存的密钥</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white"><strong>各类上传限制</strong></div>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>用途</th>
+                        <th style="width: 180px">上限（MB）</th>
+                        <th>允许的扩展名（逗号分隔）</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var purpose in Enum.GetValues<OpenLearning.Storage.Models.FilePurpose>())
+                    {
+                        var key = purpose.ToString();
+                        <tr>
+                            <td>@key</td>
+                            <td><input name="LimitMaxBytesMb[@key]" value="@Model.LimitMaxBytesMb.GetValueOrDefault(key)" class="form-control form-control-sm" /></td>
+                            <td><input name="LimitExtensions[@key]" value="@Model.LimitExtensions.GetValueOrDefault(key)" class="form-control form-control-sm" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">保存</button>
+        <button type="submit" formaction="/Admin/Storage?handler=Test" class="btn btn-outline-secondary">测试已保存的配置</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        function toggleSections() {
+            var value = document.querySelector('input[name="Provider"]:checked').value;
+            document.getElementById('s3-section').style.display = (value === 'S3' || value === 'MinIO') ? 'block' : 'none';
+            document.getElementById('oss-section').style.display = value === 'AliyunOss' ? 'block' : 'none';
+            var pathStyle = document.getElementById('s3-pathstyle');
+            if (value === 'MinIO') {
+                pathStyle.checked = true;
+                pathStyle.disabled = true;
+            } else {
+                pathStyle.disabled = false;
+            }
+        }
+        document.querySelectorAll('input[name="Provider"]').forEach(function (radio) {
+            radio.addEventListener('change', toggleSections);
+        });
+    </script>
+}

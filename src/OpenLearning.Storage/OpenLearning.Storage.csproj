@@ -8,6 +8,11 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.30" />
+    <PackageReference Include="AWSSDK.S3" Version="4.0.102.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenLearning.SystemConfig\OpenLearning.SystemConfig.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.Storage.Models;
+using OpenLearning.SystemConfig.Services;
 
 namespace OpenLearning.Storage.Services;
 
@@ -25,17 +26,46 @@ public class StorageService
     private readonly DbContext _db;
     private readonly IStorageProvider _storage;
     private readonly MediaTranscoder _transcoder;
+    private readonly SystemConfigService? _config;
 
-    public StorageService(DbContext db, IStorageProvider storage, MediaTranscoder transcoder)
+    public StorageService(
+        DbContext db,
+        IStorageProvider storage,
+        MediaTranscoder transcoder,
+        SystemConfigService? config = null)
     {
         _db = db;
         _storage = storage;
         _transcoder = transcoder;
+        _config = config;
     }
 
     public static (long MaxBytes, string[] Extensions) GetLimits(FilePurpose purpose)
     {
         return _limits[purpose];
+    }
+
+    /// <summary>
+    /// Effective per-purpose limits: system-config overrides
+    /// (<c>Storage.Limits.&lt;Purpose&gt;.MaxBytes</c> /
+    /// <c>.Extensions</c>) with the static defaults as fallback.
+    /// </summary>
+    public async Task<(long MaxBytes, string[] Extensions)> GetLimitsAsync(FilePurpose purpose)
+    {
+        var (defaultMax, defaultExtensions) = _limits[purpose];
+        if (_config is null)
+        {
+            return (defaultMax, defaultExtensions);
+        }
+
+        var maxBytes = await _config.GetIntAsync($"Storage.Limits.{purpose}.MaxBytes", (int)defaultMax);
+        var extensionsCsv = await _config.GetStringAsync(
+            $"Storage.Limits.{purpose}.Extensions", string.Join(",", defaultExtensions));
+        var extensions = extensionsCsv
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(ext => ext.StartsWith('.') ? ext : "." + ext)
+            .ToArray();
+        return (maxBytes, extensions.Length == 0 ? defaultExtensions : extensions);
     }
 
     public static bool IsPrivatePurpose(FilePurpose purpose)
@@ -52,7 +82,7 @@ public class StorageService
         }
 
         var extension = Path.GetExtension(fileName).ToLowerInvariant();
-        var (maxBytes, allowedExtensions) = _limits[purpose];
+        var (maxBytes, allowedExtensions) = await GetLimitsAsync(purpose);
         if (!allowedExtensions.Contains(extension))
         {
             return (null, $"File type '{extension}' is not allowed for {purpose}.");

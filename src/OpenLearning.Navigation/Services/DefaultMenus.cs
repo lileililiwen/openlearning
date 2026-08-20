@@ -129,6 +129,7 @@ public static class DefaultMenus
     {
         var group = new MenuGroup { Key = "admin.resources", Label = "资源管理", SortOrder = 40, IconKey = "bi-server", AllowedRoles = Roles.Admin };
         group.Items.Add(new MenuItem { Key = "operations", GroupKey = group.Key, Label = "运营配置", Route = "/Admin/Operations", SortOrder = 1, IconKey = "bi-megaphone", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "storage-settings", GroupKey = group.Key, Label = "存储设置", Route = "/Admin/Storage", SortOrder = 2, IconKey = "bi-hdd-rack", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "orders", GroupKey = group.Key, Label = "订单管理", Route = "/Admin/Orders", SortOrder = 2, IconKey = "bi-receipt", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "refunds", GroupKey = group.Key, Label = "退款审核", Route = "/Admin/Refunds", SortOrder = 3, IconKey = "bi-arrow-counterclockwise", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "withdrawals", GroupKey = group.Key, Label = "提现审核", Route = "/Admin/Withdrawals", SortOrder = 4, IconKey = "bi-cash-coin", AllowedRoles = Roles.Admin });
