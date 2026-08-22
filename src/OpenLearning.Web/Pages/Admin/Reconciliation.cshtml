@@ -10,6 +10,7 @@
         <p class="text-muted mb-0">Gross orders, refunds, and net revenue over a period.</p>
     </div>
     <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-page="/Admin/Payments">Payment gateways</a>
         <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Admin home</a>
         <a class="btn btn-outline-primary" asp-page-handler="Export" asp-route-from="@Model.From?.ToString("yyyy-MM-dd")" asp-route-to="@Model.To?.ToString("yyyy-MM-dd")">Export CSV</a>
     </div>

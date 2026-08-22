@@ -13,6 +13,7 @@ public sealed class PaymentsModel(PaymentService payments) : PageModel
 {
     public List<PaymentIntent> Intents { get; private set; } = [];
     public List<PaymentReconciliationIssue> Issues { get; private set; } = [];
+    public PaymentService.ProviderHealth? ProviderHealth { get; private set; }
 
     public async Task OnGetAsync()
     {
@@ -39,5 +40,6 @@ public sealed class PaymentsModel(PaymentService payments) : PageModel
     {
         Intents = await payments.GetRecentAsync();
         Issues = await payments.GetOpenIssuesAsync();
+        ProviderHealth = await payments.GetProviderHealthAsync();
     }
 }

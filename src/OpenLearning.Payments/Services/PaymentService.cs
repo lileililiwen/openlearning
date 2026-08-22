@@ -8,6 +8,8 @@ namespace OpenLearning.Payments.Services;
 
 public sealed class PaymentService(DbContext db, IPaymentProvider provider, EnrollmentService enrollments)
 {
+    public sealed record ProviderHealth(string Provider, bool IsAvailable, string Message);
+
     public Task<PaymentIntent?> GetAsync(Guid id)
     {
         return db.Set<PaymentIntent>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
@@ -21,6 +23,19 @@ public sealed class PaymentService(DbContext db, IPaymentProvider provider, Enro
     public Task<List<PaymentReconciliationIssue>> GetOpenIssuesAsync()
     {
         return db.Set<PaymentReconciliationIssue>().AsNoTracking().Where(x => x.State == ReconciliationState.Open).OrderByDescending(x => x.CreatedAt).ToListAsync();
+    }
+
+    public async Task<ProviderHealth> GetProviderHealthAsync()
+    {
+        try
+        {
+            await provider.GetStateAsync("health-check");
+            return new ProviderHealth(provider.Name, true, "Provider adapter is responding.");
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            return new ProviderHealth(provider.Name, false, "Provider adapter is unavailable.");
+        }
     }
 
     public async Task<(PaymentIntent? Intent, string? RedirectUrl, string? Error)> CreateAsync(int orderId, string studentId)

@@ -9,7 +9,10 @@
         <h1 class="h3 mb-1">Refund Requests</h1>
         <p class="text-muted mb-0">Approve or reject student refund requests.</p>
     </div>
-    <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Admin home</a>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-page="/Admin/Payments">Payment gateways</a>
+        <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Admin home</a>
+    </div>
 </div>
 
 @if (TempData["Message"] is string message)

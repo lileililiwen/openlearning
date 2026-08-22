@@ -43,7 +43,21 @@ public sealed class NavigationTests
 
         var tree = await menus.GetTreeAsync(new[] { Roles.Admin });
         Assert.Contains(tree.Groups, g => g.Key == "admin.home");
+        Assert.Contains(tree.Groups.SelectMany(g => g.Items), i => i.Route == "/Admin/Payments");
         Assert.All(tree.Groups.SelectMany(g => g.Items), i => Assert.Equal(Roles.Admin, i.AllowedRoles));
+    }
+
+    [Fact]
+    public async Task Finance_sees_payment_gateway_console()
+    {
+        var db = CreateDb();
+        var menus = CreateMenuService(db);
+
+        var tree = await menus.GetTreeAsync(new[] { Roles.Finance });
+
+        var item = Assert.Single(tree.Groups.SelectMany(g => g.Items), i => i.Key == "finance-payments");
+        Assert.Equal("/Admin/Payments", item.Route);
+        Assert.Equal(Roles.Finance, item.AllowedRoles);
     }
 
     [Fact]

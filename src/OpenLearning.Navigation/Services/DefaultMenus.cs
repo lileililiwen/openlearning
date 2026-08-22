@@ -38,10 +38,11 @@ public static class DefaultMenus
     {
         var group = new MenuGroup { Key = "finance.workbench", Label = "财务工作台", SortOrder = 45, IconKey = "bi-cash-stack", AllowedRoles = Roles.Finance };
         group.Items.Add(new MenuItem { Key = "finance-orders", GroupKey = group.Key, Label = "订单管理", Route = "/Admin/Orders", SortOrder = 1, IconKey = "bi-receipt", AllowedRoles = Roles.Finance });
-        group.Items.Add(new MenuItem { Key = "finance-refunds", GroupKey = group.Key, Label = "退款审核", Route = "/Admin/Refunds", SortOrder = 2, IconKey = "bi-arrow-counterclockwise", AllowedRoles = Roles.Finance });
-        group.Items.Add(new MenuItem { Key = "finance-reconciliation", GroupKey = group.Key, Label = "对账报表", Route = "/Admin/Reconciliation", SortOrder = 3, IconKey = "bi-calculator", AllowedRoles = Roles.Finance });
-        group.Items.Add(new MenuItem { Key = "finance-withdrawals", GroupKey = group.Key, Label = "提现审核", Route = "/Admin/Withdrawals", SortOrder = 4, IconKey = "bi-cash-coin", AllowedRoles = Roles.Finance });
-        group.Items.Add(new MenuItem { Key = "finance-coupons", GroupKey = group.Key, Label = "优惠券", Route = "/Admin/Coupons", SortOrder = 5, IconKey = "bi-ticket-perforated", AllowedRoles = Roles.Finance });
+        group.Items.Add(new MenuItem { Key = "finance-payments", GroupKey = group.Key, Label = "支付网关", Route = "/Admin/Payments", SortOrder = 2, IconKey = "bi-credit-card", AllowedRoles = Roles.Finance });
+        group.Items.Add(new MenuItem { Key = "finance-refunds", GroupKey = group.Key, Label = "退款审核", Route = "/Admin/Refunds", SortOrder = 3, IconKey = "bi-arrow-counterclockwise", AllowedRoles = Roles.Finance });
+        group.Items.Add(new MenuItem { Key = "finance-reconciliation", GroupKey = group.Key, Label = "对账报表", Route = "/Admin/Reconciliation", SortOrder = 4, IconKey = "bi-calculator", AllowedRoles = Roles.Finance });
+        group.Items.Add(new MenuItem { Key = "finance-withdrawals", GroupKey = group.Key, Label = "提现审核", Route = "/Admin/Withdrawals", SortOrder = 5, IconKey = "bi-cash-coin", AllowedRoles = Roles.Finance });
+        group.Items.Add(new MenuItem { Key = "finance-coupons", GroupKey = group.Key, Label = "优惠券", Route = "/Admin/Coupons", SortOrder = 6, IconKey = "bi-ticket-perforated", AllowedRoles = Roles.Finance });
         return group;
     }
 
@@ -133,11 +134,12 @@ public static class DefaultMenus
         group.Items.Add(new MenuItem { Key = "storage-settings", GroupKey = group.Key, Label = "存储设置", Route = "/Admin/Storage", SortOrder = 2, IconKey = "bi-hdd-rack", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "resources-admin", GroupKey = group.Key, Label = "资源中心", Route = "/Resources/Index", SortOrder = 3, IconKey = "bi-collection-play", AllowedRoles = Roles.Admin });
         group.Items.Add(new MenuItem { Key = "orders", GroupKey = group.Key, Label = "订单管理", Route = "/Admin/Orders", SortOrder = 2, IconKey = "bi-receipt", AllowedRoles = Roles.Admin });
-        group.Items.Add(new MenuItem { Key = "refunds", GroupKey = group.Key, Label = "退款审核", Route = "/Admin/Refunds", SortOrder = 3, IconKey = "bi-arrow-counterclockwise", AllowedRoles = Roles.Admin });
-        group.Items.Add(new MenuItem { Key = "withdrawals", GroupKey = group.Key, Label = "提现审核", Route = "/Admin/Withdrawals", SortOrder = 4, IconKey = "bi-cash-coin", AllowedRoles = Roles.Admin });
-        group.Items.Add(new MenuItem { Key = "reconciliation", GroupKey = group.Key, Label = "对账报表", Route = "/Admin/Reconciliation", SortOrder = 5, IconKey = "bi-calculator", AllowedRoles = Roles.Admin });
-        group.Items.Add(new MenuItem { Key = "coupons", GroupKey = group.Key, Label = "优惠券", Route = "/Admin/Coupons", SortOrder = 6, IconKey = "bi-ticket-perforated", AllowedRoles = Roles.Admin });
-        group.Items.Add(new MenuItem { Key = "invoices", GroupKey = group.Key, Label = "发票管理", Route = "/Admin/Invoices", SortOrder = 7, IconKey = "bi-file-earmark-text", AllowedRoles = Roles.Finance });
+        group.Items.Add(new MenuItem { Key = "payments", GroupKey = group.Key, Label = "支付网关", Route = "/Admin/Payments", SortOrder = 3, IconKey = "bi-credit-card", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "refunds", GroupKey = group.Key, Label = "退款审核", Route = "/Admin/Refunds", SortOrder = 4, IconKey = "bi-arrow-counterclockwise", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "withdrawals", GroupKey = group.Key, Label = "提现审核", Route = "/Admin/Withdrawals", SortOrder = 5, IconKey = "bi-cash-coin", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "reconciliation", GroupKey = group.Key, Label = "对账报表", Route = "/Admin/Reconciliation", SortOrder = 6, IconKey = "bi-calculator", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "coupons", GroupKey = group.Key, Label = "优惠券", Route = "/Admin/Coupons", SortOrder = 7, IconKey = "bi-ticket-perforated", AllowedRoles = Roles.Admin });
+        group.Items.Add(new MenuItem { Key = "invoices", GroupKey = group.Key, Label = "发票管理", Route = "/Admin/Invoices", SortOrder = 8, IconKey = "bi-file-earmark-text", AllowedRoles = Roles.Finance });
         return group;
     }
 

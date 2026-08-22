@@ -2,7 +2,13 @@
 @model OpenLearning.Web.Pages.Admin.PaymentsModel
 @{ ViewData["Title"] = "Payment gateways"; }
 <h1 class="h3">Payment gateways</h1>
-<p class="text-muted">Provider: sandbox. Credentials are supplied through protected configuration and are never displayed.</p>
+<p class="text-muted">Credentials are supplied through protected configuration and are never displayed.</p>
+@if (Model.ProviderHealth is not null)
+{
+    <div class="alert alert-@(Model.ProviderHealth.IsAvailable ? "success" : "danger")">
+        <strong>@Model.ProviderHealth.Provider</strong>: @Model.ProviderHealth.Message
+    </div>
+}
 @if (TempData["Message"] is string message) { <div class="alert alert-@(TempData["MessageType"] ?? "info")">@message</div> }
 <h2 class="h5 mt-4">Reconciliation exceptions</h2>
 @if (Model.Issues.Count == 0) { <p>No open exceptions.</p> }
