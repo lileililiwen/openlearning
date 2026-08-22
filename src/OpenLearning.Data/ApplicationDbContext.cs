@@ -184,6 +184,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ContentReport> ContentReports => Set<ContentReport>();
 
     public DbSet<LiveSession> LiveSessions => Set<LiveSession>();
+    public DbSet<LiveBooking> LiveBookings => Set<LiveBooking>();
+    public DbSet<LiveWaitlist> LiveWaitlists => Set<LiveWaitlist>();
+    public DbSet<LiveCalendarToken> LiveCalendarTokens => Set<LiveCalendarToken>();
 
     public DbSet<Job> Jobs => Set<Job>();
 

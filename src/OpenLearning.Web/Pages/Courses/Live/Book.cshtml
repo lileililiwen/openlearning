@@ -1,0 +1,84 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Live.BookModel
+@{
+    ViewData["Title"] = "Book Session";
+    var session = Model.Session!;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Live/Index" asp-route-id="@session.CourseId">Live Sessions</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Book</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-4">@session.Title</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@TempData["MessageType"] alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Starts</dt>
+            <dd class="col-sm-8">@session.StartsAt.ToString("f")</dd>
+            <dt class="col-sm-4">Ends</dt>
+            <dd class="col-sm-8">@session.EndsAt.ToString("f")</dd>
+            <dt class="col-sm-4">Booking Enabled</dt>
+            <dd class="col-sm-8">@(session.IsBookingEnabled ? "Yes" : "No")</dd>
+            @if (session.IsBookingEnabled)
+            {
+                <dt class="col-sm-4">Capacity</dt>
+                <dd class="col-sm-8">@(session.Capacity > 0 ? session.Capacity.ToString() : "Unlimited")</dd>
+                @if (session.BookingOpensAt.HasValue)
+                {
+                    <dt class="col-sm-4">Booking Opens</dt>
+                    <dd class="col-sm-8">@session.BookingOpensAt.Value.ToString("f")</dd>
+                }
+                @if (session.BookingClosesAt.HasValue)
+                {
+                    <dt class="col-sm-4">Booking Closes</dt>
+                    <dd class="col-sm-8">@session.BookingClosesAt.Value.ToString("f")</dd>
+                }
+                @if (session.CancellationDeadline.HasValue)
+                {
+                    <dt class="col-sm-4">Cancellation Deadline</dt>
+                    <dd class="col-sm-8">@session.CancellationDeadline.Value.ToString("f")</dd>
+                }
+            }
+        </dl>
+    </div>
+</div>
+
+@if (Model.MyBooking is not null && Model.MyBooking.Status == LiveBookingStatus.Confirmed)
+{
+    <div class="alert alert-success">You have a confirmed booking.</div>
+    <form method="post" asp-page-handler="Cancel" asp-route-sessionId="@session.Id">
+        <button type="submit" class="btn btn-danger">Cancel Booking</button>
+    </form>
+}
+else if (Model.MyBooking is not null && Model.MyBooking.Status == LiveBookingStatus.Cancelled)
+{
+    <div class="alert alert-secondary">Your previous booking was cancelled.</div>
+    <form method="post" asp-page-handler="Reserve" asp-route-sessionId="@session.Id">
+        <button type="submit" class="btn btn-primary">Reserve Seat</button>
+    </form>
+}
+else if (session.IsBookingEnabled)
+{
+    <form method="post" asp-page-handler="Reserve" asp-route-sessionId="@session.Id">
+        <button type="submit" class="btn btn-primary">Reserve Seat</button>
+    </form>
+}
+else
+{
+    <div class="alert alert-info">Booking is not enabled for this session.</div>
+}
+
+<a class="btn btn-outline-secondary mt-3" asp-page="/Courses/Live/Index" asp-route-id="@session.CourseId">Back to Sessions</a>

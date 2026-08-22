@@ -38,6 +38,9 @@ public enum NotificationType
     AccountWelcome = 30,
     EnrollmentGrantedBulk = 31,
     IntegrityDisposition = 32,
+    LiveBookingConfirmed = 33,
+    LiveBookingCancelled = 34,
+    LiveBookingWaitlistPromotion = 35,
 }
 
 /// <summary>One in-app notification for a user.</summary>

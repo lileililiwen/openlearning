@@ -119,6 +119,9 @@ public class NotificationService
         public const string AccountWelcome = "account.welcome";
         public const string EnrollmentGrantedBulk = "enrollment.granted-bulk";
         public const string IntegrityDisposition = "integrity.disposition";
+        public const string LiveBookingConfirmed = "live-booking.confirmed";
+        public const string LiveBookingCancelled = "live-booking.cancelled";
+        public const string LiveBookingWaitlistPromotion = "live-booking.waitlist-promotion";
     }
 
     private static readonly Dictionary<string, (NotificationType Type, string Title, string Body)> _events =
@@ -144,6 +147,9 @@ public class NotificationService
             [EventKeys.AccountWelcome] = (NotificationType.AccountWelcome, "Welcome", "Welcome to OpenLearning!"),
             [EventKeys.EnrollmentGrantedBulk] = (NotificationType.EnrollmentGrantedBulk, "Course access granted", "You have been enrolled in courses."),
             [EventKeys.IntegrityDisposition] = (NotificationType.IntegrityDisposition, "Exam integrity outcome", "A decision was recorded on your exam integrity incident."),
+            [EventKeys.LiveBookingConfirmed] = (NotificationType.LiveBookingConfirmed, "Live session booking confirmed", "Your seat has been confirmed for a live session."),
+            [EventKeys.LiveBookingCancelled] = (NotificationType.LiveBookingCancelled, "Live session booking cancelled", "Your booking for a live session has been cancelled."),
+            [EventKeys.LiveBookingWaitlistPromotion] = (NotificationType.LiveBookingWaitlistPromotion, "Live session seat available", "A seat has become available and you have been promoted from the waitlist."),
         };
 
     /// <summary>

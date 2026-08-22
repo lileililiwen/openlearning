@@ -1,0 +1,30 @@
+@page
+@model OpenLearning.Web.Pages.MyCalendarModel
+@{
+    ViewData["Title"] = "My Calendar";
+}
+
+<h1 class="h3 mb-4">My Calendar — @DateTime.Now.ToString("MMMM yyyy")</h1>
+
+@if (Model.Entries.Count == 0)
+{
+    <div class="alert alert-info">No confirmed bookings this month.</div>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var entry in Model.Entries.OrderBy(e => e.Start))
+        {
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">@entry.Summary</h6>
+                        <small class="text-muted">
+                            @entry.Start.ToString("ddd, MMM d HH:mm") – @entry.End.ToString("HH:mm")
+                        </small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

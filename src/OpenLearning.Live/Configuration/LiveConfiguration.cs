@@ -37,3 +37,35 @@ public class LiveCheckInConfiguration : IEntityTypeConfiguration<LiveCheckIn>
         builder.HasOne(c => c.User).WithMany().HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+public class LiveBookingConfiguration : IEntityTypeConfiguration<LiveBooking>
+{
+    public void Configure(EntityTypeBuilder<LiveBooking> builder)
+    {
+        builder.HasIndex(b => new { b.SessionId, b.StudentId }).IsUnique();
+        builder.HasOne(b => b.Session).WithMany(s => s.Bookings).HasForeignKey(b => b.SessionId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(b => b.Student).WithMany().HasForeignKey(b => b.StudentId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+public class LiveWaitlistConfiguration : IEntityTypeConfiguration<LiveWaitlist>
+{
+    public void Configure(EntityTypeBuilder<LiveWaitlist> builder)
+    {
+        builder.HasIndex(w => new { w.SessionId, w.StudentId }).IsUnique();
+        builder.HasIndex(w => new { w.SessionId, w.Position });
+        builder.HasOne(w => w.Session).WithMany(s => s.Waitlist).HasForeignKey(w => w.SessionId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(w => w.Student).WithMany().HasForeignKey(w => w.StudentId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+public class LiveCalendarTokenConfiguration : IEntityTypeConfiguration<LiveCalendarToken>
+{
+    public void Configure(EntityTypeBuilder<LiveCalendarToken> builder)
+    {
+        builder.Property(t => t.TokenHash).HasMaxLength(128).IsRequired();
+        builder.HasIndex(t => t.TokenHash);
+        builder.HasIndex(t => t.UserId);
+        builder.HasOne(t => t.User).WithMany().HasForeignKey(t => t.UserId).OnDelete(DeleteBehavior.Cascade);
+    }
+}

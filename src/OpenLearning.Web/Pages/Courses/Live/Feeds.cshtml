@@ -1,0 +1,66 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Live.FeedsModel
+@{
+    ViewData["Title"] = "Calendar Feeds";
+}
+
+<h1 class="h3 mb-4">Calendar Feeds</h1>
+
+@if (Model.NewRawToken is not null)
+{
+    <div class="alert alert-warning">
+        <strong>Save this token now.</strong> It will not be shown again.<br />
+        <code class="d-block mt-2 p-2 bg-light">@Model.NewRawToken</code>
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="post" asp-page-handler="Create">
+            <button type="submit" class="btn btn-primary">Create New Token</button>
+        </form>
+    </div>
+</div>
+
+@if (Model.Tokens.Count == 0)
+{
+    <div class="alert alert-info">You have no calendar tokens.</div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Created</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var token in Model.Tokens)
+            {
+                <tr>
+                    <td>@token.CreatedAt.ToString("f")</td>
+                    <td>
+                        @if (token.RevokedAt.HasValue)
+                        {
+                            <span class="badge bg-secondary">Revoked</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!token.RevokedAt.HasValue)
+                        {
+                            <form method="post" asp-page-handler="Revoke" asp-route-tokenId="@token.Id" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Revoke</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
