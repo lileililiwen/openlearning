@@ -24,6 +24,7 @@ using OpenLearning.Memberships.Models;
 using OpenLearning.Moderation.Models;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Operations.Models;
+using OpenLearning.PracticalTraining.Models;
 using OpenLearning.Progress.Models;
 using OpenLearning.QuestionIO.Models;
 using OpenLearning.Ratings.Models;
@@ -57,6 +58,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<LearningPathCourse> LearningPathCourses => Set<LearningPathCourse>();
 
     public DbSet<PathEnrollment> PathEnrollments => Set<PathEnrollment>();
+
+    public DbSet<Placement> PracticalPlacements => Set<Placement>();
 
     public DbSet<Module> Modules => Set<Module>();
 
@@ -231,5 +234,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(CouponImportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LtiRegistration).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LearningPath).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Placement).Assembly);
     }
 }

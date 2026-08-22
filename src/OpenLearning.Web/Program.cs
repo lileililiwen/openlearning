@@ -37,6 +37,7 @@ using OpenLearning.Notifications;
 using OpenLearning.Notifications.Channels;
 using OpenLearning.Notifications.Email;
 using OpenLearning.Operations;
+using OpenLearning.PracticalTraining;
 using OpenLearning.Progress;
 using OpenLearning.Progress.Services;
 using OpenLearning.QuestionIO;
@@ -166,6 +167,7 @@ builder.Services.AddCouponIOModule();
 builder.Services.AddResourceCenterModule();
 builder.Services.AddLtiModule();
 builder.Services.AddLearningPathsModule();
+builder.Services.AddPracticalTrainingModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();

@@ -1,0 +1,10 @@
+@page
+@model OpenLearning.Web.Pages.PracticalTraining.MyPlacementsModel
+@{ ViewData["Title"] = "My practical placements"; }
+<h1>@ViewData["Title"]</h1>
+<ul>@foreach (var p in Model.Placements) { <li><a asp-route-id="@p.Id">@p.Program?.Title at @p.Host?.Name</a> — @p.Status (@p.StartsOn to @p.EndsOn)</li> }</ul>
+@if (Model.SelectedId is int id) {
+<h2>Hour logs</h2><form method="post" asp-page-handler="Hours"><input type="hidden" name="id" value="@id" /><input type="datetime-local" name="startedAt" required /><input type="datetime-local" name="endedAt" required /><input name="description" maxlength="2000" placeholder="Work performed" /><select name="amendsLogId"><option value="">New log</option>@foreach (var logId in Model.Logs.Where(x => x.Status == OpenLearning.PracticalTraining.Models.PracticalLogStatus.Approved).Select(x => x.Id)) { <option value="@logId">Amend #@logId</option> }</select><button>Submit for approval</button></form>
+<table><thead><tr><th>When</th><th>Status</th><th>Description</th></tr></thead><tbody>@foreach (var log in Model.Logs) { <tr><td>@log.StartedAt – @log.EndedAt</td><td>@log.Status</td><td>@log.Description</td></tr> }</tbody></table>
+<h2>Competency evaluations</h2><ul>@foreach (var item in Model.Competencies) { <li>@item.ProgramCompetency?.Name — @OpenLearning.Web.Pages.PracticalTraining.MyPlacementsModel.EvaluationStatus(item) @item.Evaluation</li> }</ul>
+<h2>Evidence</h2><form method="post" enctype="multipart/form-data" asp-page-handler="Evidence"><input type="hidden" name="id" value="@id" /><input type="file" name="evidence" accept=".pdf,.doc,.docx,.zip,.jpg,.jpeg,.png" required /><input name="description" maxlength="1000" /><button>Upload private evidence</button></form> }
