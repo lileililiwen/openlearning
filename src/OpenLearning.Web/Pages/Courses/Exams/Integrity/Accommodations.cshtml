@@ -1,0 +1,74 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Exams.Integrity.AccommodationsModel
+@{
+    ViewData["Title"] = "Exam accommodations";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Accommodations</li>
+    </ol>
+</nav>
+
+<h2>Accommodations — @Model.ExamTitle</h2>
+<p class="text-muted">Operational adjustments only; no diagnosis is stored or shown.</p>
+
+<h4>Granted accommodations</h4>
+@if (Model.Items.Count == 0)
+{
+    <p class="text-muted">No accommodations yet.</p>
+}
+else
+{
+    <table class="table table-sm">
+        <thead>
+            <tr><th>Student</th><th>Extra min</th><th>Breaks</th><th>Relaxed visibility</th><th>Relaxed copy/paste</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var a in Model.Items)
+            {
+                <tr>
+                    <td>@a.StudentId</td>
+                    <td>@a.ExtraMinutes</td>
+                    <td>@a.AllowedBreaks</td>
+                    <td>@a.RelaxedVisibilityThreshold</td>
+                    <td>@a.RelaxedCopyPasteThreshold</td>
+                    <td>
+                        <form method="post" asp-page-handler="Revoke">
+                            <input type="hidden" name="id" value="@a.Id" />
+                            <button class="btn btn-sm btn-outline-danger">Revoke</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h4>Grant accommodation</h4>
+<form method="post" asp-page-handler="Grant" class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">Student id</label>
+        <input class="form-control" asp-for="StudentId" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Extra minutes</label>
+        <input class="form-control" asp-for="ExtraMinutes" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Allowed breaks</label>
+        <input class="form-control" asp-for="AllowedBreaks" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Relaxed visibility</label>
+        <input class="form-control" asp-for="RelaxedVisibilityThreshold" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Relaxed copy/paste</label>
+        <input class="form-control" asp-for="RelaxedCopyPasteThreshold" />
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Grant</button>
+    </div>
+</form>

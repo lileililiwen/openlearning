@@ -1,0 +1,77 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Exams.Integrity.IncidentModel
+@{
+    ViewData["Title"] = "Incident review";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Courses/Exams/Integrity/Incidents">Incidents</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Incident @Model.Id</li>
+    </ol>
+</nav>
+
+<h2>Incident @Model.Id</h2>
+<p>
+    Student: <strong>@Model.Incident!.StudentId</strong> &middot;
+    Risk: <strong>@Model.Incident.RiskLevel</strong> (@Model.Incident.RiskScore) &middot;
+    Status: @Model.Incident.Status &middot; Policy v@Model.Incident.PolicyVersion
+</p>
+
+<h4>Explainable risk contributions</h4>
+@if (Model.Contributions.Count == 0)
+{
+    <p class="text-muted">No contributing rules recorded.</p>
+}
+else
+{
+    <ul>
+        @foreach (var c in Model.Contributions)
+        {
+            <li>@c.Rule &times; @c.Count (weight @c.Weight) = @(c.Weight * c.Count)</li>
+        }
+    </ul>
+}
+
+<h4>Evidence (allowlisted signals only)</h4>
+@if (Model.Evidence.Count == 0)
+{
+    <p class="text-muted">No evidence captured.</p>
+}
+else
+{
+    <table class="table table-sm">
+        <thead><tr><th>#</th><th>Type</th><th>Client time</th><th>Server received</th></tr></thead>
+        <tbody>
+            @foreach (var e in Model.Evidence)
+            {
+                <tr>
+                    <td>@e.Sequence</td>
+                    <td>@e.EventType</td>
+                    <td>@e.ClientTimestamp.ToUniversalTime().ToString("u")</td>
+                    <td>@e.ReceivedAt.ToUniversalTime().ToString("u")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h4>Disposition</h4>
+<form method="post" class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">Outcome</label>
+        <select class="form-select" asp-for="Outcome">
+            <option value="0">No action</option>
+            <option value="1">Warning</option>
+            <option value="2">Score adjustment</option>
+            <option value="3">Invalidated</option>
+        </select>
+    </div>
+    <div class="col-md-8">
+        <label class="form-label">Notes</label>
+        <input class="form-control" asp-for="Notes" />
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Record disposition</button>
+    </div>
+</form>

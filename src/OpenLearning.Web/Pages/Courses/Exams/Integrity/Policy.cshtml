@@ -1,0 +1,58 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Exams.Integrity.PolicyModel
+@{
+    ViewData["Title"] = "Integrity policy";
+    var scope = Model.ExamId.HasValue ? $"Exam: {Model.ExamTitle}" : "Global default";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Integrity policy</li>
+    </ol>
+</nav>
+
+<h2>Integrity policy</h2>
+<p class="text-muted">@scope — saving creates a new versioned policy. Higher risk scores queue an incident for human review; they never change a grade automatically.</p>
+
+<form method="post" class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">Risk threshold</label>
+        <input class="form-control" asp-for="RiskThreshold" />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Heartbeat gap weight</label>
+        <input class="form-control" asp-for="HeartbeatGapWeight" />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Visibility hidden weight</label>
+        <input class="form-control" asp-for="VisibilityHiddenWeight" />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Tab switch weight</label>
+        <input class="form-control" asp-for="TabSwitchWeight" />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Copy attempt weight</label>
+        <input class="form-control" asp-for="CopyAttemptWeight" />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Paste attempt weight</label>
+        <input class="form-control" asp-for="PasteAttemptWeight" />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Connectivity loss weight</label>
+        <input class="form-control" asp-for="ConnectivityLossWeight" />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Retention days</label>
+        <input class="form-control" asp-for="RetentionDays" />
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Save new policy version</button>
+        @if (Model.ExamId.HasValue)
+        {
+            <a class="btn btn-outline-secondary" asp-page="/Courses/Details" asp-route-id="@Model.ExamId">Back</a>
+        }
+    </div>
+</form>

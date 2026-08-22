@@ -1,0 +1,45 @@
+@page
+@model OpenLearning.Web.Pages.Integrity.MyIncidentsModel
+@{
+    ViewData["Title"] = "My integrity incidents";
+}
+
+<h2>My integrity incidents</h2>
+<p class="text-muted">You will be notified if a reviewer records an adverse decision. You may appeal.</p>
+
+@if (Model.Items.Count == 0)
+{
+    <p class="text-muted">No incidents recorded.</p>
+}
+else
+{
+    <table class="table table-sm">
+        <thead><tr><th>Id</th><th>Exam</th><th>Risk</th><th>Score</th><th>Status</th><th>Appeal</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.Items)
+            {
+                <tr>
+                    <td>@i.Id</td>
+                    <td>@i.ExamId</td>
+                    <td>@i.RiskLevel</td>
+                    <td>@i.RiskScore</td>
+                    <td>@i.Status</td>
+                    <td>
+                        @if (i.Status == OpenLearning.Exams.Models.IntegrityIncidentStatus.Dispositioned)
+                        {
+                            <form method="post" asp-page-handler="Appeal" class="d-flex gap-1">
+                                <input type="hidden" name="IncidentId" value="@i.Id" />
+                                <input class="form-control form-control-sm" name="Reason" placeholder="Reason" required />
+                                <button class="btn btn-sm btn-outline-primary">Appeal</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

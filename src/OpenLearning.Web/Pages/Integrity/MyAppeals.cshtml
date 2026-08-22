@@ -1,0 +1,29 @@
+@page
+@model OpenLearning.Web.Pages.Integrity.MyAppealsModel
+@{
+    ViewData["Title"] = "My appeals";
+}
+
+<h2>My appeals</h2>
+
+@if (Model.Items.Count == 0)
+{
+    <p class="text-muted">No appeals submitted.</p>
+}
+else
+{
+    <table class="table table-sm">
+        <thead><tr><th>Incident</th><th>Status</th><th>Reason</th><th>Reviewer notes</th></tr></thead>
+        <tbody>
+            @foreach (var a in Model.Items)
+            {
+                <tr>
+                    <td>@a.IncidentId</td>
+                    <td>@a.Status</td>
+                    <td>@a.Reason</td>
+                    <td>@a.ReviewerNotes</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -19,17 +19,20 @@ public class TakeModel : PageModel
     private readonly EnrollmentService _enrollments;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly StorageService _storage;
+    private readonly ExamIntegrityService _integrity;
 
     public TakeModel(
         ExamService exams,
         EnrollmentService enrollments,
         UserManager<ApplicationUser> userManager,
-        StorageService storage)
+        StorageService storage,
+        ExamIntegrityService integrity)
     {
         _exams = exams;
         _enrollments = enrollments;
         _userManager = userManager;
         _storage = storage;
+        _integrity = integrity;
     }
 
     public Exam? Exam { get; set; }
@@ -66,6 +69,11 @@ public class TakeModel : PageModel
     [BindProperty]
     public int ScreenSwitchCount { get; set; }
 
+    /// <summary>Signed integrity session token + id for client-side signal capture.</summary>
+    public string? IntegrityToken { get; set; }
+
+    public int IntegritySessionId { get; set; }
+
     public async Task<IActionResult> OnGetAsync(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -97,6 +105,14 @@ public class TakeModel : PageModel
         Attempt = attempt;
         AttemptId = attempt?.Id ?? 0;
         ErrorMessage = error;
+
+        if (attempt is not null)
+        {
+            var (session, token) = await _integrity.BeginSessionAsync(attempt.Id, userId);
+            IntegritySessionId = session.Id;
+            IntegrityToken = token;
+        }
+
         return Page();
     }
 
@@ -176,6 +192,10 @@ public class TakeModel : PageModel
             Exam = exam;
             return Page();
         }
+
+        // Evidence is evaluated after submit; high risk queues an incident but
+        // never changes the auto score (human review decides any penalty).
+        await _integrity.EvaluateAndQueueAsync(attemptId.Value);
 
         return RedirectToPage("/Courses/Exams/Result", new { id = attemptId });
     }

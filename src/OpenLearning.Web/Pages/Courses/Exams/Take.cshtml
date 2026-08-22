@@ -57,6 +57,8 @@ else
         <input type="hidden" asp-for="ExamId" />
         <input type="hidden" asp-for="AttemptId" />
         <input type="hidden" asp-for="ScreenSwitchCount" />
+        <input type="hidden" asp-for="IntegritySessionId" />
+        <input type="hidden" asp-for="IntegrityToken" />
         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
         @for (var q = 0; q < questions.Count; q++)
@@ -197,6 +199,60 @@ else
                 window.addEventListener('blur', addSwitch);
 
                 tick();
+            })();
+
+            // ----- integrity signals (no camera/mic/biometric) -----
+            (function () {
+                var sessionId = parseInt(document.getElementById('@Html.IdFor(m => m.IntegritySessionId)').value, 10);
+                var token = document.getElementById('@Html.IdFor(m => m.IntegrityToken)').value;
+                if (!sessionId || !token) { return; }
+
+                var endpoint = '@Url.Page("/Courses/Exams/Integrity/Signal")';
+                var antiForgery = document.querySelector('input[name="__RequestVerificationToken"]');
+                var afToken = antiForgery ? antiForgery.value : '';
+                var seq = 0;
+                var buffer = [];
+
+                function push(type, payload) {
+                    seq += 1;
+                    buffer.push({ sequence: seq, type: type, clientTimestamp: new Date().toISOString(), payload: payload || null });
+                    if (buffer.length >= 5) { flush(); }
+                }
+
+                function flush() {
+                    if (buffer.length === 0) { return; }
+                    var batch = buffer.splice(0, buffer.length);
+                    var body = JSON.stringify({
+                        sessionId: sessionId,
+                        token: token,
+                        batchId: 'b' + Date.now() + '-' + Math.random().toString(36).slice(2),
+                        events: batch
+                    });
+                    // Reconnect-safe: same batchId on retry lets the server dedup replays.
+                    var attempt = function (retries) {
+                        fetch(endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': afToken },
+                            body: body,
+                            keepalive: true
+                        }).catch(function () {
+                            if (retries > 0) { setTimeout(function () { attempt(retries - 1); }, 2000); }
+                        });
+                    };
+                    attempt(3);
+                }
+
+                document.addEventListener('visibilitychange', function () {
+                    push(document.hidden ? 'VisibilityHidden' : 'VisibilityVisible');
+                });
+                document.addEventListener('copy', function () { push('CopyAttempt'); });
+                document.addEventListener('paste', function () { push('PasteAttempt'); });
+                window.addEventListener('online', function () { push('ConnectivityRestored'); });
+                window.addEventListener('offline', function () { push('ConnectivityLost'); });
+                window.addEventListener('blur', function () { push('TabSwitch'); });
+                setInterval(function () { push('Heartbeat'); }, 15000);
+                window.addEventListener('pagehide', flush);
+                form.addEventListener('submit', flush);
             })();
         </script>
     }

@@ -118,6 +118,7 @@ public class NotificationService
         public const string ExportProgress = "export.progress";
         public const string AccountWelcome = "account.welcome";
         public const string EnrollmentGrantedBulk = "enrollment.granted-bulk";
+        public const string IntegrityDisposition = "integrity.disposition";
     }
 
     private static readonly Dictionary<string, (NotificationType Type, string Title, string Body)> _events =
@@ -142,6 +143,7 @@ public class NotificationService
             [EventKeys.ExportProgress] = (NotificationType.ExportProgress, "Export in progress", "Your export is still running."),
             [EventKeys.AccountWelcome] = (NotificationType.AccountWelcome, "Welcome", "Welcome to OpenLearning!"),
             [EventKeys.EnrollmentGrantedBulk] = (NotificationType.EnrollmentGrantedBulk, "Course access granted", "You have been enrolled in courses."),
+            [EventKeys.IntegrityDisposition] = (NotificationType.IntegrityDisposition, "Exam integrity outcome", "A decision was recorded on your exam integrity incident."),
         };
 
     /// <summary>

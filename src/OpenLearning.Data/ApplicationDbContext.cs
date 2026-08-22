@@ -90,6 +90,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Quiz> Quizzes => Set<Quiz>();
 
+    public DbSet<IntegrityPolicy> IntegrityPolicies => Set<IntegrityPolicy>();
+    public DbSet<IntegritySession> IntegritySessions => Set<IntegritySession>();
+    public DbSet<IntegrityEvidence> IntegrityEvidence => Set<IntegrityEvidence>();
+    public DbSet<LearnerAccommodation> LearnerAccommodations => Set<LearnerAccommodation>();
+    public DbSet<IntegrityIncident> IntegrityIncidents => Set<IntegrityIncident>();
+    public DbSet<IntegrityDisposition> IntegrityDispositions => Set<IntegrityDisposition>();
+    public DbSet<IntegrityAppeal> IntegrityAppeals => Set<IntegrityAppeal>();
+    public DbSet<IntegrityAccessLog> IntegrityAccessLogs => Set<IntegrityAccessLog>();
+
     public DbSet<Question> Questions => Set<Question>();
 
     public DbSet<AnswerOption> AnswerOptions => Set<AnswerOption>();

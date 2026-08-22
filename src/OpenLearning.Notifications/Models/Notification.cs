@@ -37,6 +37,7 @@ public enum NotificationType
     ExportProgress = 29,
     AccountWelcome = 30,
     EnrollmentGrantedBulk = 31,
+    IntegrityDisposition = 32,
 }
 
 /// <summary>One in-app notification for a user.</summary>

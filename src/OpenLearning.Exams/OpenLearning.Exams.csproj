@@ -10,7 +10,9 @@
     <ProjectReference Include="..\OpenLearning.Auth\OpenLearning.Auth.csproj" />
     <ProjectReference Include="..\OpenLearning.CourseManagement\OpenLearning.CourseManagement.csproj" />
     <ProjectReference Include="..\OpenLearning.Enrollment\OpenLearning.Enrollment.csproj" />
+    <ProjectReference Include="..\OpenLearning.Notifications\OpenLearning.Notifications.csproj" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.30" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

@@ -8,6 +8,7 @@ public static class ExamsModuleExtensions
     public static IServiceCollection AddExamsModule(this IServiceCollection services)
     {
         services.AddScoped<ExamService>();
+        services.AddScoped<ExamIntegrityService>();
         return services;
     }
 }
