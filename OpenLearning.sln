@@ -97,6 +97,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Gamification",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.AI", "src\OpenLearning.AI\OpenLearning.AI.csproj", "{14A159B4-411F-4604-B023-A8F9D329067A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Payments", "src\OpenLearning.Payments\OpenLearning.Payments.csproj", "{A27D5796-1173-4A8C-8C37-3E0BF2523F75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -106,6 +108,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A27D5796-1173-4A8C-8C37-3E0BF2523F75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A27D5796-1173-4A8C-8C37-3E0BF2523F75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A27D5796-1173-4A8C-8C37-3E0BF2523F75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A27D5796-1173-4A8C-8C37-3E0BF2523F75}.Release|Any CPU.Build.0 = Release|Any CPU
 		{59266E3F-A056-48B6-A2EC-CBBAFD1AB326}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{59266E3F-A056-48B6-A2EC-CBBAFD1AB326}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59266E3F-A056-48B6-A2EC-CBBAFD1AB326}.Release|Any CPU.ActiveCfg = Release|Any CPU

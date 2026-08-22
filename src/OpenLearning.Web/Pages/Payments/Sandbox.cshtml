@@ -1,0 +1,18 @@
+@page
+@model OpenLearning.Web.Pages.Payments.SandboxModel
+@{
+    ViewData["Title"] = "Sandbox payment";
+}
+<div class="container py-4">
+    <h1 class="h3">Sandbox payment</h1>
+    @if (Model.Intent is null)
+    {
+        <div class="alert alert-danger">Payment intent not found.</div>
+    }
+    else
+    {
+        <p>Intent <code>@Model.Intent.ProviderIntentId</code></p>
+        <p>Amount: @Model.Intent.Amount @Model.Intent.Currency</p>
+        <div class="alert alert-info">Status: @Model.Intent.State. The order remains pending until the signed sandbox webhook is received.</div>
+    }
+</div>

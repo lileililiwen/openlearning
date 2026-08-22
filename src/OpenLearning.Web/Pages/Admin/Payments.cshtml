@@ -1,0 +1,19 @@
+@page
+@model OpenLearning.Web.Pages.Admin.PaymentsModel
+@{ ViewData["Title"] = "Payment gateways"; }
+<h1 class="h3">Payment gateways</h1>
+<p class="text-muted">Provider: sandbox. Credentials are supplied through protected configuration and are never displayed.</p>
+@if (TempData["Message"] is string message) { <div class="alert alert-@(TempData["MessageType"] ?? "info")">@message</div> }
+<h2 class="h5 mt-4">Reconciliation exceptions</h2>
+@if (Model.Issues.Count == 0) { <p>No open exceptions.</p> }
+@foreach (var issue in Model.Issues) { <div class="alert alert-warning">@issue.Reason @(issue.Retryable ? "(retryable)" : "")</div> }
+<h2 class="h5 mt-4">Recent payment intents</h2>
+<table class="table"><thead><tr><th>Intent</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+@foreach (var intent in Model.Intents)
+{
+<tr><td><code>@intent.ProviderIntentId</code></td><td>@intent.Amount @intent.Currency</td><td>@intent.State</td><td class="d-flex gap-2">
+<form method="post" asp-page-handler="Reconcile" asp-route-id="@intent.Id"><button class="btn btn-sm btn-outline-primary">Reconcile</button></form>
+@if (intent.State == OpenLearning.Payments.Models.PaymentState.Succeeded) { <form method="post" asp-page-handler="Refund" asp-route-id="@intent.Id"><input name="amount" type="number" min="0.01" step="0.01" max="@intent.Amount" required /><button class="btn btn-sm btn-outline-danger">Request refund</button></form> }
+</td></tr>
+}
+</tbody></table>

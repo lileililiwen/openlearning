@@ -2,10 +2,9 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using OpenLearning.Distribution.Services;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Ecommerce.Services;
-using OpenLearning.Settlement.Services;
+using OpenLearning.Payments.Services;
 
 namespace OpenLearning.Web.Pages.Courses;
 
@@ -13,14 +12,12 @@ namespace OpenLearning.Web.Pages.Courses;
 public class CheckoutModel : PageModel
 {
     private readonly OrderService _orders;
-    private readonly SettlementService _settlement;
-    private readonly DistributionService _distribution;
+    private readonly PaymentService _payments;
 
-    public CheckoutModel(OrderService orders, SettlementService settlement, DistributionService distribution)
+    public CheckoutModel(OrderService orders, PaymentService payments)
     {
         _orders = orders;
-        _settlement = settlement;
-        _distribution = distribution;
+        _payments = payments;
     }
 
     public Order? Order { get; set; }
@@ -57,24 +54,15 @@ public class CheckoutModel : PageModel
             return NotFound();
         }
 
-        var (ok, error) = await _orders.ConfirmPaymentAsync(orderId, userId);
-        if (ok)
-        {
-            // Credit the course instructor for the paid order (Web composition).
-            if (order.Course?.InstructorId is { Length: > 0 } instructorId)
-            {
-                await _settlement.CreditAsync(instructorId, order.CourseId, order.Amount, $"Order #{orderId}");
-            }
-
-            // Attribute the order to a distributor if it arrived via a share link.
-            await _distribution.RecordPaidAsync(orderId, Request.Cookies["ol_aff"]);
-        }
-        else
+        var (_, redirectUrl, error) = await _payments.CreateAsync(orderId, userId);
+        if (error is not null)
         {
             TempData["Message"] = error;
             TempData["MessageType"] = "danger";
         }
 
-        return RedirectToPage("/Courses/Details", new { id = order.CourseId });
+        return error is null && redirectUrl is not null
+            ? LocalRedirect(redirectUrl)
+            : RedirectToPage("/Courses/Details", new { id = order.CourseId });
     }
 }

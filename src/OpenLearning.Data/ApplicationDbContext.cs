@@ -26,6 +26,7 @@ using OpenLearning.Memberships.Models;
 using OpenLearning.Moderation.Models;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Operations.Models;
+using OpenLearning.Payments.Models;
 using OpenLearning.PracticalTraining.Models;
 using OpenLearning.Progress.Models;
 using OpenLearning.QuestionIO.Models;
@@ -66,6 +67,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<GamificationPointEntry> GamificationPointEntries => Set<GamificationPointEntry>();
 
     public DbSet<AiPolicy> AiPolicies => Set<AiPolicy>();
+
+    public DbSet<PaymentIntent> PaymentIntents => Set<PaymentIntent>();
 
     public DbSet<Module> Modules => Set<Module>();
 
@@ -243,5 +246,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Placement).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(GamificationPointEntry).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(AiPolicy).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(PaymentIntent).Assembly);
     }
 }

@@ -39,6 +39,8 @@ using OpenLearning.Notifications;
 using OpenLearning.Notifications.Channels;
 using OpenLearning.Notifications.Email;
 using OpenLearning.Operations;
+using OpenLearning.Payments;
+using OpenLearning.Payments.Services;
 using OpenLearning.PracticalTraining;
 using OpenLearning.Progress;
 using OpenLearning.Progress.Services;
@@ -133,6 +135,7 @@ builder.Services.AddProgressModule();
 builder.Services.AddAssessmentsModule();
 builder.Services.AddExamsModule();
 builder.Services.AddEcommerceModule();
+builder.Services.AddPaymentsModule(builder.Configuration);
 builder.Services.AddNavigationModule();
 builder.Services.AddScoped<OpenLearning.Navigation.Services.INavCounterProvider, OpenLearning.Web.Navigation.NotificationsNavCounter>();
 builder.Services.AddScormModule();
@@ -432,6 +435,15 @@ app.MapPost("/nav/toggle", (string group, OpenLearning.Navigation.Services.NavPr
     prefs.ToggleCollapsed(group);
     return Results.Ok();
 });
+
+app.MapPost("/api/payments/webhooks/sandbox", async (HttpRequest request, PaymentService payments) =>
+{
+    using var buffer = new MemoryStream();
+    await request.Body.CopyToAsync(buffer, request.HttpContext.RequestAborted);
+    var signature = request.Headers["X-Payment-Signature"].ToString();
+    var result = await payments.IngestAsync(buffer.ToArray(), signature);
+    return result.Ok ? Results.Ok(new { duplicate = result.Duplicate }) : Results.BadRequest(new { error = result.Error });
+}).AllowAnonymous();
 
 // Apply migrations and seed demo data on first run (dev-friendly).
 using (var scope = app.Services.CreateScope())

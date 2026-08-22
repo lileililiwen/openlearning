@@ -11,7 +11,7 @@
         <div class="card shadow-sm">
             <div class="card-body p-4">
                 <h1 class="h4 mb-1">Checkout</h1>
-                <p class="text-muted small mb-4">Demo checkout — no real payment is processed.</p>
+                <p class="text-muted small mb-4">Payment is confirmed only after a verified provider callback.</p>
 
                 <div class="d-flex justify-content-between border-bottom pb-3 mb-3">
                     <span>
@@ -27,7 +27,7 @@
                 </div>
 
                 <form method="post" asp-route-orderId="@order.Id">
-                    <button type="submit" class="btn btn-success w-100 mb-2">Pay @order.Amount.ToString("C") (demo)</button>
+                    <button type="submit" class="btn btn-success w-100 mb-2">Continue to payment</button>
                 </form>
                 <a class="btn btn-outline-secondary w-100" asp-page="/Courses/Details" asp-route-id="@course.Id">Cancel</a>
             </div>
