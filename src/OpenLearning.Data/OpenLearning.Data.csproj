@@ -14,6 +14,7 @@
     <ProjectReference Include="..\OpenLearning.LearningPaths\OpenLearning.LearningPaths.csproj" />
     <ProjectReference Include="..\OpenLearning.PracticalTraining\OpenLearning.PracticalTraining.csproj" />
     <ProjectReference Include="..\OpenLearning.Gamification\OpenLearning.Gamification.csproj" />
+    <ProjectReference Include="..\OpenLearning.AI\OpenLearning.AI.csproj" />
     <ProjectReference Include="..\OpenLearning.UserManagement\OpenLearning.UserManagement.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.30" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.30">

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenLearning.AI;
 using OpenLearning.Assessments;
 using OpenLearning.Assignments;
 using OpenLearning.AsyncIO;
@@ -170,6 +171,7 @@ builder.Services.AddLtiModule();
 builder.Services.AddLearningPathsModule();
 builder.Services.AddPracticalTrainingModule();
 builder.Services.AddGamificationModule();
+builder.Services.AddAiModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();

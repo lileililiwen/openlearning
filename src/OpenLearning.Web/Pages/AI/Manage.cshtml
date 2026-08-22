@@ -1,0 +1,21 @@
+@page
+@model OpenLearning.Web.Pages.AI.ManageModel
+@{ ViewData["Title"] = "AI governance"; }
+<h1>AI governance</h1>
+<p>AI features are disabled until an administrator enables them with an external-processing disclosure. Secret values are never stored here; use a <code>secret:</code> reference.</p>
+<form method="post" asp-page-handler="Policy">
+    <input name="courseId" type="number" placeholder="Course ID (blank = platform)" />
+    <input name="provider" value="sandbox" required maxlength="80" />
+    <input name="model" value="deterministic-v1" required maxlength="120" />
+    <input name="secretReference" placeholder="secret:provider-key" maxlength="200" />
+    <label><input name="questions" type="checkbox" value="true" /> Questions</label>
+    <label><input name="drafts" type="checkbox" value="true" /> Draft feedback</label>
+    <label><input name="grading" type="checkbox" value="true" /> Grade suggestions</label>
+    <input name="quota" type="number" value="10" min="1" />
+    <input name="retentionDays" type="number" value="30" min="1" />
+    <input name="timeoutSeconds" type="number" value="15" min="1" max="120" />
+    <input name="cost" type="number" value="0" min="0" step="0.000001" />
+    <textarea name="disclosure" required maxlength="2000" placeholder="External processing disclosure"></textarea>
+    <button>Save policy</button>
+</form>
+<ul>@foreach (var p in Model.Policies) { <li>@(p.CourseId?.ToString() ?? "Platform"): @p.Provider / @p.Model — questions @p.QuestionsEnabled, grading @p.GradeSuggestionsEnabled</li> }</ul>

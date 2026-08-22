@@ -1,0 +1,6 @@
+@page
+@model OpenLearning.Web.Pages.AI.SourcesModel
+@{ ViewData["Title"] = "AI sources"; }
+<h1>Approved AI sources</h1>
+<form method="post" asp-page-handler="Add"><input name="courseId" type="number" value="@Model.CourseId" required /><input name="title" required maxlength="300" /><input name="anchor" required maxlength="500" /><textarea name="content" required></textarea><label><input name="published" type="checkbox" value="true" /> Published</label><label><input name="approved" type="checkbox" value="true" /> Approved</label><button>Index source</button></form>
+<ul>@foreach (var s in Model.Sources) { <li>@s.Title — approved @s.IsApproved, unsafe @s.IsUnsafe<form method="post" asp-page-handler="Remove"><input type="hidden" name="courseId" value="@Model.CourseId" /><input type="hidden" name="sourceId" value="@s.Id" /><button>Remove</button></form></li> }</ul>

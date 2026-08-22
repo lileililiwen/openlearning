@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using OpenLearning.AI.Models;
 using OpenLearning.Assessments.Models;
 using OpenLearning.Assignments.Models;
 using OpenLearning.AsyncIO.Models;
@@ -63,6 +64,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Placement> PracticalPlacements => Set<Placement>();
 
     public DbSet<GamificationPointEntry> GamificationPointEntries => Set<GamificationPointEntry>();
+
+    public DbSet<AiPolicy> AiPolicies => Set<AiPolicy>();
 
     public DbSet<Module> Modules => Set<Module>();
 
@@ -239,5 +242,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(LearningPath).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Placement).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(GamificationPointEntry).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(AiPolicy).Assembly);
     }
 }

@@ -56,6 +56,7 @@
     <ProjectReference Include="..\OpenLearning.LearningPaths\OpenLearning.LearningPaths.csproj" />
     <ProjectReference Include="..\OpenLearning.PracticalTraining\OpenLearning.PracticalTraining.csproj" />
     <ProjectReference Include="..\OpenLearning.Gamification\OpenLearning.Gamification.csproj" />
+    <ProjectReference Include="..\OpenLearning.AI\OpenLearning.AI.csproj" />
   </ItemGroup>
 
 </Project>

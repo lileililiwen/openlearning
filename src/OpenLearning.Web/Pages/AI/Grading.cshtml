@@ -1,0 +1,6 @@
+@page
+@model OpenLearning.Web.Pages.AI.GradingModel
+@{ ViewData["Title"] = "AI grading drafts"; }
+<h1>AI grading drafts</h1><p>Suggestions are advisory and cannot alter grades until you confirm edited final values.</p>
+<form method="post" asp-page-handler="Suggest"><input name="submissionId" type="number" required /><button>Create suggestion</button></form>
+@foreach (var d in Model.Drafts) { <article><p>Suggested: @d.SuggestedScore — @d.SuggestedFeedback</p><p>@d.RubricEvidence</p><form method="post" asp-page-handler="Confirm"><input type="hidden" name="draftId" value="@d.Id" /><input name="score" type="number" min="0" max="100" required value="@d.SuggestedScore" /><textarea name="feedback" required>@d.SuggestedFeedback</textarea><button>Confirm final grade</button></form></article> }

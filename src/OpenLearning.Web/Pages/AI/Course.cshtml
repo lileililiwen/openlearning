@@ -1,0 +1,9 @@
+@page
+@model OpenLearning.Web.Pages.AI.CourseModel
+@{ ViewData["Title"] = "Course AI assistant"; }
+<h1>Course AI assistant</h1>
+<p><strong>AI-generated.</strong> Verify important details against the cited course material. External processing applies when disclosed by your administrator.</p>
+<form method="post" asp-page-handler="Ask"><input type="hidden" name="courseId" value="@Model.CourseId" /><textarea name="question" required maxlength="2000"></textarea><button>Ask</button></form>
+<h2>Formative draft feedback</h2><form method="post" asp-page-handler="Feedback"><input type="hidden" name="courseId" value="@Model.CourseId" /><input name="submissionId" type="number" required placeholder="Your assignment submission ID" /><button>Request feedback</button></form>
+@foreach (var draft in Model.FeedbackDrafts) { <article><strong>AI-generated formative feedback; no grade effect.</strong><p>@draft.SuggestedFeedback</p></article> }
+@foreach (var item in Model.Messages) { <article><p>@item.Answer</p>@if (item.IsUncertain) { <strong>Approved sources were insufficient.</strong> }<ul>@foreach (var c in item.Citations) { <li><a href="@c.Anchor">@c.Title</a></li> }</ul><form method="post" asp-page-handler="Report"><input type="hidden" name="courseId" value="@Model.CourseId" /><input type="hidden" name="messageId" value="@item.Id" /><input name="reason" required maxlength="1000" /><button>Report</button></form></article> }
