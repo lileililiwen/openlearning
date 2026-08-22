@@ -8,6 +8,7 @@ public static class StudyToolsModuleExtensions
     public static IServiceCollection AddStudyToolsModule(this IServiceCollection services)
     {
         services.AddScoped<StudyToolService>();
+        services.AddScoped<LearnerNoteService>();
         return services;
     }
 }

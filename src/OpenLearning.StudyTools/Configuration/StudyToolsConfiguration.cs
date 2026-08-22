@@ -48,3 +48,15 @@ public class StudyDailyAggregateConfiguration : IEntityTypeConfiguration<StudyDa
         builder.HasIndex(a => new { a.Date, a.UserId, a.CourseId }).IsUnique();
     }
 }
+
+public class LearnerNoteConfiguration : IEntityTypeConfiguration<LearnerNote>
+{
+    public void Configure(EntityTypeBuilder<LearnerNote> builder)
+    {
+        builder.Property(n => n.Body).HasMaxLength(50000).IsRequired();
+        builder.Property(n => n.Tags).HasMaxLength(500);
+        builder.HasIndex(n => n.UserId);
+        builder.HasIndex(n => new { n.UserId, n.ContextType, n.ContextId });
+        builder.HasIndex(n => new { n.UserId, n.CreatedAt });
+    }
+}

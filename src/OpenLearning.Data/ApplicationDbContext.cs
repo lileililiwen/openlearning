@@ -174,6 +174,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Assignment> Assignments => Set<Assignment>();
 
     public DbSet<LessonNote> LessonNotes => Set<LessonNote>();
+    public DbSet<LearnerNote> LearnerNotes => Set<LearnerNote>();
 
     public DbSet<StudyCheckIn> StudyCheckIns => Set<StudyCheckIn>();
 
