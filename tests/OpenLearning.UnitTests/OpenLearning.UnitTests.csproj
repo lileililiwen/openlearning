@@ -54,6 +54,7 @@
     <ProjectReference Include="..\..\src\OpenLearning.CouponIO\OpenLearning.CouponIO.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.ResourceCenter\OpenLearning.ResourceCenter.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Lti\OpenLearning.Lti.csproj" />
+    <ProjectReference Include="..\..\src\OpenLearning.LearningPaths\OpenLearning.LearningPaths.csproj" />
   </ItemGroup>
 
 </Project>

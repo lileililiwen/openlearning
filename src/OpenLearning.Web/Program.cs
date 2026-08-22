@@ -24,6 +24,7 @@ using OpenLearning.Exams;
 using OpenLearning.GradeExport;
 using OpenLearning.Invoicing;
 using OpenLearning.Jobs;
+using OpenLearning.LearningPaths;
 using OpenLearning.Live;
 using OpenLearning.Live.Hubs;
 using OpenLearning.Logging;
@@ -164,6 +165,7 @@ builder.Services.AddCourseOutlineIOModule();
 builder.Services.AddCouponIOModule();
 builder.Services.AddResourceCenterModule();
 builder.Services.AddLtiModule();
+builder.Services.AddLearningPathsModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();

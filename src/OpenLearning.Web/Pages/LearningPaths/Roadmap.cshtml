@@ -1,0 +1,6 @@
+@page
+@model OpenLearning.Web.Pages.LearningPaths.RoadmapModel
+@{ ViewData["Title"] = Model.Progress.Title; }
+<h1>@Model.Progress.Title <small class="text-muted">v@(Model.Progress.VersionNumber)</small></h1>
+@if(Model.Progress.IsComplete){<div class="alert alert-success">Path completed @Model.Progress.CompletedAt</div>}
+@foreach(var stage in Model.Progress.Courses.GroupBy(x=>x.StagePosition).OrderBy(x=>x.Key)){<section class="card card-body mb-3"><h2 class="h5">Stage @stage.Key</h2><ol>@foreach(var item in stage.OrderBy(x=>x.Position)){<li class="mb-2"><strong>@item.Title</strong> — @item.State @if(item.IsRequired){<span class="badge bg-secondary">Required</span>}<div class="progress my-1" style="height:6px"><div class="progress-bar" style="width:@item.ProgressPercent%"></div></div>@if(item.State != OpenLearning.LearningPaths.Services.PathCourseState.Blocked && item.State != OpenLearning.LearningPaths.Services.PathCourseState.Complete){<a asp-page="/Courses/Details" asp-route-id="@item.CourseId">@(item.State == OpenLearning.LearningPaths.Services.PathCourseState.PurchaseRequired ? "Purchase course" : "Open course")</a>}</li>}</ol></section>}

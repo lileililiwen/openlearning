@@ -16,6 +16,7 @@ using OpenLearning.Exams.Models;
 using OpenLearning.GradeExport.Models;
 using OpenLearning.Invoicing.Models;
 using OpenLearning.Jobs.Models;
+using OpenLearning.LearningPaths.Models;
 using OpenLearning.Live.Models;
 using OpenLearning.Logging.Models;
 using OpenLearning.Lti.Models;
@@ -46,6 +47,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
 
     public DbSet<Course> Courses => Set<Course>();
+
+    public DbSet<LearningPath> LearningPaths => Set<LearningPath>();
+
+    public DbSet<LearningPathVersion> LearningPathVersions => Set<LearningPathVersion>();
+
+    public DbSet<LearningPathStage> LearningPathStages => Set<LearningPathStage>();
+
+    public DbSet<LearningPathCourse> LearningPathCourses => Set<LearningPathCourse>();
+
+    public DbSet<PathEnrollment> PathEnrollments => Set<PathEnrollment>();
 
     public DbSet<Module> Modules => Set<Module>();
 
@@ -219,5 +230,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(OutlineImportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(CouponImportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LtiRegistration).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(LearningPath).Assembly);
     }
 }

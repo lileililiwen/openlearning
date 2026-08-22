@@ -1,0 +1,6 @@
+@page
+@model OpenLearning.Web.Pages.LearningPaths.IndexModel
+@{ ViewData["Title"] = "Learning paths"; }
+<h1>Learning paths</h1>
+@if(Model.Enrollments.Count > 0){<h2 class="h4">My paths</h2><div class="list-group mb-4">@foreach(var e in Model.Enrollments){<a class="list-group-item list-group-item-action" asp-page="Roadmap" asp-route-id="@e.Id">@e.Version!.LearningPath!.Title — version @e.Version.VersionNumber</a>}</div>}
+<div class="row g-3">@foreach(var path in Model.Catalog){<div class="col-md-6"><div class="card h-100"><div class="card-body"><h2 class="h5">@path.Title</h2><p>@path.Description</p><form method="post" asp-page-handler="Enroll"><input type="hidden" name="id" value="@path.Id"/><button class="btn btn-primary">Follow this path</button></form></div></div></div>}</div>
