@@ -18,6 +18,7 @@ using OpenLearning.Invoicing.Models;
 using OpenLearning.Jobs.Models;
 using OpenLearning.Live.Models;
 using OpenLearning.Logging.Models;
+using OpenLearning.Lti.Models;
 using OpenLearning.Memberships.Models;
 using OpenLearning.Moderation.Models;
 using OpenLearning.Notifications.Models;
@@ -174,6 +175,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<CouponImportRowError> CouponImportRowErrors => Set<CouponImportRowError>();
 
+    public DbSet<LtiRegistration> LtiRegistrations => Set<LtiRegistration>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -215,5 +218,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(GradeExportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(OutlineImportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(CouponImportJob).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(LtiRegistration).Assembly);
     }
 }

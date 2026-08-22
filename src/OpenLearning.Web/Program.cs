@@ -28,6 +28,7 @@ using OpenLearning.Live;
 using OpenLearning.Live.Hubs;
 using OpenLearning.Logging;
 using OpenLearning.Logging.Middleware;
+using OpenLearning.Lti;
 using OpenLearning.Memberships;
 using OpenLearning.Moderation;
 using OpenLearning.Navigation;
@@ -162,6 +163,7 @@ builder.Services.AddGradeExportModule();
 builder.Services.AddCourseOutlineIOModule();
 builder.Services.AddCouponIOModule();
 builder.Services.AddResourceCenterModule();
+builder.Services.AddLtiModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();

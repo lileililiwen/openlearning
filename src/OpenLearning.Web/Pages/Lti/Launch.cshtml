@@ -1,0 +1,5 @@
+@page
+@model OpenLearning.Web.Pages.Lti.LaunchModel
+@{ ViewData["Title"] = "LTI launch"; }
+@if (!Model.Result.Ok) { <div class="alert alert-danger">@Model.Result.Error</div> }
+else { <div class="alert alert-success">Launch accepted for course @Model.Result.CourseId.</div><a class="btn btn-primary" asp-page="/Courses/Detail" asp-route-id="@Model.Result.CourseId">Open course</a> }
