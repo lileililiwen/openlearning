@@ -21,6 +21,7 @@ using OpenLearning.Distribution;
 using OpenLearning.Ecommerce;
 using OpenLearning.Enrollment;
 using OpenLearning.Exams;
+using OpenLearning.Gamification;
 using OpenLearning.GradeExport;
 using OpenLearning.Invoicing;
 using OpenLearning.Jobs;
@@ -168,6 +169,7 @@ builder.Services.AddResourceCenterModule();
 builder.Services.AddLtiModule();
 builder.Services.AddLearningPathsModule();
 builder.Services.AddPracticalTrainingModule();
+builder.Services.AddGamificationModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();

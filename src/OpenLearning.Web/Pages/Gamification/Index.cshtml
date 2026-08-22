@@ -1,0 +1,9 @@
+@page
+@model OpenLearning.Web.Pages.Gamification.IndexModel
+@{ ViewData["Title"] = "Achievements"; }
+<h1>@ViewData["Title"]</h1>
+<section><h2>Leaderboard privacy</h2><form method="post" asp-page-handler="Preference"><input name="alias" maxlength="80" placeholder="Display alias" /><button name="visible" value="true">Opt in</button><button name="visible" value="false">Opt out</button></form></section>
+<section><h2>Points history</h2><table><thead><tr><th>Date</th><th>Event</th><th>Points</th><th>Audit</th></tr></thead><tbody>@foreach (var entry in Model.History) { <tr><td>@entry.CreatedAt</td><td>@entry.EventType</td><td>@entry.Amount</td><td>#@entry.Id, rule v@entry.RuleVersion, source @entry.SourceKey @(entry.WasCapped ? "capped" : "")</td></tr> }</tbody></table></section>
+<section><h2>Badge case</h2><ul>@foreach (var award in Model.Badges) { <li>@award.Badge?.Name — criteria v@award.CriteriaVersion — @award.Evidence</li> }</ul></section>
+<section><h2>Challenges</h2><ul>@foreach (var item in Model.Challenges) { <li>@item.Challenge.Name: @item.Points / @item.Challenge.TargetPoints @(item.IsComplete ? "Complete" : "In progress")</li> }</ul></section>
+<section><h2>Platform leaderboard</h2><ol>@foreach (var row in Model.Leaderboard) { <li value="@row.Rank">@row.Alias — @row.Points</li> }</ol></section>

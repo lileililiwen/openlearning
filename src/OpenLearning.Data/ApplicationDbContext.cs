@@ -13,6 +13,7 @@ using OpenLearning.CourseOutlineIO.Models;
 using OpenLearning.Distribution.Models;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Exams.Models;
+using OpenLearning.Gamification.Models;
 using OpenLearning.GradeExport.Models;
 using OpenLearning.Invoicing.Models;
 using OpenLearning.Jobs.Models;
@@ -60,6 +61,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<PathEnrollment> PathEnrollments => Set<PathEnrollment>();
 
     public DbSet<Placement> PracticalPlacements => Set<Placement>();
+
+    public DbSet<GamificationPointEntry> GamificationPointEntries => Set<GamificationPointEntry>();
 
     public DbSet<Module> Modules => Set<Module>();
 
@@ -235,5 +238,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(LtiRegistration).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LearningPath).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Placement).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(GamificationPointEntry).Assembly);
     }
 }
