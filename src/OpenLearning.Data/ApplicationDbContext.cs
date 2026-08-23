@@ -27,6 +27,7 @@ using OpenLearning.Memberships.Models;
 using OpenLearning.Moderation.Models;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Operations.Models;
+using OpenLearning.Organizations.Models;
 using OpenLearning.Payments.Models;
 using OpenLearning.PracticalTraining.Models;
 using OpenLearning.Progress.Models;
@@ -224,6 +225,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<GraduationDecision> GraduationDecisions => Set<GraduationDecision>();
 
+    public DbSet<Organization> Organizations => Set<Organization>();
+
+    public DbSet<Department> Departments => Set<Department>();
+
+    public DbSet<OrganizationMembership> OrganizationMemberships => Set<OrganizationMembership>();
+
+    public DbSet<OrganizationInvitation> OrganizationInvitations => Set<OrganizationInvitation>();
+
+    public DbSet<OrganizationCourse> OrganizationCourses => Set<OrganizationCourse>();
+
+    public DbSet<OrganizationAudit> OrganizationAudits => Set<OrganizationAudit>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -272,5 +285,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(GamificationPointEntry).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(AiPolicy).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(PaymentIntent).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Organization).Assembly);
     }
 }

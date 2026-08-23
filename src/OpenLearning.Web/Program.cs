@@ -40,6 +40,7 @@ using OpenLearning.Notifications;
 using OpenLearning.Notifications.Channels;
 using OpenLearning.Notifications.Email;
 using OpenLearning.Operations;
+using OpenLearning.Organizations;
 using OpenLearning.Payments;
 using OpenLearning.Payments.Services;
 using OpenLearning.PracticalTraining;
@@ -153,6 +154,7 @@ builder.Services.AddStorageModule(
 builder.Services.AddLoggingModule();
 builder.Services.AddMembershipsModule();
 builder.Services.AddOperationsModule();
+builder.Services.AddOrganizationsModule();
 builder.Services.AddAssignmentsModule();
 builder.Services.AddStudyToolsModule();
 builder.Services.AddSettlementModule();

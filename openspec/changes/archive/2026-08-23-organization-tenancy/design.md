@@ -17,6 +17,13 @@ Tenant isolation is a security boundary, not a UI filter. The platform also need
 
 ## Decisions
 
+## Existing Components Reused
+
+- Reuse ASP.NET Core authorization handlers and policies from `OpenLearning.Auth` for scoped-role checks.
+- Reuse `ApplicationUser`, `Course`, the base `DbContext` module pattern, Razor Pages antiforgery, and the existing Admin ownership/role-gating conventions.
+- Reuse the protected-cookie approach from `NavPreferencesService` for active-organization selection; the cookie is only a selector and every request revalidates it against active membership.
+- Keep tenant audit records in the Organizations module while following the append-only operation-log pattern.
+
 ### D1: Shared database with explicit scope
 
 Organization-owned rows carry a non-null `OrganizationId`; global rows remain null only where explicitly supported. Services require an `OrganizationContext` and never accept a client-supplied scope as authority.
