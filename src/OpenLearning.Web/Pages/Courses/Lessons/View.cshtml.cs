@@ -8,6 +8,7 @@ using OpenLearning.Auth.Models;
 using OpenLearning.Chat.Services;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseManagement.Services;
+using OpenLearning.Credits.Services;
 using OpenLearning.Enrollment.Services;
 using OpenLearning.Progress.Services;
 using OpenLearning.Scorm.Models;
@@ -28,6 +29,7 @@ public class ViewModel : PageModel
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly StudyToolService _studyTools;
     private readonly ChatService _chat;
+    private readonly CreditService _credits;
 
     public ViewModel(
         LessonService lessons,
@@ -37,7 +39,8 @@ public class ViewModel : PageModel
         ScormService scorm,
         UserManager<ApplicationUser> userManager,
         StudyToolService studyTools,
-        ChatService chat)
+        ChatService chat,
+        CreditService credits)
     {
         _lessons = lessons;
         _modules = modules;
@@ -47,6 +50,7 @@ public class ViewModel : PageModel
         _userManager = userManager;
         _studyTools = studyTools;
         _chat = chat;
+        _credits = credits;
     }
 
     public Lesson? Lesson { get; set; }
@@ -174,7 +178,18 @@ public class ViewModel : PageModel
             return RedirectToPage(new { id });
         }
 
-        await _progress.MarkCompleteAsync(userId, lesson.Module.CourseId, id);
+        var result = await _progress.MarkCompleteAsync(userId, lesson.Module.CourseId, id);
+        if (!result.Ok)
+        {
+            TempData["Message"] = result.Error;
+            TempData["MessageType"] = "danger";
+            return RedirectToPage(new { id });
+        }
+
+        if (await _progress.GetProgressPercentAsync(userId, lesson.Module.CourseId) == 100)
+        {
+            await _credits.ProcessCourseCompletionAsync(userId, lesson.Module.CourseId);
+        }
         return RedirectToPage(new { id });
     }
 

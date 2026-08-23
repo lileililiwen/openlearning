@@ -1,0 +1,24 @@
+@page
+@model OpenLearning.Web.Pages.Credits.IndexModel
+@{ ViewData["Title"] = "Credits and graduation"; }
+<h1>Credits and graduation</h1>
+@if (Model.Assignment?.Program is null)
+{
+    <div class="alert alert-info">No graduation program is assigned.</div>
+}
+else
+{
+    <section class="card mb-4"><div class="card-body">
+        <h2 class="h4">@Model.Assignment.Program.Name <span class="text-muted">v@(Model.Assignment.Program.Version)</span></h2>
+        <p><strong>@Model.Audit.EarnedTotal</strong> / @Model.Assignment.Program.MinTotalCredits total credits</p>
+        @if (Model.Audit.Eligible) { <div class="alert alert-success">All current graduation requirements are satisfied.</div> }
+        else { <h3 class="h5">Unmet requirements</h3><ul>@foreach (var item in Model.Audit.UnmetRequirements) { <li>@item</li> }</ul> }
+        <h3 class="h5">Credits by category</h3>
+        <ul>@foreach (var item in Model.Audit.EarnedByCategory.OrderBy(x => x.Key)) { <li>@item.Key: @item.Value</li> }</ul>
+    </div></section>
+}
+<h2 class="h4">Credit history</h2>
+<table class="table"><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Source</th><th>Reason</th></tr></thead><tbody>
+@foreach (var entry in Model.Ledger.OrderByDescending(x => x.AwardedAt))
+{ <tr><td>@entry.AwardedAt.ToLocalTime().ToString("g")</td><td>@entry.Category</td><td>@entry.Amount</td><td>@entry.SourceType / @entry.SourceId</td><td>@entry.Reason</td></tr> }
+</tbody></table>

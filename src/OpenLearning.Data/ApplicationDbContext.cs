@@ -11,6 +11,7 @@ using OpenLearning.Classes.Models;
 using OpenLearning.CouponIO.Models;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseOutlineIO.Models;
+using OpenLearning.Credits.Models;
 using OpenLearning.Distribution.Models;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Exams.Models;
@@ -213,6 +214,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<LtiRegistration> LtiRegistrations => Set<LtiRegistration>();
 
+    public DbSet<CreditAward> CreditAwards => Set<CreditAward>();
+
+    public DbSet<CourseCreditRule> CourseCreditRules => Set<CourseCreditRule>();
+
+    public DbSet<GraduationProgram> GraduationPrograms => Set<GraduationProgram>();
+
+    public DbSet<LearnerProgram> LearnerPrograms => Set<LearnerProgram>();
+
+    public DbSet<GraduationDecision> GraduationDecisions => Set<GraduationDecision>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -255,6 +266,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(OutlineImportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(CouponImportJob).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LtiRegistration).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(CreditAward).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LearningPath).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Placement).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(GamificationPointEntry).Assembly);
