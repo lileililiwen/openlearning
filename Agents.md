@@ -190,6 +190,8 @@ DB is empty.
 
 ## 5. Agent Workflow Checklist
 
+**Single-developer branch rule:** Implement changes directly on `main`. Do not create or switch to feature branches.
+
 When asked to implement a feature or spec:
 
 1. **Read** the change folder: `proposal.md`, `specs/<cap>/spec.md`,
