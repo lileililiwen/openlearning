@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.AI.Models;
+using OpenLearning.Analytics.Models;
 using OpenLearning.Assessments.Models;
 using OpenLearning.Assignments.Models;
 using OpenLearning.AsyncIO.Models;
@@ -24,6 +25,7 @@ using OpenLearning.Live.Models;
 using OpenLearning.Logging.Models;
 using OpenLearning.Lti.Models;
 using OpenLearning.Memberships.Models;
+using OpenLearning.Mobile.Models;
 using OpenLearning.Moderation.Models;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Operations.Models;
@@ -237,6 +239,28 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<OrganizationAudit> OrganizationAudits => Set<OrganizationAudit>();
 
+    public DbSet<DeviceSession> DeviceSessions => Set<DeviceSession>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<OfflineManifest> OfflineManifests => Set<OfflineManifest>();
+
+    public DbSet<OfflineManifestAsset> OfflineManifestAssets => Set<OfflineManifestAsset>();
+
+    public DbSet<SyncOperation> SyncOperations => Set<SyncOperation>();
+
+    public DbSet<MobilePushDevice> MobilePushDevices => Set<MobilePushDevice>();
+
+    public DbSet<LearningEvent> LearningEvents => Set<LearningEvent>();
+    public DbSet<RefreshRun> RefreshRuns => Set<RefreshRun>();
+    public DbSet<CourseFunnelAggregate> CourseFunnelAggregates => Set<CourseFunnelAggregate>();
+    public DbSet<EngagementAggregate> EngagementAggregates => Set<EngagementAggregate>();
+    public DbSet<CohortRetentionAggregate> CohortRetentionAggregates => Set<CohortRetentionAggregate>();
+    public DbSet<AssessmentAggregate> AssessmentAggregates => Set<AssessmentAggregate>();
+    public DbSet<WorkloadAggregate> WorkloadAggregates => Set<WorkloadAggregate>();
+    public DbSet<ExportAudit> ExportAudits => Set<ExportAudit>();
+    public DbSet<RetentionPolicy> RetentionPolicies => Set<RetentionPolicy>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -286,5 +310,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(AiPolicy).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(PaymentIntent).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Organization).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(LearningEvent).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(DeviceSession).Assembly);
     }
 }

@@ -1,0 +1,185 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Reports.LearningAnalyticsModel
+@{
+    ViewData["Title"] = "Admin · Learning Analytics";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Learning analytics</h1>
+        <p class="text-muted mb-0">Course funnels, engagement, cohort retention, and assessment performance.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-page="/Admin/Reports/Revenue">Revenue</a>
+        <a class="btn btn-outline-primary" asp-page="/Admin/Reports/Enrollments">Enrollments</a>
+    </div>
+</div>
+
+@if (Model.Freshness.LastSuccessfulRefresh is DateTime last)
+{
+    <div class="alert alert-info py-2">
+        Last successful aggregate refresh: <strong>@last.ToString("yyyy-MM-dd HH:mm 'UTC'")</strong>.
+        @if (!Model.Freshness.HasData)
+        {
+            <span class="text-muted">No aggregate data yet — the daily job has not produced facts.</span>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-warning py-2">No successful aggregate refresh yet. Facts will appear after the daily job runs.</div>
+}
+
+<form method="get" class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Course</label>
+                <select name="courseId" class="form-select">
+                    <option value="">All courses</option>
+                    @foreach (var course in Model.Courses)
+                    {
+                        <option value="@course.Id" selected="@(Model.CourseId == course.Id)">@course.Title</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Cohort</label>
+                <select name="cohortId" class="form-select">
+                    <option value="">All cohorts</option>
+                    @foreach (var cohort in Model.Cohorts)
+                    {
+                        <option value="@cohort.Id" selected="@(Model.CohortId == cohort.Id)">@cohort.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted mb-1">From</label>
+                <input type="date" name="from" value="@(Model.From?.ToString("yyyy-MM-dd") ?? "")" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted mb-1">To</label>
+                <input type="date" name="to" value="@(Model.To?.ToString("yyyy-MM-dd") ?? "")" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a class="btn btn-outline-success" asp-page="/Admin/Reports/LearningAnalytics" asp-page-handler="Export"
+                       asp-route-courseId="@Model.CourseId" asp-route-cohortId="@Model.CohortId"
+                       asp-route-from="@(Model.From?.ToString("yyyy-MM-dd") ?? "")" asp-route-to="@(Model.To?.ToString("yyyy-MM-dd") ?? "")">Export CSV</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (!Model.CourseId.HasValue)
+{
+    <div class="alert alert-info">Select a course to view its analytics.</div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Completion funnel</h2>
+                    @if (Model.Funnel is null)
+                    {
+                        <p class="text-muted mb-0">No funnel data in the selected period.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr><td>Eligible (enrolled)</td><td class="text-end fw-semibold">@Model.Funnel.Eligible</td></tr>
+                                <tr><td>Enrolled</td><td class="text-end">@Model.Funnel.Enrolled</td></tr>
+                                <tr><td>Started</td><td class="text-end">@Model.Funnel.Started</td></tr>
+                                <tr><td>Completed</td><td class="text-end">@Model.Funnel.Completed</td></tr>
+                                <tr><td>Completion rate</td><td class="text-end fw-semibold">@Model.Funnel.CompletionRate.ToString("0.0%")</td></tr>
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Engagement</h2>
+                    @if (Model.Engagement is null)
+                    {
+                        <p class="text-muted mb-0">No engagement data in the selected period.</p>
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-muted small">Active learners</div>
+                                <div class="h4 mb-0">@Model.Engagement.ActiveLearners</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Active learning time</div>
+                                <div class="h4 mb-0">@TimeSpan.FromSeconds(Model.Engagement.ActiveSeconds).ToString(@"h\h\ m\m")</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Cohort retention</h2>
+                    @if (Model.Retention is null)
+                    {
+                        <p class="text-muted mb-0">Select a cohort to view retention.</p>
+                    }
+                    else if (Model.Retention.Suppressed)
+                    {
+                        <div class="alert alert-warning mb-0">Retention suppressed — cohort below the privacy threshold.</div>
+                    }
+                    else
+                    {
+                        <div class="text-muted small">@Model.Retention.CohortName</div>
+                        <div class="h4 mb-0">@Model.Retention.Retained retained</div>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Assessment performance</h2>
+                    @if (Model.Assessments.Count == 0)
+                    {
+                        <p class="text-muted mb-0">No assessment data in the selected period.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Assessment</th>
+                                    <th class="text-end">Attempts</th>
+                                    <th class="text-end">Avg score</th>
+                                    <th class="text-end">Pass rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var a in Model.Assessments)
+                                {
+                                    <tr>
+                                        <td>#@a.AssessmentId</td>
+                                        <td class="text-end">@a.Attempts</td>
+                                        <td class="text-end">@a.AverageScore.ToString("0.0")</td>
+                                        <td class="text-end">@a.PassRate.ToString("0.0%")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}

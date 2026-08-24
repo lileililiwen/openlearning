@@ -1,0 +1,160 @@
+@page
+@model OpenLearning.Web.Pages.Instructor.AnalyticsModel
+@{
+    ViewData["Title"] = "Teaching Analytics";
+}
+
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h3 mb-1">Teaching analytics</h1>
+        <p class="text-muted mb-0">Engagement, assessment quality, teaching hours, and grading workload for your courses.</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="/Dashboard/Teacher">Teacher dashboard</a>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model.Freshness.LastSuccessfulRefresh is DateTime last)
+{
+    <div class="alert alert-info py-2">Last successful aggregate refresh: <strong>@last.ToString("yyyy-MM-dd HH:mm 'UTC'")</strong>.</div>
+}
+else
+{
+    <div class="alert alert-warning py-2">No successful aggregate refresh yet. Facts will appear after the daily job runs.</div>
+}
+
+<form method="get" class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small text-muted mb-1">Course</label>
+                <select name="courseId" class="form-select">
+                    <option value="">Select a course</option>
+                    @foreach (var course in Model.Courses)
+                    {
+                        <option value="@course.Id" selected="@(Model.CourseId == course.Id)">@course.Title</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">From</label>
+                <input type="date" name="from" value="@(Model.From?.ToString("yyyy-MM-dd") ?? "")" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">To</label>
+                <input type="date" name="to" value="@(Model.To?.ToString("yyyy-MM-dd") ?? "")" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a class="btn btn-outline-success" asp-page="/Instructor/Analytics" asp-page-handler="Export"
+                       asp-route-courseId="@Model.CourseId"
+                       asp-route-from="@(Model.From?.ToString("yyyy-MM-dd") ?? "")" asp-route-to="@(Model.To?.ToString("yyyy-MM-dd") ?? "")">Export CSV</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (Model.Error is not null)
+{
+    <div class="alert alert-danger">@Model.Error</div>
+}
+else if (!Model.CourseId.HasValue)
+{
+    <div class="alert alert-info">Select one of your courses to view its analytics.</div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Engagement</h2>
+                    @if (Model.Engagement is null)
+                    {
+                        <p class="text-muted mb-0">No engagement data in the selected period.</p>
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-muted small">Active learners</div>
+                                <div class="h4 mb-0">@Model.Engagement.ActiveLearners</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Active learning time</div>
+                                <div class="h4 mb-0">@TimeSpan.FromSeconds(Model.Engagement.ActiveSeconds).ToString(@"h\h\ m\m")</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Teaching workload</h2>
+                    @if (Model.Workload is null)
+                    {
+                        <p class="text-muted mb-0">No workload data in the selected period.</p>
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-muted small">Scheduled teaching hours</div>
+                                <div class="h4 mb-0">@Model.Workload.TeachingHours.ToString("0.0")</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Grading workload</div>
+                                <div class="h4 mb-0">@Model.Workload.GradingWorkload</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Assessment quality</h2>
+                    @if (Model.Assessments.Count == 0)
+                    {
+                        <p class="text-muted mb-0">No assessment data in the selected period.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Assessment</th>
+                                    <th class="text-end">Attempts</th>
+                                    <th class="text-end">Avg score</th>
+                                    <th class="text-end">Pass rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var a in Model.Assessments)
+                                {
+                                    <tr>
+                                        <td>#@a.AssessmentId</td>
+                                        <td class="text-end">@a.Attempts</td>
+                                        <td class="text-end">@a.AverageScore.ToString("0.0")</td>
+                                        <td class="text-end">@a.PassRate.ToString("0.0%")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}

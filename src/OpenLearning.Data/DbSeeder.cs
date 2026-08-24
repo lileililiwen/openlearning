@@ -119,6 +119,17 @@ public static class DbSeeder
             db.PointsLedgers.Add(new PointsLedger { UserId = student.Id, Amount = 500, Reason = "Welcome points" });
             await db.SaveChangesAsync();
         }
+
+        if (!await db.RetentionPolicies.AnyAsync(p => p.Key == "learning-events"))
+        {
+            db.RetentionPolicies.Add(new OpenLearning.Analytics.Models.RetentionPolicy
+            {
+                Key = "learning-events",
+                RetentionDays = 365,
+                CohortThreshold = 5,
+            });
+            await db.SaveChangesAsync();
+        }
     }
 
     private static async Task<ApplicationUser> EnsureUserAsync(

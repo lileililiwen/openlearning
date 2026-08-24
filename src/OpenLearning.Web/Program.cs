@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.AI;
+using OpenLearning.Analytics;
 using OpenLearning.Assessments;
 using OpenLearning.Assignments;
 using OpenLearning.AsyncIO;
@@ -34,6 +35,9 @@ using OpenLearning.Logging;
 using OpenLearning.Logging.Middleware;
 using OpenLearning.Lti;
 using OpenLearning.Memberships;
+using OpenLearning.Mobile;
+using OpenLearning.Mobile.Dtos;
+using OpenLearning.Mobile.Services;
 using OpenLearning.Moderation;
 using OpenLearning.Navigation;
 using OpenLearning.Notifications;
@@ -157,6 +161,7 @@ builder.Services.AddOperationsModule();
 builder.Services.AddOrganizationsModule();
 builder.Services.AddAssignmentsModule();
 builder.Services.AddStudyToolsModule();
+builder.Services.AddAnalyticsModule();
 builder.Services.AddSettlementModule();
 // After AddNotificationsModule so the template renderer override wins.
 builder.Services.AddSystemConfigModule();
@@ -179,6 +184,7 @@ builder.Services.AddLearningPathsModule();
 builder.Services.AddPracticalTrainingModule();
 builder.Services.AddGamificationModule();
 builder.Services.AddAiModule();
+builder.Services.AddMobileModule();
 // Affiliate distribution jobs (registered with the distribution module).
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionHoldExpireJob>();
 builder.Services.AddJob<OpenLearning.Distribution.Jobs.DistributionSettlementCloseJob>();
@@ -194,6 +200,7 @@ builder.Services.AddJob<OpenLearning.Web.Jobs.AssignmentDueReminderJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.ExamReminderJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.ClassStartReminderJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.StudyDailyAggregateJob>();
+builder.Services.AddJob<OpenLearning.Web.Jobs.AnalyticsDailyAggregateJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.InstructorSettlementCloseJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.CouponExpireDisabledJob>();
 builder.Services.AddJob<OpenLearning.Web.Jobs.LogArchiveJob>();
@@ -448,6 +455,142 @@ app.MapPost("/api/payments/webhooks/sandbox", async (HttpRequest request, Paymen
     var result = await payments.IngestAsync(buffer.ToArray(), signature);
     return result.Ok ? Results.Ok(new { duplicate = result.Duplicate }) : Results.BadRequest(new { error = result.Error });
 }).AllowAnonymous();
+
+// ===== Mobile learning API (v1) =====
+// Device-bound sessions, offline manifests, idempotent sync, and native push.
+// The authenticated user id comes from the web cookie; the device id scopes
+// the session/push records so logout and revocation affect only that device.
+
+app.MapPost("/api/mobile/v1/sessions", async (MobileSessionRequest request, HttpContext http, MobileSessionService sessions) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var (result, error) = await sessions.CreateSessionAsync(userId, request.DeviceId, request.DeviceName);
+    return result is null ? Results.BadRequest(new { error }) : Results.Ok(result);
+});
+
+app.MapPost("/api/mobile/v1/sessions/refresh", async (MobileRefreshRequest request, HttpContext http, MobileSessionService sessions) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var (result, error) = await sessions.RotateAsync(userId, request.DeviceId, request.RefreshToken);
+    return result is null ? Results.BadRequest(new { error }) : Results.Ok(result);
+});
+
+app.MapPost("/api/mobile/v1/sessions/logout", async (MobileLogoutRequest request, HttpContext http, MobileSessionService sessions) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var ok = await sessions.LogoutAsync(userId, request.DeviceId);
+    return ok ? Results.Ok(new { ok = true }) : Results.NotFound(new { error = "Session not found." });
+});
+
+app.MapPost("/api/mobile/v1/sessions/revoke", async (MobileRevokeRequest request, HttpContext http, MobileSessionService sessions) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var ok = await sessions.RevokeDeviceAsync(userId, request.DeviceId);
+    return ok ? Results.Ok(new { ok = true }) : Results.NotFound(new { error = "Session not found." });
+});
+
+app.MapPost("/api/mobile/v1/offline/manifests", async (OfflineManifestRequest request, HttpContext http, OfflineManifestService offline) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var (manifest, error) = await offline.CreateManifestAsync(userId, request.CourseId);
+    return manifest is null ? Results.BadRequest(new { error }) : Results.Ok(manifest);
+});
+
+app.MapGet("/api/mobile/v1/offline/manifests/{manifestId:int}/assets/{**key}", async (
+    int manifestId, string key, HttpContext http, OfflineManifestService offline, StorageService storage) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var (ok, _) = await offline.AuthorizeAssetAsync(userId, manifestId, key);
+    if (!ok)
+    {
+        return Results.Forbid();
+    }
+
+    var (file, stream) = await storage.OpenAsync(key);
+    if (stream is null)
+    {
+        return Results.NotFound();
+    }
+
+    var contentType = file?.ContentType ?? "application/octet-stream";
+    return Results.File(stream, contentType, enableRangeProcessing: true);
+});
+
+app.MapPost("/api/mobile/v1/sync/progress", async (ProgressSyncRequest request, HttpContext http, MobileSyncService sync) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    return Results.Ok(await sync.SyncProgressAsync(userId, request));
+});
+
+app.MapPost("/api/mobile/v1/sync/notes", async (NoteSyncRequest request, HttpContext http, MobileSyncService sync) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    return Results.Ok(await sync.SyncNoteAsync(userId, request));
+});
+
+app.MapPost("/api/mobile/v1/push/register", async (MobilePushRegisterRequest request, HttpContext http, MobilePushService push) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var (ok, error) = await push.RegisterAsync(userId, request.DeviceId, request.PushToken, request.Provider);
+    return ok ? Results.Ok(new { ok = true }) : Results.BadRequest(new { error });
+});
+
+app.MapPost("/api/mobile/v1/push/remove", async (MobilePushRemoveRequest request, HttpContext http, MobilePushService push) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var ok = await push.RemoveAsync(userId, request.DeviceId);
+    return ok ? Results.Ok(new { ok = true }) : Results.NotFound(new { error = "Push endpoint not found." });
+});
 
 // Apply migrations and seed demo data on first run (dev-friendly).
 using (var scope = app.Services.CreateScope())
