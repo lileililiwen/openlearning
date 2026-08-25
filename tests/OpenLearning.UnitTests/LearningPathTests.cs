@@ -95,7 +95,7 @@ public sealed class LearningPathTests
         return courses;
     }
 
-    private static LearningPath PathWithDraft(IReadOnlyList<Course> courses, bool prerequisiteCycle = false,
+    private static LearningPath PathWithDraft(List<Course> courses, bool prerequisiteCycle = false,
         int electiveMinimum = 0, bool successorPrerequisite = false)
     {
         var items = courses.Select((course, index) => new LearningPathCourse
