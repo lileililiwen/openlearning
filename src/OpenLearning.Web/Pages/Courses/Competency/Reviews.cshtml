@@ -1,0 +1,65 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Competency.ReviewsModel
+@{
+    ViewData["Title"] = "Evidence reviews";
+}
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item active">Competency evidence reviews</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-3">Pending competency evidence (@Model.Pending.Count)</h1>
+
+@if (Model.Pending.Count == 0)
+{
+    <div class="alert alert-info">No pending submissions.</div>
+}
+else
+{
+    @foreach (var evidence in Model.Pending)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <strong>@evidence.Competency?.Title</strong>
+                    <span class="text-muted small">@evidence.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+                </div>
+                <div class="small text-muted mb-2">Learner: @Model.LearnerNames.GetValueOrDefault(evidence.UserId, evidence.UserId)</div>
+                <div style="white-space: pre-wrap" class="mb-2">@evidence.Description</div>
+                @if (!string.IsNullOrWhiteSpace(evidence.AttachmentUrl))
+                {
+                    <p><a href="@evidence.AttachmentUrl" target="_blank" rel="noopener">View attachment</a></p>
+                }
+                <form method="post" asp-page-handler="Review" asp-route-evidenceId="@evidence.Id" class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <select name="levelSortOrder" class="form-select form-select-sm">
+                            <option value="">— level (approve only) —</option>
+                            @foreach (var level in evidence.Competency!.Framework!.ScaleLevels.OrderBy(l => l.SortOrder))
+                            {
+                                <option value="@level.SortOrder">@level.SortOrder — @level.Label</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="reason" class="form-control form-control-sm" placeholder="Rejection reason (reject only)" maxlength="1000" />
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" name="approve" value="true" class="btn btn-success btn-sm">Approve</button>
+                        <button type="submit" name="approve" value="false" class="btn btn-outline-danger btn-sm">Reject</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+}

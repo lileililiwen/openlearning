@@ -1770,6 +1770,212 @@ namespace OpenLearning.Data.Migrations
                     b.ToTable("QuestionReply");
                 });
 
+            modelBuilder.Entity("OpenLearning.Competency.Models.ActivityMapping", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AssignmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CompetencyId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignmentId");
+
+                    b.HasIndex("CompetencyId");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("ActivityMappings");
+                });
+
+            modelBuilder.Entity("OpenLearning.Competency.Models.CompetencyEvidence", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AttachmentUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("CompetencyId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CompetencyTitleSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<int>("FrameworkVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("LevelSortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ReviewReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReviewerId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("SourceKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompetencyId", "SourceKey")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "Status");
+
+                    b.ToTable("CompetencyEvidence");
+                });
+
+            modelBuilder.Entity("OpenLearning.Competency.Models.CompetencyFramework", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsArchived");
+
+                    b.ToTable("CompetencyFrameworks");
+                });
+
+            modelBuilder.Entity("OpenLearning.Competency.Models.CompetencyNode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("FrameworkId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("FrameworkId", "SortOrder");
+
+                    b.ToTable("CompetencyNodes");
+                });
+
+            modelBuilder.Entity("OpenLearning.Competency.Models.FrameworkScaleLevel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FrameworkId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FrameworkId", "SortOrder")
+                        .IsUnique();
+
+                    b.ToTable("FrameworkScaleLevels");
+                });
+
             modelBuilder.Entity("OpenLearning.CouponIO.Models.CouponImportJob", b =>
                 {
                     b.Property<int>("Id")
@@ -3786,6 +3992,138 @@ namespace OpenLearning.Data.Migrations
                     b.HasIndex("UserId", "CreatedAt");
 
                     b.ToTable("GradeExportJobs");
+                });
+
+            modelBuilder.Entity("OpenLearning.Gradebook.Models.GradebookAdjustment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsExcusal")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("OverrideScore")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StudentId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("GradebookAdjustments");
+                });
+
+            modelBuilder.Entity("OpenLearning.Gradebook.Models.GradebookConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PublishedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GradebookConfigs");
+                });
+
+            modelBuilder.Entity("OpenLearning.Gradebook.Models.GradebookItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConfigId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SourceId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Weight")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConfigId");
+
+                    b.ToTable("GradebookItems");
+                });
+
+            modelBuilder.Entity("OpenLearning.Gradebook.Models.GradebookSnapshot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("Aggregate")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("BasisJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ConfigId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("StudentId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GradebookSnapshots");
                 });
 
             modelBuilder.Entity("OpenLearning.Invoicing.Models.Invoice", b =>
@@ -5863,6 +6201,286 @@ namespace OpenLearning.Data.Migrations
                     b.ToTable("ProviderEvent");
                 });
 
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerAllocationPair", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConfigId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("RevieweeSubmissionId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ReviewerId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<int>("RunId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RevieweeSubmissionId");
+
+                    b.HasIndex("ConfigId", "ReviewerId", "IsActive");
+
+                    b.HasIndex("RunId", "ReviewerId", "RevieweeSubmissionId")
+                        .IsUnique();
+
+                    b.ToTable("PeerAllocationPairs");
+                });
+
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerAllocationRun", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConfigId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<int>("ParticipantCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReviewsEach")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RunNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ShortfallCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConfigId", "RunNumber")
+                        .IsUnique();
+
+                    b.ToTable("PeerAllocationRuns");
+                });
+
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerAssessmentAnswer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssessmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("MaxPoints")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PromptSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssessmentId", "QuestionId")
+                        .IsUnique();
+
+                    b.ToTable("PeerAssessmentAnswers");
+                });
+
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerReviewAssessment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AssessorId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<int>("ConfigId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RevieweeSubmissionId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TotalScore")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RevieweeSubmissionId");
+
+                    b.HasIndex("ConfigId", "AssessorId", "RevieweeSubmissionId")
+                        .IsUnique();
+
+                    b.ToTable("PeerReviewAssessments");
+                });
+
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerReviewConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssignmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("InstructorWeightPercent")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsAnonymous")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ReleasedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<DateTime?>("ResultsReleasedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ReviewClosesAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ReviewOpensAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ReviewsPerStudent")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Strategy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignmentId")
+                        .IsUnique();
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("PeerReviewConfigs");
+                });
+
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerReviewResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Basis")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("ComputedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ComputedScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ConfigId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("OverrideAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OverrideBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<int?>("OverrideScore")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StudentId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConfigId", "StudentId")
+                        .IsUnique();
+
+                    b.ToTable("PeerReviewResults");
+                });
+
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerReviewRubricQuestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConfigId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxPoints")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Prompt")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConfigId", "SortOrder");
+
+                    b.ToTable("PeerReviewRubricQuestions");
+                });
+
             modelBuilder.Entity("OpenLearning.PracticalTraining.Models.HostOrganization", b =>
                 {
                     b.Property<int>("Id")
@@ -7096,6 +7714,184 @@ namespace OpenLearning.Data.Migrations
                     b.ToTable("StudyDailyAggregate");
                 });
 
+            modelBuilder.Entity("OpenLearning.Surveys.Models.Survey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AllowLiveResults")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ClosesAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("IsAnonymous")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("OpensAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Scope")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<byte[]>("TokenSalt")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Scope", "CourseId");
+
+                    b.ToTable("Surveys");
+                });
+
+            modelBuilder.Entity("OpenLearning.Surveys.Models.SurveyAnswer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("OptionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RatingValue")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ResponseId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TextValue")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId");
+
+                    b.HasIndex("ResponseId", "QuestionId")
+                        .IsUnique();
+
+                    b.ToTable("SurveyAnswers");
+                });
+
+            modelBuilder.Entity("OpenLearning.Surveys.Models.SurveyQuestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Prompt")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SurveyId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SurveyId", "SortOrder");
+
+                    b.ToTable("SurveyQuestions");
+                });
+
+            modelBuilder.Entity("OpenLearning.Surveys.Models.SurveyQuestionOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId", "SortOrder");
+
+                    b.ToTable("SurveyQuestionOptions");
+                });
+
+            modelBuilder.Entity("OpenLearning.Surveys.Models.SurveyResponse", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("RespondentToken")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("RespondentUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("SurveyId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SurveyId", "RespondentToken")
+                        .IsUnique();
+
+                    b.ToTable("SurveyResponses");
+                });
+
             modelBuilder.Entity("OpenLearning.SystemConfig.Models.NotificationTemplate", b =>
                 {
                     b.Property<int>("Id")
@@ -7525,6 +8321,50 @@ namespace OpenLearning.Data.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("OpenLearning.Competency.Models.ActivityMapping", b =>
+                {
+                    b.HasOne("OpenLearning.Competency.Models.CompetencyNode", "Competency")
+                        .WithMany()
+                        .HasForeignKey("CompetencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Competency");
+                });
+
+            modelBuilder.Entity("OpenLearning.Competency.Models.CompetencyEvidence", b =>
+                {
+                    b.HasOne("OpenLearning.Competency.Models.CompetencyNode", "Competency")
+                        .WithMany()
+                        .HasForeignKey("CompetencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Competency");
+                });
+
+            modelBuilder.Entity("OpenLearning.Competency.Models.CompetencyNode", b =>
+                {
+                    b.HasOne("OpenLearning.Competency.Models.CompetencyFramework", "Framework")
+                        .WithMany("Competencies")
+                        .HasForeignKey("FrameworkId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Framework");
+                });
+
+            modelBuilder.Entity("OpenLearning.Competency.Models.FrameworkScaleLevel", b =>
+                {
+                    b.HasOne("OpenLearning.Competency.Models.CompetencyFramework", "Framework")
+                        .WithMany("ScaleLevels")
+                        .HasForeignKey("FrameworkId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Framework");
                 });
 
             modelBuilder.Entity("OpenLearning.CourseManagement.Models.Course", b =>
@@ -7969,6 +8809,28 @@ namespace OpenLearning.Data.Migrations
                     b.Navigation("Rule");
                 });
 
+            modelBuilder.Entity("OpenLearning.Gradebook.Models.GradebookAdjustment", b =>
+                {
+                    b.HasOne("OpenLearning.Gradebook.Models.GradebookItem", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("OpenLearning.Gradebook.Models.GradebookItem", b =>
+                {
+                    b.HasOne("OpenLearning.Gradebook.Models.GradebookConfig", "Config")
+                        .WithMany("Items")
+                        .HasForeignKey("ConfigId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Config");
+                });
+
             modelBuilder.Entity("OpenLearning.Invoicing.Models.InvoiceRequest", b =>
                 {
                     b.HasOne("OpenLearning.Auth.Models.ApplicationUser", "Student")
@@ -8273,6 +9135,39 @@ namespace OpenLearning.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerAllocationPair", b =>
+                {
+                    b.HasOne("OpenLearning.PeerAssessment.Models.PeerAllocationRun", "Run")
+                        .WithMany()
+                        .HasForeignKey("RunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Run");
+                });
+
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerAssessmentAnswer", b =>
+                {
+                    b.HasOne("OpenLearning.PeerAssessment.Models.PeerReviewAssessment", "Assessment")
+                        .WithMany("Answers")
+                        .HasForeignKey("AssessmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Assessment");
+                });
+
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerReviewRubricQuestion", b =>
+                {
+                    b.HasOne("OpenLearning.PeerAssessment.Models.PeerReviewConfig", "Config")
+                        .WithMany("RubricQuestions")
+                        .HasForeignKey("ConfigId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Config");
+                });
+
             modelBuilder.Entity("OpenLearning.PracticalTraining.Models.Placement", b =>
                 {
                     b.HasOne("OpenLearning.PracticalTraining.Models.HostOrganization", "Host")
@@ -8518,6 +9413,50 @@ namespace OpenLearning.Data.Migrations
                     b.Navigation("Lesson");
                 });
 
+            modelBuilder.Entity("OpenLearning.Surveys.Models.SurveyAnswer", b =>
+                {
+                    b.HasOne("OpenLearning.Surveys.Models.SurveyResponse", "Response")
+                        .WithMany("Answers")
+                        .HasForeignKey("ResponseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Response");
+                });
+
+            modelBuilder.Entity("OpenLearning.Surveys.Models.SurveyQuestion", b =>
+                {
+                    b.HasOne("OpenLearning.Surveys.Models.Survey", "Survey")
+                        .WithMany("Questions")
+                        .HasForeignKey("SurveyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Survey");
+                });
+
+            modelBuilder.Entity("OpenLearning.Surveys.Models.SurveyQuestionOption", b =>
+                {
+                    b.HasOne("OpenLearning.Surveys.Models.SurveyQuestion", "Question")
+                        .WithMany("Options")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("OpenLearning.Surveys.Models.SurveyResponse", b =>
+                {
+                    b.HasOne("OpenLearning.Surveys.Models.Survey", "Survey")
+                        .WithMany()
+                        .HasForeignKey("SurveyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Survey");
+                });
+
             modelBuilder.Entity("OpenLearning.UserManagement.Models.InstructorApplication", b =>
                 {
                     b.HasOne("OpenLearning.Auth.Models.ApplicationUser", "User")
@@ -8569,6 +9508,13 @@ namespace OpenLearning.Data.Migrations
                     b.Navigation("Replies");
                 });
 
+            modelBuilder.Entity("OpenLearning.Competency.Models.CompetencyFramework", b =>
+                {
+                    b.Navigation("Competencies");
+
+                    b.Navigation("ScaleLevels");
+                });
+
             modelBuilder.Entity("OpenLearning.CourseManagement.Models.Course", b =>
                 {
                     b.Navigation("Modules");
@@ -8608,6 +9554,11 @@ namespace OpenLearning.Data.Migrations
             modelBuilder.Entity("OpenLearning.Exams.Models.IntegritySession", b =>
                 {
                     b.Navigation("Evidence");
+                });
+
+            modelBuilder.Entity("OpenLearning.Gradebook.Models.GradebookConfig", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("OpenLearning.LearningPaths.Models.LearningPath", b =>
@@ -8654,6 +9605,16 @@ namespace OpenLearning.Data.Migrations
                     b.Navigation("Banners");
                 });
 
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerReviewAssessment", b =>
+                {
+                    b.Navigation("Answers");
+                });
+
+            modelBuilder.Entity("OpenLearning.PeerAssessment.Models.PeerReviewConfig", b =>
+                {
+                    b.Navigation("RubricQuestions");
+                });
+
             modelBuilder.Entity("OpenLearning.PracticalTraining.Models.Placement", b =>
                 {
                     b.Navigation("Competencies");
@@ -8667,6 +9628,21 @@ namespace OpenLearning.Data.Migrations
             modelBuilder.Entity("OpenLearning.Ratings.Models.Review", b =>
                 {
                     b.Navigation("Comments");
+                });
+
+            modelBuilder.Entity("OpenLearning.Surveys.Models.Survey", b =>
+                {
+                    b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("OpenLearning.Surveys.Models.SurveyQuestion", b =>
+                {
+                    b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("OpenLearning.Surveys.Models.SurveyResponse", b =>
+                {
+                    b.Navigation("Answers");
                 });
 #pragma warning restore 612, 618
         }

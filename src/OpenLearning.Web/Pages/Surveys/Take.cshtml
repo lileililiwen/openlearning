@@ -1,0 +1,102 @@
+@page
+@using OpenLearning.Surveys.Models
+@model OpenLearning.Web.Pages.Surveys.TakeModel
+@{
+    ViewData["Title"] = "Respond to survey";
+    var survey = Model.Survey;
+}
+
+@if (survey is null)
+{
+    <div class="alert alert-danger">Survey not found.</div>
+}
+else
+{
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Surveys/Open" asp-route-courseId="@Model.CourseId">Open surveys</a></li>
+        <li class="breadcrumb-item active">Respond</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-1">@survey.Title</h1>
+<p class="text-muted small mb-3">
+    @survey.Description
+    @if (survey.IsAnonymous)
+    {
+        <span class="badge bg-secondary ms-2">Anonymous — your identity is not stored with your answers</span>
+    }
+</p>
+
+@if (Model.AlreadyResponded)
+{
+    <div class="alert alert-success">You have already responded to this survey.</div>
+}
+else if (Model.WindowClosed)
+{
+    <div class="alert alert-warning">This survey is not open for responses.</div>
+}
+else
+{
+<div asp-validation-summary="All" class="text-danger mb-2"></div>
+<form method="post" asp-route-id="@survey.Id" asp-route-courseId="@Model.CourseId">
+    @for (var i = 0; i < survey.Questions.Count; i++)
+    {
+        var question = survey.Questions.OrderBy(q => q.SortOrder).ElementAt(i);
+        var slot = Model.Answers.FirstOrDefault(a => a.QuestionId == question.Id);
+        var slotIndex = slot is null ? -1 : Model.Answers.IndexOf(slot);
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <label class="form-label fw-semibold">
+                    @question.Prompt
+                    @if (!question.IsRequired)
+                    {
+                        <span class="text-muted small">(optional)</span>
+                    }
+                </label>
+                <input type="hidden" name="Answers[@slotIndex].QuestionId" value="@question.Id" />
+
+                @if (question.Type == SurveyQuestionType.SingleChoice)
+                {
+                    @foreach (var option in question.Options.OrderBy(o => o.SortOrder))
+                    {
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="Answers[@slotIndex].OptionIds"
+                                   value="@option.Id" />
+                            <label class="form-check-label">@option.Text</label>
+                        </div>
+                    }
+                }
+                else if (question.Type == SurveyQuestionType.MultipleChoice)
+                {
+                    @foreach (var option in question.Options.OrderBy(o => o.SortOrder))
+                    {
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="Answers[@slotIndex].OptionIds"
+                                   value="@option.Id" />
+                            <label class="form-check-label">@option.Text</label>
+                        </div>
+                    }
+                }
+                else if (question.Type == SurveyQuestionType.RatingScale)
+                {
+                    <select name="Answers[@slotIndex].RatingValue" class="form-select" style="max-width: 160px">
+                        <option value="">— choose —</option>
+                        @foreach (var rating in Enumerable.Range(1, 5))
+                        {
+                            <option value="@rating">@rating</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <textarea name="Answers[@slotIndex].TextValue" rows="3" class="form-control" maxlength="4000"></textarea>
+                }
+            </div>
+        </div>
+    }
+    <button type="submit" class="btn btn-primary mb-4">Submit response</button>
+</form>
+}
+}

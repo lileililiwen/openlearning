@@ -41,7 +41,7 @@ public sealed class MobileApiTests
     private static (ApplicationDbContext Db, OfflineManifestService Offline) CreateOffline()
     {
         var db = NewDb();
-        var provider = new LocalStorageProvider(TempDir);
+        var provider = new LocalStorageProvider(_tempDir);
         var services = new ServiceCollection();
         services.AddScoped(_ => db);
         var scopeFactory = services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>();

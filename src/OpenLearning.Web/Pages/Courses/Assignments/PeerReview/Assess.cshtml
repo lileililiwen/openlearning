@@ -1,0 +1,77 @@
+@page
+@using OpenLearning.PeerAssessment.Models
+@model OpenLearning.Web.Pages.Courses.Assignments.PeerReview.AssessModel
+@{
+    ViewData["Title"] = "Assess submission";
+}
+
+@if (Model.Submission is null || Model.Config is null)
+{
+    <div class="alert alert-danger">This review allocation was not found in your queue.</div>
+}
+else
+{
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@Model.Config.CourseId">Course</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Assignments/PeerReview/MyReviews" asp-route-assignmentId="@Model.Config.AssignmentId">Peer review</a></li>
+        <li class="breadcrumb-item active">Assess</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-1">Assess a peer submission</h1>
+<p class="text-muted small mb-3">
+    Phase: <strong>@Model.Phase</strong>
+    @if (Model.Config.IsAnonymous)
+    {
+        <span class="badge bg-secondary ms-2">Anonymous — the author cannot see your name</span>
+    }
+</p>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body" style="white-space: pre-wrap">@Model.Submission.Text</div>
+    @if (!string.IsNullOrWhiteSpace(Model.Submission.FileUrl))
+    {
+        <div class="card-footer"><a href="@Model.Submission.FileUrl" target="_blank" rel="noopener">View attached file</a></div>
+    }
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div asp-validation-summary="All" class="text-danger mb-2"></div>
+        <form method="post" asp-route-pairId="@Model.Pair!.Id">
+            @for (var i = 0; i < Model.Rubric.Count; i++)
+            {
+                var question = Model.Rubric[i];
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        @question.Prompt <span class="text-muted small">(0–@question.MaxPoints points)</span>
+                    </label>
+                    <input type="hidden" name="Answers[@i].QuestionId" value="@question.Id" />
+                    <input type="number" name="Answers[@i].Score" min="0" max="@question.MaxPoints"
+                           value="0" class="form-control" style="max-width: 140px" required />
+                    <textarea name="Answers[@i].Comment" rows="2" class="form-control mt-2"
+                              placeholder="Comment (optional)" maxlength="2000"></textarea>
+                </div>
+            }
+            <button type="submit" class="btn btn-primary"
+                    disabled="@(Model.Phase != PeerReviewPhase.Review ? "disabled" : null)">
+                Submit assessment
+            </button>
+            @if (Model.Phase != PeerReviewPhase.Review)
+            {
+                <span class="text-muted small ms-2">The review phase is not open.</span>
+            }
+        </form>
+    </div>
+</div>
+}

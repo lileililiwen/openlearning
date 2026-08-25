@@ -1,0 +1,99 @@
+@page
+@model OpenLearning.Web.Pages.Competency.Admin.IndexModel
+@{
+    ViewData["Title"] = "Competency frameworks";
+}
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Admin/Index">Admin</a></li>
+        <li class="breadcrumb-item active">Competency frameworks</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Competency frameworks</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-route-showArchived="@(!Model.ShowArchived)">
+        @(Model.ShowArchived ? "Hide archived" : "Show archived")
+    </a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Create framework</h2>
+        <form method="post" asp-page-handler="Create">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <input asp-for="Name" class="form-control" placeholder="Framework name" maxlength="200" required />
+                </div>
+                <div class="col-md-4">
+                    <input asp-for="Description" class="form-control" placeholder="Description (optional)" maxlength="2000" />
+                </div>
+                <div class="col-md-3">
+                    <input asp-for="ScaleLabels" class="form-control" placeholder="Scale labels, comma separated" />
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">Add</button>
+                </div>
+            </div>
+            <p class="text-muted small mt-1 mb-0">Scale levels are ordered left to right (2–10 labels).</p>
+        </form>
+    </div>
+</div>
+
+@if (Model.Frameworks.Count == 0)
+{
+    <div class="alert alert-info">No frameworks yet.</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr><th>Name</th><th>Version</th><th>Scale</th><th>Competencies</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var framework in Model.Frameworks)
+                    {
+                        <tr class="@(framework.IsArchived ? "text-muted" : null)">
+                            <td>
+                                <a asp-page="/Competency/Admin/Framework" asp-route-id="@framework.Id">@framework.Name</a>
+                                @if (!string.IsNullOrWhiteSpace(framework.Description))
+                                {
+                                    <div class="small text-muted">@framework.Description</div>
+                                }
+                            </td>
+                            <td>v@framework.Version</td>
+                            <td>@string.Join(" → ", framework.ScaleLevels.OrderBy(l => l.SortOrder).Select(l => l.Label))</td>
+                            <td>@framework.Competencies.Count</td>
+                            <td>@(framework.IsArchived ? "Archived" : "Active")</td>
+                            <td class="text-end">
+                                @if (framework.IsArchived)
+                                {
+                                    <form method="post" asp-page-handler="Restore" asp-route-id="@framework.Id" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm">Restore</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form method="post" asp-page-handler="Archive" asp-route-id="@framework.Id" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Archive</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

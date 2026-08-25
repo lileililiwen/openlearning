@@ -1,0 +1,136 @@
+@page
+@using OpenLearning.Competency.Models
+@model OpenLearning.Web.Pages.Competency.ProfileModel
+@{
+    ViewData["Title"] = "Competency profile";
+}
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item active">Competency profile</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-1">Competency profile</h1>
+<p class="text-muted small mb-3">
+    @(Model.IsSelf ? "Your competencies across all frameworks." : $"Learner: {Model.LearnerName}")
+</p>
+
+@if (Model.Rows.Count == 0)
+{
+    <div class="alert alert-info">No active competency frameworks yet.</div>
+}
+
+@foreach (var row in Model.Rows)
+{
+    var achieved = row.Statuses.Count(s => s.State == "achieved");
+    var partial = row.Statuses.Count(s => s.State == "partial");
+    var missing = row.Statuses.Count(s => s.State == "missing");
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="h6 mb-0">@row.Framework.Name <span class="text-muted small">v@row.Framework.Version</span></h2>
+                <span class="small text-muted">@achieved achieved · @partial pending review · @missing missing</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead><tr><th>Competency</th><th>Status</th><th>Level</th><th>Evidence</th></tr></thead>
+                    <tbody>
+                        @foreach (var status in row.Statuses.OrderBy(s => s.Competency.SortOrder))
+                        {
+                            <tr>
+                                <td>
+                                    @status.Competency.Title
+                                    @if (!string.IsNullOrWhiteSpace(status.Competency.Description))
+                                    {
+                                        <div class="small text-muted">@status.Competency.Description</div>
+                                    }
+                                </td>
+                                <td>
+                                    @if (status.State == "achieved")
+                                    {
+                                        <span class="badge bg-success">Achieved</span>
+                                    }
+                                    else if (status.State == "partial")
+                                    {
+                                        <span class="badge bg-warning text-dark">Pending review</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Missing</span>
+                                    }
+                                </td>
+                                <td>@(status.Level is null ? "—" : $"{status.Level} {status.LevelLabel}")</td>
+                                <td class="small">
+                                    @if (status.Evidence.Count == 0)
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                    else
+                                    {
+                                        <ul class="mb-0 ps-3">
+                                            @foreach (var evidence in status.Evidence)
+                                            {
+                                                <li>
+                                                    @evidence.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd") —
+                                                    @(evidence.Status switch
+                                                    {
+                                                        EvidenceStatus.Auto => "automatic (activity completed)",
+                                                        EvidenceStatus.Approved => $"approved by reviewer",
+                                                        EvidenceStatus.Pending => "awaiting review",
+                                                        _ => $"rejected: {evidence.ReviewReason}",
+                                                    })
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-2">Submit manual evidence</h2>
+        <p class="text-muted small">Demonstrated a competency outside the platform? Submit it for reviewer approval.</p>
+        <form method="post" asp-page-handler="SubmitEvidence">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <select name="competencyId" class="form-select" required>
+                        <option value="">— choose competency —</option>
+                        @foreach (var row in Model.Rows)
+                        {
+                            <optgroup label="@row.Framework.Name">
+                                @foreach (var option in row.Statuses.OrderBy(s => s.Competency.SortOrder).Select(s => s.Competency))
+                                {
+                                    <option value="@option.Id">@option.Title</option>
+                                }
+                            </optgroup>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <textarea name="description" class="form-control" rows="2"
+                              placeholder="What did you do, and how does it demonstrate the competency?" maxlength="4000" required></textarea>
+                </div>
+            </div>
+            <input type="text" name="attachmentUrl" class="form-control mt-2" placeholder="Attachment link (optional)" maxlength="1000" />
+            <button type="submit" class="btn btn-primary mt-2">Submit for review</button>
+        </form>
+    </div>
+</div>

@@ -9,6 +9,7 @@ using OpenLearning.Auth.Models;
 using OpenLearning.Certificates.Models;
 using OpenLearning.Chat.Models;
 using OpenLearning.Classes.Models;
+using OpenLearning.Competency.Models;
 using OpenLearning.CouponIO.Models;
 using OpenLearning.CourseManagement.Models;
 using OpenLearning.CourseOutlineIO.Models;
@@ -17,6 +18,7 @@ using OpenLearning.Distribution.Models;
 using OpenLearning.Ecommerce.Models;
 using OpenLearning.Exams.Models;
 using OpenLearning.Gamification.Models;
+using OpenLearning.Gradebook.Models;
 using OpenLearning.GradeExport.Models;
 using OpenLearning.Invoicing.Models;
 using OpenLearning.Jobs.Models;
@@ -31,6 +33,7 @@ using OpenLearning.Notifications.Models;
 using OpenLearning.Operations.Models;
 using OpenLearning.Organizations.Models;
 using OpenLearning.Payments.Models;
+using OpenLearning.PeerAssessment.Models;
 using OpenLearning.PracticalTraining.Models;
 using OpenLearning.Progress.Models;
 using OpenLearning.QuestionIO.Models;
@@ -40,6 +43,7 @@ using OpenLearning.Settlement.Models;
 using OpenLearning.Storage.Models;
 using OpenLearning.StudentIO.Models;
 using OpenLearning.StudyTools.Models;
+using OpenLearning.Surveys.Models;
 using OpenLearning.SystemConfig.Models;
 using OpenLearning.UserManagement.Models;
 using EnrollmentEntity = OpenLearning.Enrollment.Models.Enrollment;
@@ -261,6 +265,48 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ExportAudit> ExportAudits => Set<ExportAudit>();
     public DbSet<RetentionPolicy> RetentionPolicies => Set<RetentionPolicy>();
 
+    public DbSet<PeerReviewConfig> PeerReviewConfigs => Set<PeerReviewConfig>();
+
+    public DbSet<PeerReviewRubricQuestion> PeerReviewRubricQuestions => Set<PeerReviewRubricQuestion>();
+
+    public DbSet<PeerAllocationRun> PeerAllocationRuns => Set<PeerAllocationRun>();
+
+    public DbSet<PeerAllocationPair> PeerAllocationPairs => Set<PeerAllocationPair>();
+
+    public DbSet<PeerReviewAssessment> PeerReviewAssessments => Set<PeerReviewAssessment>();
+
+    public DbSet<PeerAssessmentAnswer> PeerAssessmentAnswers => Set<PeerAssessmentAnswer>();
+
+    public DbSet<PeerReviewResult> PeerReviewResults => Set<PeerReviewResult>();
+
+    public DbSet<CompetencyFramework> CompetencyFrameworks => Set<CompetencyFramework>();
+
+    public DbSet<FrameworkScaleLevel> FrameworkScaleLevels => Set<FrameworkScaleLevel>();
+
+    public DbSet<CompetencyNode> CompetencyNodes => Set<CompetencyNode>();
+
+    public DbSet<ActivityMapping> ActivityMappings => Set<ActivityMapping>();
+
+    public DbSet<CompetencyEvidence> CompetencyEvidence => Set<CompetencyEvidence>();
+
+    public DbSet<GradebookConfig> GradebookConfigs => Set<GradebookConfig>();
+
+    public DbSet<GradebookItem> GradebookItems => Set<GradebookItem>();
+
+    public DbSet<GradebookAdjustment> GradebookAdjustments => Set<GradebookAdjustment>();
+
+    public DbSet<GradebookSnapshot> GradebookSnapshots => Set<GradebookSnapshot>();
+
+    public DbSet<Survey> Surveys => Set<Survey>();
+
+    public DbSet<SurveyQuestion> SurveyQuestions => Set<SurveyQuestion>();
+
+    public DbSet<SurveyQuestionOption> SurveyQuestionOptions => Set<SurveyQuestionOption>();
+
+    public DbSet<SurveyResponse> SurveyResponses => Set<SurveyResponse>();
+
+    public DbSet<SurveyAnswer> SurveyAnswers => Set<SurveyAnswer>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -312,5 +358,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Organization).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(LearningEvent).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(DeviceSession).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(PeerReviewConfig).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(CompetencyFramework).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(Survey).Assembly);
     }
 }

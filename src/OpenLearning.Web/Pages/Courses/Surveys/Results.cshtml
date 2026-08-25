@@ -1,0 +1,102 @@
+@page
+@using OpenLearning.Surveys.Models
+@model OpenLearning.Web.Pages.Courses.Surveys.ResultsModel
+@{
+    ViewData["Title"] = "Survey results";
+    var survey = Model.Survey;
+}
+
+@if (survey is null || Model.Results is null)
+{
+    <div class="alert alert-danger">Survey not found.</div>
+}
+else
+{
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Surveys/Index" asp-route-courseId="@Model.BackCourseId">Surveys</a></li>
+        <li class="breadcrumb-item active">Results</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-1">@survey.Title</h1>
+<p class="text-muted small mb-3">
+    @if (survey.IsAnonymous)
+    {
+        <span class="badge bg-secondary me-1">Anonymous</span>
+    }
+    Responses: <strong>@Model.Results.ResponseCount</strong>
+    @if (!Model.Results.CanSeeAnswers)
+    {
+        <text>— answer content unlocks after the survey closes @(survey.AllowLiveResults ? string.Empty : "(live results disabled)")</text>
+    }
+</p>
+
+@if (!Model.Results.CanSeeAnswers)
+{
+    <div class="alert alert-info">
+        You can see the response count only. Aggregate answers become visible when the survey closes.
+    </div>
+}
+else
+{
+    var maxChoice = 1;
+    foreach (var question in Model.Results.Questions)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h2 class="h6 mb-3">@question.Question.Prompt</h2>
+
+                @if (question.Question.Type is SurveyQuestionType.SingleChoice or SurveyQuestionType.MultipleChoice)
+                {
+                    maxChoice = Math.Max(1, question.Choices.Max(c => c.Count));
+                    @foreach (var bucket in question.Choices)
+                    {
+                        var pct = Model.Results.ResponseCount > 0 ? bucket.Count * 100 / maxChoice : 0;
+                        <div class="mb-2">
+                            <div class="small d-flex justify-content-between">
+                                <span>@bucket.Text</span>
+                                <span class="text-muted">@bucket.Count</span>
+                            </div>
+                            <div class="progress" style="height: 8px">
+                                <div class="progress-bar" style="width: @pct%"></div>
+                            </div>
+                        </div>
+                    }
+                }
+                else if (question.Question.Type == SurveyQuestionType.RatingScale)
+                {
+                    <p class="small text-muted mb-1">
+                        Average: @(question.AverageRating is double avg ? avg.ToString("0.0") : "—") (1–5)
+                    </p>
+                    @foreach (var rating in Enumerable.Range(1, 5))
+                    {
+                        var count = question.Ratings.GetValueOrDefault(rating);
+                        <div class="small d-flex justify-content-between">
+                            <span>@rating star@(rating == 1 ? "" : "s")</span>
+                            <span class="text-muted">@count</span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    @if (question.OpenTexts.Count == 0)
+                    {
+                        <p class="text-muted small mb-0">No written answers yet.</p>
+                    }
+                    else
+                    {
+                        <ul class="mb-0 ps-3 small">
+                            @foreach (var text in question.OpenTexts)
+                            {
+                                <li style="white-space: pre-wrap">@text</li>
+                            }
+                        </ul>
+                    }
+                }
+            </div>
+        </div>
+    }
+}
+}

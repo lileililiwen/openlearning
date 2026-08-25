@@ -1,0 +1,138 @@
+@page
+@using OpenLearning.PeerAssessment.Models
+@model OpenLearning.Web.Pages.Courses.Assignments.PeerReview.MyReviewsModel
+@{
+    ViewData["Title"] = "My peer reviews";
+    var assignment = Model.Assignment;
+}
+
+@if (assignment is null || Model.Config is null)
+{
+    <div class="alert alert-danger">Peer review not found.</div>
+}
+else
+{
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@assignment.CourseId">Course</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Assignments/Index" asp-route-courseId="@assignment.CourseId">Assignments</a></li>
+        <li class="breadcrumb-item active">Peer review</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-1">Peer review — @assignment.Title</h1>
+<p class="text-muted small">
+    Phase: <strong>@Model.Phase</strong>
+    @if (Model.Config.IsAnonymous)
+    {
+        <span class="badge bg-secondary ms-2">Anonymous</span>
+    }
+</p>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Your review queue (@Model.Queue.Count)</h2>
+        @if (Model.Queue.Count == 0)
+        {
+            <p class="text-muted small mb-0">
+                @(Model.Phase == PeerReviewPhase.Submission
+                    ? "Submissions are allocated when the review phase opens."
+                    : "You have no submissions to review.")
+            </p>
+        }
+        else
+        {
+            <div class="list-group list-group-flush">
+                @foreach (var item in Model.Queue)
+                {
+                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center gap-3">
+                        <div>
+                            <div class="small text-muted">
+                                Submitted @item.Submission.SubmittedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                — @(item.Submission.Text.Length > 120 ? item.Submission.Text[..120] + "…" : item.Submission.Text)
+                            </div>
+                        </div>
+                        @if (item.SubmittedAssessment is not null)
+                        {
+                            <span class="badge bg-success">Assessed</span>
+                        }
+                        else if (Model.Phase == PeerReviewPhase.Review)
+                        {
+                            <a class="btn btn-primary btn-sm"
+                               asp-page="/Courses/Assignments/PeerReview/Assess" asp-route-pairId="@item.Pair.Id">Assess</a>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Closed</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Your result</h2>
+        @if (Model.Config.ResultsReleasedAt is null)
+        {
+            <p class="text-muted small mb-0">Results are hidden until the instructor releases them.</p>
+        }
+        else if (Model.MyResult is null)
+        {
+            <p class="text-muted small mb-0">No result was recorded for you.</p>
+        }
+        else
+        {
+            var final = Model.MyResult.OverrideScore ?? Model.MyResult.ComputedScore;
+            <div class="display-6">@final?.ToString() ?? "—"<span class="fs-6 text-muted">/100</span></div>
+            <p class="text-muted small mb-0">Basis: @Model.MyResult.Basis@(Model.MyResult.OverrideScore is not null ? " (instructor override)" : null)</p>
+        }
+    </div>
+</div>
+
+@if (Model.Config.ResultsReleasedAt is not null)
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="h6 mb-3">Peer assessments you received (@Model.Received.Count)</h2>
+            @if (Model.Received.Count == 0)
+            {
+                <p class="text-muted small mb-0">No peer assessments were submitted for your work.</p>
+            }
+            else
+            {
+                @foreach (var received in Model.Received)
+                {
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>@(received.AssessorName ?? "Anonymous student")</strong>
+                            <span>@received.TotalScore/@received.RubricMax</span>
+                        </div>
+                        @foreach (var answer in received.Answers)
+                        {
+                            <div class="mb-2">
+                                <div class="small"><strong>@answer.PromptSnapshot</strong> — @answer.Score/@answer.MaxPoints</div>
+                                @if (!string.IsNullOrWhiteSpace(answer.Comment))
+                                {
+                                    <div class="small text-muted" style="white-space: pre-wrap">@answer.Comment</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+}
+}

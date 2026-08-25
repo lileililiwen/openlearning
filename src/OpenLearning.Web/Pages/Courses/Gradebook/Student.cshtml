@@ -1,0 +1,80 @@
+@page
+@using OpenLearning.Gradebook.Models
+@model OpenLearning.Web.Pages.Courses.Gradebook.StudentModel
+@{
+    ViewData["Title"] = "My course grades";
+}
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@Model.CourseId">Course</a></li>
+        <li class="breadcrumb-item active">My grades</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-1">My course grades</h1>
+<p class="text-muted small mb-3">
+    @if (Model.Snapshot is { PublishedAt: DateTime published })
+    {
+        <text>Published @published.ToLocalTime().ToString("yyyy-MM-dd HH:mm") — aggregates update as work is graded.</text>
+    }
+</p>
+
+@if (Model.Config is null || !Model.Config.IsPublished)
+{
+    <div class="alert alert-info">The gradebook has not been published for this course.</div>
+}
+else if (Model.MyRow is not { } myRow)
+{
+    <div class="alert alert-warning">No gradebook rows found for your enrollment.</div>
+}
+else
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+            <div class="display-5">@myRow.Aggregate?.ToString() ?? "—"<span class="fs-6 text-muted">/100</span></div>
+            <div class="text-muted small">current weighted aggregate</div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead><tr><th>Activity</th><th>Weight</th><th>Your score</th></tr></thead>
+                <tbody>
+                    @foreach (var item in Model.Config.Items.OrderBy(i => i.SortOrder))
+                    {
+                        var hasScore = myRow.ItemScores.TryGetValue(item.Id, out var score);
+                        <tr>
+                            <td>@item.Kind #@item.SourceId</td>
+                            <td>@item.Weight%</td>
+                            <td>
+                                @if (hasScore && score is not null && score.Excused)
+                                {
+                                    <span class="badge bg-info text-dark">Excused</span>
+                                }
+                                else if (!hasScore || score is null || score.Percent is null)
+                                {
+                                    <span class="text-muted">Not graded yet</span>
+                                }
+                                else
+                                {
+                                    <text>@Math.Round(score.Percent.Value)@(score.Overridden ? " (instructor adjusted)" : "")</text>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

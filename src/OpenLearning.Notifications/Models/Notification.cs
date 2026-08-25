@@ -41,6 +41,8 @@ public enum NotificationType
     LiveBookingConfirmed = 33,
     LiveBookingCancelled = 34,
     LiveBookingWaitlistPromotion = 35,
+    PeerReviewOpened = 36,
+    PeerReviewResultsReleased = 37,
 }
 
 /// <summary>One in-app notification for a user.</summary>

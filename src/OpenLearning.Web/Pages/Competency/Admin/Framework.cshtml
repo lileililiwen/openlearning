@@ -1,0 +1,102 @@
+@page
+@using OpenLearning.Competency.Models
+@model OpenLearning.Web.Pages.Competency.Admin.FrameworkModel
+@{
+    ViewData["Title"] = Model.Framework?.Name ?? "Framework";
+    var framework = Model.Framework;
+}
+
+@if (framework is null)
+{
+    <div class="alert alert-danger">Framework not found.</div>
+}
+else
+{
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Admin/Index">Admin</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Competency/Admin/Index">Competency frameworks</a></li>
+        <li class="breadcrumb-item active">@framework.Name</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-1">@framework.Name</h1>
+<p class="text-muted small">
+    v@framework.Version · scale:
+    @string.Join(" → ", framework.ScaleLevels.OrderBy(l => l.SortOrder).Select(l => l.Label))
+</p>
+@if (framework.IsArchived)
+{
+    <div class="alert alert-warning">This framework is archived and cannot receive new mappings.</div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Competencies (@framework.Competencies.Count)</h2>
+        @if (framework.Competencies.Count == 0)
+        {
+            <p class="text-muted small">No competencies yet — add the first one below.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead><tr><th>Competency</th><th>Description</th><th>Parent</th><th style="width: 320px"></th></tr></thead>
+                    <tbody>
+                        @foreach (var node in framework.Competencies.OrderBy(c => c.SortOrder))
+                        {
+                            var parent = node.ParentId is int pid ? framework.Competencies.FirstOrDefault(c => c.Id == pid) : null;
+                            <tr>
+                                <td>@node.Title</td>
+                                <td class="small text-muted">@node.Description</td>
+                                <td>@parent?.Title</td>
+                                <td>
+                                    <form method="post" asp-page-handler="RenameNode" asp-route-id="@framework.Id" asp-route-nodeId="@node.Id"
+                                          class="d-flex gap-1 mb-1">
+                                        <input type="text" name="title" value="@node.Title" class="form-control form-control-sm" maxlength="200" required />
+                                        <input type="text" name="description" value="@node.Description" class="form-control form-control-sm" placeholder="Description" />
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm">Save</button>
+                                    </form>
+                                    <form method="post" asp-page-handler="DeleteNode" asp-route-id="@framework.Id" asp-route-nodeId="@node.Id">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm btn-sm">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Add competency</h2>
+        <form method="post" asp-page-handler="AddNode" asp-route-id="@framework.Id">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <select asp-for="ParentId" class="form-select">
+                        <option value="">— top level —</option>
+                        @foreach (var node in framework.Competencies)
+                        {
+                            <option value="@node.Id">@node.Title</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4"><input asp-for="Title" class="form-control" placeholder="Competency title" maxlength="200" required /></div>
+                <div class="col-md-4"><input asp-for="Description" class="form-control" placeholder="Description (optional)" /></div>
+                <div class="col-md-1"><button type="submit" class="btn btn-primary w-100">Add</button></div>
+            </div>
+        </form>
+    </div>
+</div>
+}

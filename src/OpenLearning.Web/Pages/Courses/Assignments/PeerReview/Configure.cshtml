@@ -1,0 +1,102 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Assignments.PeerReview.ConfigureModel
+@{
+    ViewData["Title"] = "Peer review settings";
+    var assignment = Model.Assignment;
+}
+
+@if (assignment is null)
+{
+    <div class="alert alert-danger">Assignment not found.</div>
+}
+else
+{
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@assignment.CourseId">Course</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Assignments/Index" asp-route-courseId="@assignment.CourseId">Assignments</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Assignments/Detail" asp-route-id="@assignment.Id">@assignment.Title</a></li>
+        <li class="breadcrumb-item active">Peer review</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-3">Peer review — @assignment.Title</h1>
+
+@if (Model.Locked)
+{
+    <div class="alert alert-warning">
+        Settings and rubric are locked once the review phase opens.
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="post" asp-route-assignmentId="@assignment.Id">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="Input.ReviewsPerStudent" class="form-label">Reviews per student</label>
+                    <input asp-for="Input.ReviewsPerStudent" type="number" min="1" max="10"
+                           class="form-control" disabled="@(Model.Locked ? "disabled" : null)" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Input.ReviewOpensAt" class="form-label">Review phase opens</label>
+                    <input asp-for="Input.ReviewOpensAt" type="datetime-local" class="form-control" disabled="@(Model.Locked ? "disabled" : null)" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Input.ReviewClosesAt" class="form-label">Review phase closes</label>
+                    <input asp-for="Input.ReviewClosesAt" type="datetime-local" class="form-control" disabled="@(Model.Locked ? "disabled" : null)" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Input.Strategy" class="form-label">Final score strategy</label>
+                    <select asp-for="Input.Strategy" asp-items="Html.GetEnumSelectList<OpenLearning.PeerAssessment.Models.PeerReviewStrategy>()"
+                            class="form-select" disabled="@(Model.Locked ? "disabled" : null)"></select>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Input.InstructorWeightPercent" class="form-label">Instructor weight % (weighted mix)</label>
+                    <input asp-for="Input.InstructorWeightPercent" type="number" min="0" max="100"
+                           class="form-control" disabled="@(Model.Locked ? "disabled" : null)" />
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check form-switch">
+                        <input asp-for="Input.IsAnonymous" class="form-check-input" disabled="@(Model.Locked ? "disabled" : null)" />
+                        <label asp-for="Input.IsAnonymous" class="form-check-label">Anonymous reviews</label>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="h6 mt-4 mb-2">Rubric</h2>
+            @for (var i = 0; i < Model.Input.Rubric.Count; i++)
+            {
+                var row = Model.Input.Rubric[i];
+                <div class="row g-2 align-items-center mb-2 rubric-row">
+                    <div class="col-md-9">
+                        <input type="text" name="Input.Rubric[@i].Prompt" value="@row.Prompt"
+                               class="form-control" placeholder="Rubric question @(i + 1)" maxlength="500" disabled="@(Model.Locked ? "disabled" : null)" />
+                    </div>
+                    <div class="col-md-3">
+                        <input type="number" name="Input.Rubric[@i].MaxPoints" value="@row.MaxPoints"
+                               class="form-control" min="1" max="100" title="Maximum points" disabled="@(Model.Locked ? "disabled" : null)" />
+                    </div>
+                </div>
+            }
+            <p class="text-muted small">Rows with an empty prompt are ignored (1–10 questions, 1–100 points each).</p>
+
+            @if (!Model.Locked)
+            {
+                <button type="submit" class="btn btn-primary">Save settings</button>
+            }
+            <a class="btn btn-outline-secondary"
+               asp-page="/Courses/Assignments/PeerReview/Manage" asp-route-assignmentId="@assignment.Id">Manage &amp; results</a>
+        </form>
+    </div>
+</div>
+}

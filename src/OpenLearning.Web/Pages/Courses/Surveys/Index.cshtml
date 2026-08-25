@@ -1,0 +1,103 @@
+@page
+@using OpenLearning.Surveys.Models
+@model OpenLearning.Web.Pages.Courses.Surveys.IndexModel
+@{
+    ViewData["Title"] = "Surveys";
+    var backCourseId = Model.CourseId ?? 0;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        @if (Model.Course is not null)
+        {
+            <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@Model.Course.Id">@Model.Course.Title</a></li>
+        }
+        <li class="breadcrumb-item active">@(Model.IsPlatformScope ? "Platform surveys" : "Surveys")</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-3">@(Model.IsPlatformScope ? "Platform-wide surveys" : $"Surveys — {Model.Course?.Title}")</h1>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Create survey</h2>
+        <form method="post" asp-page-handler="Create" asp-route-courseId="@backCourseId">
+            <div class="row g-2 mb-2">
+                <div class="col-md-5"><input asp-for="Title" class="form-control" placeholder="Survey title" maxlength="200" required /></div>
+                <div class="col-md-7"><input asp-for="Description" class="form-control" placeholder="Description (optional)" maxlength="2000" /></div>
+                <div class="col-md-3"><input asp-for="OpensAt" type="datetime-local" class="form-control" /></div>
+                <div class="col-md-3"><input asp-for="ClosesAt" type="datetime-local" class="form-control" /></div>
+                <div class="col-md-3 d-flex align-items-center gap-3">
+                    <div class="form-check form-switch">
+                        <input asp-for="IsAnonymous" class="form-check-input" />
+                        <label asp-for="IsAnonymous" class="form-check-label small">Anonymous</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input asp-for="AllowLiveResults" class="form-check-input" />
+                        <label asp-for="AllowLiveResults" class="form-check-label small">Live results</label>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="h6 mt-3 mb-2">Questions (rows with an empty prompt are ignored)</h3>
+            @for (var i = 0; i < Model.Questions.Count; i++)
+            {
+                var row = Model.Questions[i];
+                <div class="row g-2 align-items-center mb-2">
+                    <div class="col-md-2">
+                        <select name="Questions[@i].Type" asp-items="Html.GetEnumSelectList<SurveyQuestionType>()" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" name="Questions[@i].Prompt" value="@row.Prompt" class="form-control form-control-sm"
+                               placeholder="Question @(i + 1)" maxlength="500" />
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="Questions[@i].Options" value="@row.Options" class="form-control form-control-sm"
+                               placeholder="Choice options, comma separated" />
+                    </div>
+                    <div class="col-md-1 form-check ms-2">
+                        <input type="checkbox" name="Questions[@i].IsRequired" value="true" class="form-check-input" title="Required" checked />
+                    </div>
+                </div>
+            }
+            <p class="text-muted small">Choice questions need 2–10 comma-separated options. Leave options empty for rating/open-text.</p>
+            <button type="submit" class="btn btn-primary">Create survey</button>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead><tr><th>Title</th><th>Questions</th><th>Window</th><th>Mode</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var survey in Model.Surveys)
+                {
+                    <tr>
+                        <td>@survey.Title</td>
+                        <td>@survey.Questions.Count</td>
+                        <td class="small">
+                            @(survey.OpensAt?.ToLocalTime().ToString("MM-dd HH:mm") ?? "now") →
+                            @(survey.ClosesAt?.ToLocalTime().ToString("MM-dd HH:mm") ?? "no close")
+                        </td>
+                        <td>
+                            @if (survey.IsAnonymous)
+                            {
+                                <span class="badge bg-secondary">Anonymous</span>
+                            }
+                            @if (survey.AllowLiveResults)
+                            {
+                                <span class="badge bg-info text-dark">Live results</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-outline-primary btn-sm"
+                               asp-page="/Courses/Surveys/Results" asp-route-id="@survey.Id" asp-route-courseId="@backCourseId">Results</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

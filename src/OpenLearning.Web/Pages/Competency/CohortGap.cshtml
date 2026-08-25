@@ -1,0 +1,77 @@
+@page
+@model OpenLearning.Web.Pages.Competency.CohortGapModel
+@{
+    ViewData["Title"] = "Cohort gap analysis";
+    var course = Model.Course;
+}
+
+@if (course is null)
+{
+    <div class="alert alert-danger">Course not found.</div>
+}
+else
+{
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a></li>
+        <li class="breadcrumb-item active">Cohort gap analysis</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-3">Cohort gap analysis — @course.Title</h1>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label small">Target framework</label>
+                <select name="frameworkId" class="form-select" required>
+                    @foreach (var framework in Model.Frameworks)
+                    {
+                        <option value="@framework.Id" selected="@(Model.FrameworkId == framework.Id)">@framework.Name</option>
+                    }
+                </select>
+            </div>
+            <input type="hidden" name="courseId" value="@course.Id" />
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Analyze</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.FrameworkId is not null)
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead><tr><th>Learner</th><th>Achieved</th><th>Pending review</th><th>Missing</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        <tr>
+                            <td>@Model.LearnerNames.GetValueOrDefault(row.UserId, row.UserId)</td>
+                            <td><span class="badge bg-success">@row.Achieved</span></td>
+                            <td><span class="badge bg-warning text-dark">@row.Partial</span></td>
+                            <td><span class="badge bg-secondary">@row.Missing</span></td>
+                            <td>
+                                <a class="btn btn-outline-secondary btn-sm"
+                                   asp-page="/Competency/Profile" asp-route-userId="@row.UserId" asp-route-frameworkId="@Model.FrameworkId">Profile</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+}

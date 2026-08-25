@@ -1,0 +1,207 @@
+@page
+@using OpenLearning.Gradebook.Models
+@model OpenLearning.Web.Pages.Courses.Gradebook.IndexModel
+@{
+    ViewData["Title"] = "Gradebook";
+    var course = Model.Course;
+}
+
+@if (course is null)
+{
+    <div class="alert alert-danger">Course not found.</div>
+}
+else
+{
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a></li>
+        <li class="breadcrumb-item active">Gradebook</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Gradebook — @course.Title</h1>
+    @if (Model.Config is { IsPublished: true })
+    {
+        <div class="d-flex gap-2 align-items-center">
+            <span class="badge bg-success">Published</span>
+            <form method="post" asp-page-handler="Unpublish" asp-route-courseId="@course.Id">
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Unpublish</button>
+            </form>
+        </div>
+    }
+    else
+    {
+        <form method="post" asp-page-handler="Publish" asp-route-courseId="@course.Id">
+            <button type="submit" class="btn btn-primary btn-sm"
+                    disabled="@(Model.WeightTotal != 100 || Model.Config is null || Model.Config.Items.Count == 0)">
+                Publish to students
+            </button>
+        </form>
+    }
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-2">
+            Weighted items
+            <span class="small text-muted">(total: @Model.WeightTotal% — must equal 100% to publish)</span>
+        </h2>
+        @if (Model.Config is null || Model.Config.Items.Count == 0)
+        {
+            <p class="text-muted small mb-0">No items yet. Add assignments, quizzes, and exams below.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead><tr><th>Activity</th><th>Kind</th><th>Weight</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var item in Model.Config.Items.OrderBy(i => i.SortOrder))
+                        {
+                            <tr>
+                                <td>@(item.Kind switch { GradebookItemKind.Assignment => "Assignment", GradebookItemKind.Quiz => "Quiz", _ => "Exam" }) #@item.SourceId</td>
+                                <td>@item.Kind</td>
+                                <td>@item.Weight%</td>
+                                <td class="text-end">
+                                    <form method="post" asp-page-handler="Remove" asp-route-courseId="@course.Id" asp-route-itemId="@item.Id" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Add item</h2>
+        <form method="post" asp-page-handler="Add" asp-route-courseId="@course.Id" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small">Kind</label>
+                <select asp-for="Kind" asp-items="Html.GetEnumSelectList<GradebookItemKind>()" class="form-select"></select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label small">Activity</label>
+                <select asp-for="SourceId" class="form-select" required>
+                    @foreach (var assignment in Model.Assignments)
+                    {
+                        <option value="@assignment.Id">[Assignment] @assignment.Title</option>
+                    }
+                    @foreach (var quiz in Model.Quizzes)
+                    {
+                        <option value="@quiz.Id">[Quiz] @quiz.Title</option>
+                    }
+                    @foreach (var exam in Model.Exams)
+                    {
+                        <option value="@exam.Id">[Exam] @exam.Title</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Weight %</label>
+                <input asp-for="Weight" type="number" min="1" max="100" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Add</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Config is not null && Model.Config.Items.Count > 0 && Model.Rows.Count > 0)
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="h6 mb-3">Student grid (@Model.Rows.Count enrolled)</h2>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            @foreach (var item in Model.Config.Items.OrderBy(i => i.SortOrder))
+                            {
+                                <th>@item.Kind #@item.SourceId <span class="text-muted small">(@item.Weight%)</span></th>
+                            }
+                            <th>Aggregate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Rows)
+                        {
+                            <tr>
+                                <td>@Model.StudentNames.GetValueOrDefault(row.StudentId, row.StudentId)</td>
+                                @foreach (var item in Model.Config.Items.OrderBy(i => i.SortOrder))
+                                {
+                                    var hasScore = row.ItemScores.TryGetValue(item.Id, out var score);
+                                    <td>
+                                        @if (!hasScore || score is null)
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                        else if (score.Excused)
+                                        {
+                                            <span class="badge bg-info text-dark">excused</span>
+                                        }
+                                        else if (score.Percent is null)
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                        else
+                                        {
+                                            <text>@Math.Round(score.Percent.Value)@(score.Overridden ? "*" : "")</text>
+                                        }
+                                    </td>
+                                }
+                                <td><strong>@row.Aggregate?.ToString() ?? "—"</strong></td>
+                            </tr>
+                            <tr class="table-light">
+                                <td colspan="@(Model.Config.Items.Count + 2)" class="small">
+                                    <form method="post" asp-page-handler="Override" asp-route-courseId="@course.Id"
+                                          asp-route-studentId="@row.StudentId" class="d-inline-flex gap-1 align-items-center me-3">
+                                        <select name="itemId" class="form-select form-select-sm w-auto">
+                                            @foreach (var item in Model.Config.Items.OrderBy(i => i.SortOrder))
+                                            {
+                                                <option value="@item.Id">@item.Kind #@item.SourceId</option>
+                                            }
+                                        </select>
+                                        <input type="number" name="overrideScore" min="0" max="100" placeholder="override"
+                                               class="form-control form-control-sm" style="width: 90px" />
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm">Set override</button>
+                                    </form>
+                                    <form method="post" asp-page-handler="Excuse" asp-route-courseId="@course.Id"
+                                          asp-route-studentId="@row.StudentId" class="d-inline-flex gap-1 align-items-center">
+                                        <select name="itemId" class="form-select form-select-sm w-auto">
+                                            @foreach (var item in Model.Config.Items.OrderBy(i => i.SortOrder))
+                                            {
+                                                <option value="@item.Id">@item.Kind #@item.SourceId</option>
+                                            }
+                                        </select>
+                                        <input type="hidden" name="excused" value="true" />
+                                        <input type="text" name="reason" placeholder="reason" class="form-control form-control-sm" style="width: 140px" />
+                                        <button type="submit" class="btn btn-outline-info btn-sm">Excuse</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-muted small mb-0">* = override applied. Ungraded items are ignored, not counted as zero.</p>
+        </div>
+    </div>
+}
+}

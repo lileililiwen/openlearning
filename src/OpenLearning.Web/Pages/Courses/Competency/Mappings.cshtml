@@ -1,0 +1,114 @@
+@page
+@using OpenLearning.Competency.Models
+@model OpenLearning.Web.Pages.Courses.Competency.MappingsModel
+@{
+    ViewData["Title"] = "Competency mappings";
+    var course = Model.Course;
+}
+
+@if (course is null)
+{
+    <div class="alert alert-danger">Course not found.</div>
+}
+else
+{
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a></li>
+        <li class="breadcrumb-item active">Competency mappings</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-3">Competency mappings — @course.Title</h1>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Current mappings (@Model.Mappings.Count)</h2>
+        @if (Model.Mappings.Count == 0)
+        {
+            <p class="text-muted small mb-0">No mappings yet. Map the whole course or individual assignments below.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead><tr><th>Competency</th><th>Target</th><th>Evidence rule</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var mapping in Model.Mappings)
+                        {
+                            <tr>
+                                <td>@mapping.Competency?.Title</td>
+                                <td>
+                                    @(mapping.CourseId is not null ? "Whole course"
+                                        : "Assignment: " + Model.AssignmentTitles.GetValueOrDefault(mapping.AssignmentId ?? 0, "unknown"))
+                                </td>
+                                <td class="small text-muted">
+                                    @(mapping.CourseId is not null ? "Course completed (100% of lessons)" : "Submission graded")
+                                </td>
+                                <td class="text-end">
+                                    <form method="post" asp-page-handler="Unmap" asp-route-courseId="@course.Id" asp-route-mappingId="@mapping.Id" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Add mapping</h2>
+        @if (Model.Frameworks.Count == 0)
+        {
+            <p class="text-muted small mb-0">No active frameworks available. Ask an Admin to create one.</p>
+        }
+        else
+        {
+            <form method="post" asp-page-handler="Map" asp-route-courseId="@course.Id">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small">Competency</label>
+                        <select asp-for="CompetencyId" class="form-select" required>
+                            @foreach (var framework in Model.Frameworks)
+                            {
+                                <optgroup label="@framework.Name">
+                                    @foreach (var node in framework.Competencies.OrderBy(c => c.SortOrder))
+                                    {
+                                        <option value="@node.Id">@node.Title</option>
+                                    }
+                                </optgroup>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small">Target activity</label>
+                        <select asp-for="AssignmentId" class="form-select">
+                            <option value="">Whole course — evidence on 100% completion</option>
+                            @foreach (var assignment in Model.AssignmentTitles)
+                            {
+                                <option value="@assignment.Key">Assignment: @assignment.Value — evidence on grading</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Map</button>
+                    </div>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+}

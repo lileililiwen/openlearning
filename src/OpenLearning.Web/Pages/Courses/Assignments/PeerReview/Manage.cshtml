@@ -1,0 +1,147 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Assignments.PeerReview.ManageModel
+@{
+    ViewData["Title"] = "Peer review management";
+    var assignment = Model.Assignment;
+    var config = Model.Config;
+}
+
+@if (assignment is null || config is null)
+{
+    <div class="alert alert-danger">Peer review is not configured for this assignment.</div>
+}
+else
+{
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Details" asp-route-id="@assignment.CourseId">Course</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Assignments/Index" asp-route-courseId="@assignment.CourseId">Assignments</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Courses/Assignments/Detail" asp-route-id="@assignment.Id">@assignment.Title</a></li>
+        <li class="breadcrumb-item active">Peer review</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-3">Peer review — @assignment.Title</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card shadow-sm"><div class="card-body py-2">
+        <div class="text-muted small">Phase</div>
+        <strong>@Model.Phase</strong>
+    </div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm"><div class="card-body py-2">
+        <div class="text-muted small">Participants</div>
+        <strong>@Model.ParticipantCount</strong>
+    </div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm"><div class="card-body py-2">
+        <div class="text-muted small">Allocated reviews</div>
+        <strong>@Model.ActivePairCount</strong>
+    </div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm"><div class="card-body py-2">
+        <div class="text-muted small">Assessments submitted</div>
+        <strong>@Model.AssessmentCount</strong>
+    </div></div></div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-2">Allocation</h2>
+        @if (Model.LatestRun is null)
+        {
+            <p class="text-muted small mb-2">No allocation has run yet. It runs automatically when the review phase opens.</p>
+        }
+        else
+        {
+            <p class="text-muted small mb-2">
+                Run #@Model.LatestRun.RunNumber — @Model.LatestRun.ParticipantCount participants,
+                @Model.LatestRun.ReviewsEach reviews each,
+                shortfall @Model.LatestRun.ShortfallCount.
+            </p>
+        }
+        <div class="d-flex gap-2">
+            <form method="post" asp-page-handler="Allocate" asp-route-assignmentId="@assignment.Id">
+                <button type="submit" class="btn btn-outline-primary"
+                        disabled="@(Model.Phase == OpenLearning.PeerAssessment.Models.PeerReviewPhase.Submission ? "disabled" : null)">
+                    @(Model.LatestRun is null ? "Run allocation" : "Re-run allocation")
+                </button>
+            </form>
+            <a class="btn btn-outline-secondary"
+               asp-page="/Courses/Assignments/PeerReview/Configure" asp-route-assignmentId="@assignment.Id">Settings &amp; rubric</a>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="h6 mb-0">Results</h2>
+            @if (config.ResultsReleasedAt is DateTime released)
+            {
+                <span class="badge bg-success">Released @released.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+            }
+            else
+            {
+                <form method="post" asp-page-handler="Release" asp-route-assignmentId="@assignment.Id">
+                    <button type="submit" class="btn btn-primary btn-sm"
+                            disabled="@(Model.Phase != OpenLearning.PeerAssessment.Models.PeerReviewPhase.Closed ? "disabled" : null)">
+                        Release results
+                    </button>
+                </form>
+            }
+        </div>
+
+        @if (Model.Results.Count == 0)
+        {
+            <p class="text-muted small mb-0">No results computed yet. Results are computed when released or overridden.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Computed</th>
+                            <th>Basis</th>
+                            <th>Override</th>
+                            <th>Final</th>
+                            <th style="width: 220px">Set override</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var result in Model.Results)
+                        {
+                            var final = result.OverrideScore ?? result.ComputedScore;
+                            <tr>
+                                <td>@Model.StudentNames.GetValueOrDefault(result.StudentId, result.StudentId)</td>
+                                <td>@result.ComputedScore?.ToString() ?? "—"</td>
+                                <td>@result.Basis</td>
+                                <td>@(result.OverrideScore?.ToString() ?? "—")</td>
+                                <td><strong>@final?.ToString() ?? "—"</strong></td>
+                                <td>
+                                    <form method="post" asp-page-handler="Override"
+                                          asp-route-assignmentId="@assignment.Id" asp-route-studentId="@result.StudentId"
+                                          class="d-flex gap-1">
+                                        <input type="number" name="overrideScore" min="0" max="100"
+                                               value="@result.OverrideScore" class="form-control form-control-sm" />
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm">Set</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-muted small mb-0">Leave the override box empty and submit to clear an override.</p>
+        }
+    </div>
+</div>
+}
