@@ -219,7 +219,7 @@ public partial class CouponImportService : IAsyncIOProcessor
         }
     }
 
-    private async Task<CouponImportOutcome> ImportSyncCoreAsync(IReadOnlyList<CouponImportRow> rows, string adminId)
+    private async Task<CouponImportOutcome> ImportSyncCoreAsync(List<CouponImportRow> rows, string adminId)
     {
         var (errors, success) = await ValidateAndPersistAsync(rows, default);
         await _db.SaveChangesAsync();
@@ -274,7 +274,7 @@ public partial class CouponImportService : IAsyncIOProcessor
     /// rows as coupons, and returns the collected errors plus success count.
     /// </summary>
     private async Task<(List<CouponImportRowError> Errors, int Success)> ValidateAndPersistAsync(
-        IReadOnlyList<CouponImportRow> rows, CancellationToken ct)
+        List<CouponImportRow> rows, CancellationToken ct)
     {
         var errors = new List<CouponImportRowError>();
         var valid = new List<CouponImportRow>();
@@ -437,7 +437,7 @@ public partial class CouponImportService : IAsyncIOProcessor
         return rows;
     }
 
-    private async Task<string?> WriteErrorFileAsync(int asyncIOJobId, string ownerId, IReadOnlyList<CouponImportRowError> errors)
+    private async Task<string?> WriteErrorFileAsync(int asyncIOJobId, string ownerId, List<CouponImportRowError> errors)
     {
         if (errors.Count == 0)
         {

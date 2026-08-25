@@ -241,7 +241,7 @@ public class OutlineImportService : IAsyncIOProcessor
     }
 
     private async Task<OutlineImportOutcome> ImportSyncCoreAsync(
-        IReadOnlyList<OutlineRow> rows,
+        List<OutlineRow> rows,
         string ownerId,
         int courseId,
         OutlineImportMode mode)
@@ -321,7 +321,7 @@ public class OutlineImportService : IAsyncIOProcessor
     /// order). Invalid rows are collected into <paramref name="errors"/>.
     /// </summary>
     private async Task PersistRowsAsync(
-        IReadOnlyList<OutlineRow> rows,
+        List<OutlineRow> rows,
         List<OutlineRowError> errors,
         int courseId,
         CancellationToken ct)
@@ -491,7 +491,7 @@ public class OutlineImportService : IAsyncIOProcessor
         return errors;
     }
 
-    private async Task<string?> WriteErrorFileAsync(int asyncIOJobId, string ownerId, IReadOnlyList<OutlineRowError> errors)
+    private async Task<string?> WriteErrorFileAsync(int asyncIOJobId, string ownerId, List<OutlineRowError> errors)
     {
         if (errors.Count == 0)
         {

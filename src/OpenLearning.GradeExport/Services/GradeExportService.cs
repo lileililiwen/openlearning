@@ -866,7 +866,7 @@ public class GradeExportService : IAsyncIOProcessor
         return answers.GroupBy(a => a.AttemptId).ToDictionary(g => g.Key, g => g.ToList());
     }
 
-    private static string BuildPerQuestionJson(IReadOnlyCollection<QuizAttemptAnswer>? answers)
+    private static string BuildPerQuestionJson(List<QuizAttemptAnswer>? answers)
     {
         if (answers is null || answers.Count == 0)
         {
@@ -889,7 +889,7 @@ public class GradeExportService : IAsyncIOProcessor
         return JsonSerializer.Serialize(items);
     }
 
-    private static string BuildPerQuestionJson(IReadOnlyCollection<ExamAttemptAnswer>? answers)
+    private static string BuildPerQuestionJson(List<ExamAttemptAnswer>? answers)
     {
         if (answers is null || answers.Count == 0)
         {
