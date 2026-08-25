@@ -701,7 +701,7 @@ public class StudentImportService : IAsyncIOProcessor
         return null;
     }
 
-    private async Task<string?> WriteErrorFileAsync(int asyncIOJobId, string ownerId, IReadOnlyList<StudentImportRowError> errors)
+    private async Task<string?> WriteErrorFileAsync(int asyncIOJobId, string ownerId, List<StudentImportRowError> errors)
     {
         if (errors.Count == 0)
         {

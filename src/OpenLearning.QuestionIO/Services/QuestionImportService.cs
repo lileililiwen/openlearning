@@ -268,7 +268,7 @@ public class QuestionImportService : IAsyncIOProcessor
     }
 
     private async Task<QuestionImportOutcome> ImportSyncCoreAsync(
-        IReadOnlyList<ParsedQuestionRow> rows,
+        List<ParsedQuestionRow> rows,
         string ownerId,
         int? quizId,
         QuestionImportMode mode,
@@ -615,7 +615,7 @@ public class QuestionImportService : IAsyncIOProcessor
         return null;
     }
 
-    private async Task<string?> WriteErrorFileAsync(int asyncIOJobId, string ownerId, IReadOnlyList<QuestionRowError> errors)
+    private async Task<string?> WriteErrorFileAsync(int asyncIOJobId, string ownerId, List<QuestionRowError> errors)
     {
         if (errors.Count == 0)
         {
