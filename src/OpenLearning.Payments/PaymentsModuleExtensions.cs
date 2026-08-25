@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenLearning.Payments.Services;
 
 namespace OpenLearning.Payments;
+
 public static class PaymentsModuleExtensions
 {
     public static IServiceCollection AddPaymentsModule(this IServiceCollection services, IConfiguration config)
