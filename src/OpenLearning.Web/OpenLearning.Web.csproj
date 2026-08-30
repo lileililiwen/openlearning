@@ -67,6 +67,7 @@
 <ProjectReference Include="..\OpenLearning.Gradebook\OpenLearning.Gradebook.csproj" />
 <ProjectReference Include="..\OpenLearning.Surveys\OpenLearning.Surveys.csproj" />
 <ProjectReference Include="..\OpenLearning.Authoring\OpenLearning.Authoring.csproj" />
+<ProjectReference Include="..\OpenLearning.Outcomes\OpenLearning.Outcomes.csproj" />
   </ItemGroup>
 
 </Project>

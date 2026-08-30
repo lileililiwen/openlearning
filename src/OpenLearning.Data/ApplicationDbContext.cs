@@ -33,6 +33,7 @@ using OpenLearning.Moderation.Models;
 using OpenLearning.Notifications.Models;
 using OpenLearning.Operations.Models;
 using OpenLearning.Organizations.Models;
+using OpenLearning.Outcomes.Models;
 using OpenLearning.Payments.Models;
 using OpenLearning.PeerAssessment.Models;
 using OpenLearning.PracticalTraining.Models;
@@ -363,5 +364,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(CompetencyFramework).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Survey).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(CourseRevision).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(CourseOutcome).Assembly);
     }
 }

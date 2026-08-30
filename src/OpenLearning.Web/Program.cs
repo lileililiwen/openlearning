@@ -48,6 +48,7 @@ using OpenLearning.Notifications.Channels;
 using OpenLearning.Notifications.Email;
 using OpenLearning.Operations;
 using OpenLearning.Organizations;
+using OpenLearning.Outcomes;
 using OpenLearning.Payments;
 using OpenLearning.Payments.Services;
 using OpenLearning.PeerAssessment;
@@ -184,6 +185,10 @@ builder.Services.AddGradeExportModule();
 builder.Services.AddCourseOutlineIOModule();
 builder.Services.AddCouponIOModule();
 builder.Services.AddAuthoringModule();
+builder.Services.AddOutcomesModule();
+builder.Services.AddScoped<OpenLearning.Web.Pages.Courses.Outcomes.DbOutcomeActivitySource>();
+builder.Services.AddScoped<OpenLearning.Outcomes.Services.IOutcomeActivitySource>(sp =>
+    sp.GetRequiredService<OpenLearning.Web.Pages.Courses.Outcomes.DbOutcomeActivitySource>());
 builder.Services.AddResourceCenterModule();
 builder.Services.AddLtiModule();
 builder.Services.AddLearningPathsModule();

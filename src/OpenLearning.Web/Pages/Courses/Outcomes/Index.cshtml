@@ -1,0 +1,157 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Outcomes.IndexModel
+@{
+    ViewData["Title"] = "课程成果与掌握度";
+}
+
+<div class="container my-4">
+    <h2>课程成果与掌握度</h2>
+    <p class="text-muted">将课程成果映射到可评测活动，系统会按确定规则计算学员掌握度，并给出可解释的关注信号。</p>
+
+    @if (!string.IsNullOrEmpty((string?)TempData["Message"]))
+    {
+        <div class="alert alert-@(TempData["MessageType"] ?? "info")">@TempData["Message"]</div>
+    }
+
+    <div class="mb-2">
+        <a class="btn btn-outline-secondary" asp-page="/Courses/Edit" asp-route-id="@Model.CourseId">返回课程编辑</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">添加课程成果</div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="CreateOutcome">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">成果标题</label>
+                        <input class="form-control" name="title" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">描述</label>
+                        <input class="form-control" name="description" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">掌握阈值 (0-1)</label>
+                        <input class="form-control" name="threshold" type="number" step="0.05" min="0.01" max="1" value="0.7" />
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary" type="submit">添加成果</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.Outcomes.Count == 0)
+    {
+        <div class="alert alert-light">尚未定义任何课程成果。</div>
+    }
+
+    @foreach (var (outcome, mappings) in Model.Outcomes)
+    {
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between">
+                <span><strong>@outcome.Title</strong> — 阈值 @(outcome.MasteryThreshold.ToString("P0"))</span>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrWhiteSpace(outcome.Description))
+                {
+                    <p class="text-muted">@outcome.Description</p>
+                }
+
+                <h6>已映射活动</h6>
+                @if (mappings.Count == 0)
+                {
+                    <p class="text-muted">尚未映射任何活动。</p>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush mb-2">
+                        @foreach (var m in mappings)
+                        {
+                            <li class="list-group-item">@m.ActivityType #@m.ActivityId — 权重 @m.Weight.ToString("F2")</li>
+                        }
+                    </ul>
+                }
+
+                <form method="post" asp-page-handler="AddMapping" class="row g-2 align-items-end">
+                    <input type="hidden" name="outcomeId" value="@outcome.Id" />
+                    <div class="col-md-3">
+                        <label class="form-label">活动类型</label>
+                        <select class="form-select" name="activityType">
+                            <option value="Quiz">Quiz</option>
+                            <option value="Assignment">Assignment</option>
+                            <option value="Exam">Exam</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">活动 Id</label>
+                        <input class="form-control" name="activityId" type="number" min="1" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">权重</label>
+                        <input class="form-control" name="weight" type="number" step="0.1" min="0.1" value="1" />
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-primary" type="submit">映射活动</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">学员掌握度</div>
+        <div class="card-body">
+            @if (Model.LearnerRows.Count == 0)
+            {
+                <div class="alert alert-light">本课程暂无已报名学员。</div>
+            }
+            else
+            {
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>学员</th>
+                            @foreach (var (outcome, _) in Model.Outcomes)
+                            {
+                                <th>@outcome.Title</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.LearnerRows)
+                        {
+                            <tr>
+                                <td>
+                                    @row.LearnerName
+                                    <form method="post" asp-page-handler="Recalculate" class="d-inline">
+                                        <input type="hidden" name="learnerId" value="@row.LearnerId" />
+                                        <button class="btn btn-sm btn-link" type="submit">重新计算</button>
+                                    </form>
+                                </td>
+                                @foreach (var cell in row.Cells)
+                                {
+                                    <td>
+                                        <span class="badge bg-@OpenLearning.Web.Pages.Courses.Outcomes.IndexModel.BadgeClass(cell.State)">
+                                            @OpenLearning.Web.Pages.Courses.Outcomes.IndexModel.StateLabel(cell.State) (@(cell.Score.ToString("P0")))
+                                        </span>
+                                        @if (cell.Signals.Count > 0)
+                                        {
+                                            <ul class="small text-muted mb-0">
+                                                @foreach (var s in cell.Signals)
+                                                {
+                                                    <li>[@s.Rule] @s.Evidence</li>
+                                                }
+                                            </ul>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

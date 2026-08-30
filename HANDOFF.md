@@ -1,89 +1,109 @@
-# HANDOFF.md — Authoring Versioning & Preview
+# HANDOFF.md — Outcomes and Mastery Operations
 
 > Progress / status document. Reusable by another AI session or conversation to
 > continue this work. **Last updated: 2026-08-30.** Branch: `main`.
-> Source change: `openspec/changes/authoring-versioning-preview` (spec `authoring-versioning-preview`)
-> **Status: COMPLETE & ARCHIVED** (`openspec/changes/archive/2026-08-30-authoring-versioning-preview`).
+> Source change: `openspec/changes/outcomes-mastery-operations` (spec `outcomes-mastery-operations`)
+> **Status: COMPLETE & ARCHIVED** (`openspec/changes/archive/2026-08-30-outcomes-mastery-operations`).
 
 ## Goal of this change
-Add immutable published revisions, draft editing, validation, owner-only preview,
-publish, rollback, and audit history. Learner catalog/delivery must read **only** the
-active published revision. (See `openspec/changes/archive/2026-08-30-authoring-versioning-preview/{proposal,design,spec,tasks}.md`.)
+Connect declared course outcomes to graded activities, calculate auditable mastery
+states, and surface explainable learner risk signals to authorized instructors and
+administrators. Learner delivery reads only published course content; outcome drafts
+and mastery never leak to unauthorized viewers. (See
+`openspec/changes/archive/2026-08-30-outcomes-mastery-operations/{proposal,design,spec,tasks}.md`.)
 
 ## Status
 **Fully implemented and archived.** All four task groups are complete:
-- Modدule `src/OpenLearning.Authoring/` (domain, config, lifecycle service, module extensions).
-- EF migration `20260830030603_AddAuthoringRevisions` (+ model snapshot).
-- Wiring into `ApplicationDbContext`, `Program.cs`, and the architecture fixture.
-- Unit tests (7) + architecture tests (5).
-- **Task 3:** instructor revisions page (`Pages/Courses/Revisions/Index`) with
-  Start editing / Preview / Validate / Publish / Unpublish / Rollback, owner + Admin
-  gating, linked from the course Edit page; learner pages already gate on
-  `CourseStatus.Published` and never reference revision drafts, so drafts cannot leak.
-- **Task 4:** PostgreSQL integration tests + role/non-owner PageModel smoke tests.
+- Module `src/OpenLearning.Outcomes/` (models, config, operations service, module extensions).
+- EF migration `20260830054819_AddOutcomes` (+ model snapshot).
+- Wiring into `ApplicationDbContext`, `Program.cs`, `OpenLearning.Web`, `OpenLearning.Data`,
+  `OpenLearning.UnitTests`, and the architecture fixture.
+- Unit tests (9) + PostgreSQL integration tests (4) + Web page authorization tests (5)
+  + architecture tests (5).
+- **UI:** instructor outcomes page (`Pages/Courses/Outcomes/Index`) with outcome/mapping
+  management and a per-learner mastery + intervention matrix, owner + Admin gated, linked
+  from the course Edit page; learner self-view is read-only (no owner check, no writes).
 
 ## What is DONE
 
-- New module `src/OpenLearning.Authoring/` (no cross-module deps; allowed deps = none).
-  - `Models/AuthoringModels.cs` — `CourseRevision`, `CourseRevisionPointer`,
-    `RevisionValidationResult`, `RevisionAudit`, `RevisionState`, internal `ContentSnapshot` DTOs.
-  - `Configuration/AuthoringConfiguration.cs` — 4 `IEntityTypeConfiguration` classes
-    (indexes on `(CourseId,State)`, `(CourseId)`, pointer FKs, `RowVersion` concurrency token).
-  - `Services/RevisionLifecycleService.cs` — `EnsureDraftAsync`, `EditDraftAsync`,
-    `ValidateDraftAsync`, `GetPreviewAsync`, `PublishAsync`, `UnpublishAsync`,
-    `RollbackAsync`, `GetActiveRevisionAsync`. Owner checks throw
-    `UnauthorizedRevisionOperationException`; concurrent publish throws `RevisionConcurrencyException`.
-  - `AuthoringModuleExtensions.cs` — `AddAuthoringModule`.
-- EF migration `20260830030603_AddAuthoringRevisions` (tables `CourseRevision`,
-  `CourseRevisionPointer`, `RevisionValidationResult`, `RevisionAudit`) + updated
-  `ApplicationDbContextModelSnapshot.cs`.
-- Wiring: `ApplicationDbContext` config scan, csproj references, `Program.cs` calls
-  `AddAuthoringModule()`, architecture fixture lists `OpenLearning.Authoring` with no deps.
-- Unit tests `tests/OpenLearning.UnitTests/Authoring/RevisionLifecycleServiceTests.cs` (7, all pass).
-- Architecture tests: 5/5 pass.
-- **Instructor UI** `src/OpenLearning.Web/Pages/Courses/Revisions/Index.cshtml(.cs)`:
-  view active/draft/history, Start editing, Preview, Validate, Publish, Unpublish,
-  Rollback; owner (`Course.InstructorId`) + Admin gated; reachable from the course
-  Edit page (`src/OpenLearning.Web/Pages/Courses/Edit.cshtml` "版本管理" link).
-- **PostgreSQL integration tests** `tests/OpenLearning.UnitTests/Authoring/RevisionLifecycleServicePostgresTests.cs`
-  (6 tests) against the local `openlearning_integration` DB: concurrent publish → exactly
-  one `RevisionConcurrencyException`, rollback preserves history, `GetActiveRevisionAsync`
-  isolation, invalid-publish rejection, validation recording.
-- **Role/non-owner smoke tests** `tests/OpenLearning.UnitTests/Web/RevisionsPageTests.cs`
-  (5 tests): owner instructor → page; non-owner instructor → Forbid; student → Forbid;
-  owner publish success; non-owner publish → Forbid.
+- New module `src/OpenLearning.Outcomes/` (no cross-module deps; allowed deps = none).
+  - `Models/OutcomesModels.cs` — `CourseOutcome`, `OutcomeActivityMapping`, `MasteryResult`,
+    `MasteryState` (NotStarted / Developing / Mastered / NeedsReview).
+  - `Configuration/OutcomesConfiguration.cs` — 3 `IEntityTypeConfiguration` classes
+    (indexes on `CourseId`, `(CourseId,OwnerId)`, `(CourseId,OutcomeId)`, unique
+    `(OutcomeId,ActivityId)`, unique `(CourseId,OutcomeId,LearnerId)`).
+  - `Services/OutcomeOperationsService.cs` — `CreateOutcomeAsync`, `AddOutcomeActivityMappingAsync`,
+    `GetOutcomesWithMappingsAsync`, `CalculateWithAsync`, `RecalculateAsync`, `EvaluateAsync`,
+    `GetCurrentMasteryAsync`. Owner checks throw `UnauthorizedOutcomeOperationException`.
+  - `OutcomesModuleExtensions.cs` — `AddOutcomesModule`.
+  - Public contracts: `ActivityResult`, `IOutcomeActivitySource`, `InterventionSignal`,
+    `OutcomeEvaluation`, `MasteryCalculation`, request/result types.
+- EF migration `20260830054819_AddOutcomes` (tables `CourseOutcome`, `OutcomeActivityMapping`,
+  `MasteryResult`) + updated `ApplicationDbContextModelSnapshot.cs`.
+- Wiring: `ApplicationDbContext` config scan, csproj references (Data + Web + UnitTests),
+  `Program.cs` calls `AddOutcomesModule()` and registers `DbOutcomeActivitySource` as the
+  `IOutcomeActivitySource`; architecture fixture lists `OpenLearning.Outcomes` with no deps;
+  solution file lists the new project.
+- **Instructor UI** `src/OpenLearning.Web/Pages/Courses/Outcomes/Index.cshtml(.cs)`:
+  add outcome (title/description/threshold), map an activity (type/id/weight) with validation
+  feedback, and a learner matrix showing mastery badge + explainable signals; owner
+  (`Course.InstructorId`) + Admin gated; reachable from the course Edit page
+  (`Pages/Courses/Edit.cshtml` "成果与掌握度" link).
+- **Web activity adapter** `DbOutcomeActivitySource` reads `QuizAttempt` scores for the course
+  and adapts them to `ActivityResult`. Gradebook/exam analytics can be added via the same
+  `IOutcomeActivitySource` interface without touching the module.
+- Unit tests `tests/OpenLearning.UnitTests/Outcomes/OutcomeOperationsServiceTests.cs` (9, pass):
+  deterministic calc, boundary threshold, idempotent recalculation (single current row),
+  invalid mapping rejection (weight/duplicate/type/threshold), intervention rules
+  (MissingWork, RepeatedLowAttempts, StaleProgress, UnmetOutcome), NeedsReview state,
+  unauthorized actor, learner self-view (no owner check, no write).
+- PostgreSQL integration tests `tests/OpenLearning.UnitTests/Outcomes/OutcomeOperationsServicePostgresTests.cs`
+  (4, pass) against a dedicated `openlearning_integration_outcomes` database: relational
+  persist, idempotent upsert, unauthorized exception, relational mapping validation.
+- Web page authorization tests `tests/OpenLearning.UnitTests/Web/OutcomesPageTests.cs` (5, pass):
+  owner instructor → page; non-owner instructor → Forbid; student → Forbid; owner create
+  outcome → success; non-owner create → Forbid.
 
 ## Verification already run (green)
-- `dotnet test tests/OpenLearning.UnitTests --filter FullyQualifiedName~Authoring` → 13 passed
-  (7 in-memory lifecycle + 6 PostgreSQL integration).
-- `dotnet test tests/OpenLearning.UnitTests --filter FullyQualifiedName~RevisionsPageTests` → 5 passed.
+
+- `dotnet test tests/OpenLearning.UnitTests --filter FullyQualifiedName~Outcomes` → 19 passed
+  (9 service unit + 4 PostgreSQL integration + 5 Web page).
 - `dotnet test tests/OpenLearning.ArchitectureTests` → 5 passed.
 - `dotnet build OpenLearning.sln` → 0 warnings / 0 errors.
 
 ## Key decisions / gotchas for the next session
-- Concurrency: `CourseRevisionPointer.RowVersion` is a `byte[]` concurrency token bumped to
-  `Guid.NewGuid().ToByteArray()` on every mutation; relational providers enforce optimistic
-  concurrency. Do NOT switch to `IsRowVersion()` (Npgsql has no rowversion type).
-- FK assignment order bug already fixed: pointer FKs must be set **after** `SaveChanges`
-  assigns the store-generated draft id (scalar FKs are not fixed up automatically).
-- Build is strict: `TreatWarningsAsErrors=true` + Sonar + `csharp_style_expression_bodied_methods=false`.
-  Use block bodies for methods/constructors; avoid unnecessary `!` null-forgiving operators (S8969).
-- `CourseRevision.ContentSnapshotJson` is a separate lightweight snapshot (module/lesson
-  titles + types only). It is intentionally NOT mapped to the real `Course.Modules/Lessons`
-  entities (modular-monolith rule: Authoring may not depend on CourseManagement). Learner
-  delivery continues to read the published `Course` entity, which learners only see when
-  `CourseStatus.Published`; revision drafts are only reachable via the owner-gated
-  `/Courses/Revisions` page, so drafts never leak to learners.
-- `RevisionLifecycleService` models "owner" as `CourseRevisionPointer.OwnerId`. For the UI,
-  the page operates as the course's `InstructorId` (passed as the actor to the service) so the
-  owner check stays consistent with `Course.InstructorId`.
-- PostgreSQL integration tests use a small test-only `DbContext` (`AuthoringPostgresContext`)
-  mapping only the 4 authoring tables against the local `openlearning_integration` database
-  (created with `CREATE DATABASE openlearning_integration;`); this avoids building the full
-  50-module schema/extensions and exercises the relational concurrency path that InMemory ignores.
+
+- The module computes mastery from activity results supplied via `IOutcomeActivitySource`
+  (adapter in Web). It deliberately stores only `ActivityId` + `ActivityType` on
+  `OutcomeActivityMapping` and never navigates to Assessments/Exams entities (modular-monolith
+  rule: Outcomes may not depend on those modules). To add a new activity source, implement
+  `IOutcomeActivitySource` and register it in `Program.cs` — no module change required.
+- Mastery is deterministic and versioned (`OutcomeOperationsService.CurrentCalculationVersion`).
+  Recalculation is idempotent: the single current `MasteryResult` row (unique on
+  `(CourseId,OutcomeId,LearnerId)`) is upserted, so repeated calls never create conflicting
+  current results. Source inputs + calculation version are retained in `SourceJson` for
+  explanation/audit.
+- Intervention signals are computed on the fly (explainable, never change grades): MissingWork
+  (mapping with no result), RepeatedLowAttempts (Attempts ≥ 3 and best fraction < 0.5),
+  StaleProgress (last attempt older than 30 days), UnmetOutcome (attempted but below threshold).
+  When a learner is Developing with a review-worthy signal, the state is promoted to NeedsReview.
+- Role/tenant scoping: all writes require the actor to equal `CourseOutcome.OwnerId`; the UI
+  enforces `Course.InstructorId == user` OR `Roles.Admin` and passes `Course.InstructorId` as the
+  actor (so admins act as owner). `EvaluateAsync` and `GetCurrentMasteryAsync` are read-only and
+  safe for learner self-view.
+- Build is strict: `TreatWarningsAsErrors=true` + Sonar + `EnforceCodeStyleInBuild=true`. Use
+  block bodies for methods, avoid unnecessary `!` null-forgiving operators (S8969), avoid nested
+  ternaries in Razor (S3358 — use helper methods like `BadgeClass`/`StateLabel`), and keep
+  static helpers static (S2325).
+- PostgreSQL integration tests use a dedicated `openlearning_integration_outcomes` database and
+  call `EnsureDeletedAsync()`+`EnsureCreatedAsync()` per test so unique indexes never collide with
+  leftovers from prior runs. Do NOT reuse `openlearning_integration` (owned by the Authoring
+  Postgres tests, whose `EnsureCreated` will not create missing tables on an existing database).
 
 ## Suggested next steps (checklist)
+
 1. **Archive complete** — no further tasks remain for this change.
-2. If content editing of the revision `ContentSnapshotJson` is desired, build an editor that
-   writes the snapshot from the existing course outline (out of scope for this change).
-3. Before pushing `main`, run the remaining test suites and `dotnet format` if required by CI.
+2. Wire `IOutcomeActivitySource` adapters for Assignment/Exam results (and optionally gradebook
+   aggregates) so mastery covers all assessable activity types, not just quizzes.
+3. Before pushing `main`, run the remaining test suites and `dotnet format` if required by CI, and
+   apply the `AddOutcomes` migration to the target database (`dotnet ef database update`).

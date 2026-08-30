@@ -114,6 +114,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Gradebook", "src\OpenLearning.Gradebook\OpenLearning.Gradebook.csproj", "{C0DD80A1-F415-427F-B031-4324023A12E1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Surveys", "src\OpenLearning.Surveys\OpenLearning.Surveys.csproj", "{73C1AE36-5F04-4726-B293-6661441B382E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLearning.Outcomes", "src\OpenLearning.Outcomes\OpenLearning.Outcomes.csproj", "{5264B9AC-7E2F-448C-A3E7-C6EE80480D3A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -350,5 +351,6 @@ Global
 		{8A78C943-B268-4AB0-8865-337BB5E74BE0} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
 		{C0DD80A1-F415-427F-B031-4324023A12E1} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
 		{73C1AE36-5F04-4726-B293-6661441B382E} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
+		{5264B9AC-7E2F-448C-A3E7-C6EE80480D3A} = {3463386F-B8D6-4899-A736-63B07DB9D55D}
 	EndGlobalSection
 EndGlobal
