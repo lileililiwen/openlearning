@@ -29,6 +29,7 @@ using OpenLearning.Exams;
 using OpenLearning.Gamification;
 using OpenLearning.Gradebook;
 using OpenLearning.GradeExport;
+using OpenLearning.Integrations;
 using OpenLearning.Invoicing;
 using OpenLearning.Jobs;
 using OpenLearning.LearningPaths;
@@ -189,6 +190,7 @@ builder.Services.AddOutcomesModule();
 builder.Services.AddScoped<OpenLearning.Web.Pages.Courses.Outcomes.DbOutcomeActivitySource>();
 builder.Services.AddScoped<OpenLearning.Outcomes.Services.IOutcomeActivitySource>(sp =>
     sp.GetRequiredService<OpenLearning.Web.Pages.Courses.Outcomes.DbOutcomeActivitySource>());
+builder.Services.AddIntegrationsModule();
 builder.Services.AddResourceCenterModule();
 builder.Services.AddLtiModule();
 builder.Services.AddLearningPathsModule();

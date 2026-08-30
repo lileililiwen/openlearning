@@ -42,6 +42,7 @@
     <ProjectReference Include="..\OpenLearning.Memberships\OpenLearning.Memberships.csproj" />
     <ProjectReference Include="..\OpenLearning.Operations\OpenLearning.Operations.csproj" />
     <ProjectReference Include="..\OpenLearning.Outcomes\OpenLearning.Outcomes.csproj" />
+    <ProjectReference Include="..\OpenLearning.Integrations\OpenLearning.Integrations.csproj" />
     <ProjectReference Include="..\OpenLearning.Assignments\OpenLearning.Assignments.csproj" />
     <ProjectReference Include="..\OpenLearning.StudyTools\OpenLearning.StudyTools.csproj" />
     <ProjectReference Include="..\OpenLearning.Settlement\OpenLearning.Settlement.csproj" />

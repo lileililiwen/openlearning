@@ -1,0 +1,131 @@
+@page
+@model OpenLearning.Web.Pages.Admin.Integrations.IntegrationsModel
+@{
+    ViewData["Title"] = "Integration Contracts";
+}
+
+<h1>Integration Contracts</h1>
+<p class="text-muted">
+    External integrations (LTI, SCORM, webhooks) declare a contract before invocation. Deliveries are
+    idempotent, retried with a bounded budget, and dead-lettered on exhaustion. All attempts are audited.
+</p>
+
+<h2>Declare integration</h2>
+<form method="post" asp-page-handler="Declare">
+    <div class="row g-2 align-items-end">
+        <div class="col">
+            <label class="form-label">Name</label>
+            <input name="name" class="form-control" required />
+        </div>
+        <div class="col">
+            <label class="form-label">Type</label>
+            <select name="type" class="form-select">
+                <option value="Webhook">Webhook</option>
+                <option value="Lti">LTI</option>
+                <option value="Scorm">SCORM</option>
+            </select>
+        </div>
+        <div class="col">
+            <label class="form-label">Endpoint</label>
+            <input name="endpoint" class="form-control" placeholder="https://..." />
+        </div>
+        <div class="col">
+            <label class="form-label">Contract version</label>
+            <input name="contractVersion" type="number" value="1" class="form-control" />
+        </div>
+        <div class="col">
+            <label class="form-label">Capabilities (csv)</label>
+            <input name="capabilities" class="form-control" placeholder="deepLinking,nrps" />
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary">Declare</button>
+        </div>
+    </div>
+</form>
+
+<h2 class="mt-4">Registered integrations</h2>
+<table class="table">
+    <thead>
+        <tr><th>Id</th><th>Name</th><th>Type</th><th>Version</th><th>Enabled</th><th>Capabilities</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model.Registrations)
+        {
+            <tr>
+                <td>@r.Id</td>
+                <td>@r.Name</td>
+                <td>@r.Type</td>
+                <td>@r.ContractVersion</td>
+                <td>@(r.IsEnabled ? "Yes" : "No")</td>
+                <td>@r.CapabilitiesJson</td>
+                <td>
+                    @if (r.IsEnabled)
+                    {
+                        <form method="post" asp-page-handler="SetEnabled" class="d-inline">
+                            <input type="hidden" name="registrationId" value="@r.Id" />
+                            <input type="hidden" name="enabled" value="false" />
+                            <button class="btn btn-sm btn-warning">Disable</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="SetEnabled" class="d-inline">
+                            <input type="hidden" name="registrationId" value="@r.Id" />
+                            <input type="hidden" name="enabled" value="true" />
+                            <button class="btn btn-sm btn-success">Enable</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h2 class="mt-4">Recent deliveries</h2>
+<table class="table">
+    <thead>
+        <tr><th>Id</th><th>Registration</th><th>Event</th><th>Status</th><th>Attempts</th><th>Last error</th><th>Replay</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var d in Model.Deliveries)
+        {
+            <tr>
+                <td>@d.Id</td>
+                <td>@d.RegistrationId</td>
+                <td>@d.EventType</td>
+                <td>@d.Status</td>
+                <td>@d.Attempts</td>
+                <td>@d.LastError</td>
+                <td>
+                    @if (d.Status == OpenLearning.Integrations.Models.IntegrationDeliveryStatus.DeadLettered)
+                    {
+                        <form method="post" asp-page-handler="Replay" class="d-inline">
+                            <input type="hidden" name="deliveryId" value="@d.Id" />
+                            <button class="btn btn-sm btn-info">Replay</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h2 class="mt-4">Audit</h2>
+<table class="table">
+    <thead>
+        <tr><th>Time</th><th>Action</th><th>Disposition</th><th>Registration</th><th>Delivery</th><th>Detail</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var a in Model.Audit)
+        {
+            <tr>
+                <td>@a.CreatedAt</td>
+                <td>@a.Action</td>
+                <td>@a.Disposition</td>
+                <td>@a.RegistrationId</td>
+                <td>@a.DeliveryId</td>
+                <td>@a.Detail</td>
+            </tr>
+        }
+    </tbody>
+</table>

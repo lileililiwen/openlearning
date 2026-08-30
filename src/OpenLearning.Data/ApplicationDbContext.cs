@@ -365,5 +365,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(Survey).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(CourseRevision).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(CourseOutcome).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(OpenLearning.Integrations.Models.IntegrationRegistration).Assembly);
     }
 }
