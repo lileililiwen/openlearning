@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Cart" xml:space="preserve">
+    <value>购物车</value>
+  </data>
+  <data name="Notifications" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="ProfileSettings" xml:space="preserve">
+    <value>个人设置</value>
+  </data>
+  <data name="Membership" xml:space="preserve">
+    <value>会员方案</value>
+  </data>
+  <data name="BecomeInstructor" xml:space="preserve">
+    <value>成为教师</value>
+  </data>
+  <data name="SignOut" xml:space="preserve">
+    <value>退出登录</value>
+  </data>
+  <data name="AccountSuspendedPrefix" xml:space="preserve">
+    <value>您的账户已被</value>
+  </data>
+  <data name="Suspended" xml:space="preserve">
+    <value>停用</value>
+  </data>
+  <data name="AccountSuspendedSuffix" xml:space="preserve">
+    <value>。在管理员重新启用之前，您无法学习、教学或聊天。</value>
+  </data>
+  <data name="LearnMore" xml:space="preserve">
+    <value>了解更多</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="FooterLicense" xml:space="preserve">
+    <value>MIT 开源许可。仅供本地开发与演示使用。</value>
+  </data>
+</root>

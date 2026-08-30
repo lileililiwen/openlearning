@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Catalog" xml:space="preserve">
+    <value>课程目录</value>
+  </data>
+  <data name="Review feedback:" xml:space="preserve">
+    <value>审核反馈：</value>
+  </data>
+  <data name="Published" xml:space="preserve">
+    <value>已发布</value>
+  </data>
+  <data name="Under Review" xml:space="preserve">
+    <value>审核中</value>
+  </data>
+  <data name="Draft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="Free" xml:space="preserve">
+    <value>免费</value>
+  </data>
+  <data name="By " xml:space="preserve">
+    <value>由 </value>
+  </data>
+  <data name="Created {0} · {1} module(s) · {2} lesson(s)" xml:space="preserve">
+    <value>创建于 {0} · {1} 个模块 · {2} 个课时</value>
+  </data>
+  <data name="review(s)" xml:space="preserve">
+    <value>条评价</value>
+  </data>
+  <data name="Prerequisites" xml:space="preserve">
+    <value>先修要求</value>
+  </data>
+  <data name="What you will learn" xml:space="preserve">
+    <value>你将学到什么</value>
+  </data>
+  <data name="This course has no content yet." xml:space="preserve">
+    <value>本课程还没有内容。</value>
+  </data>
+  <data name="Course content" xml:space="preserve">
+    <value>课程内容</value>
+  </data>
+  <data name="Add lesson" xml:space="preserve">
+    <value>添加课时</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="No lessons yet." xml:space="preserve">
+    <value>还没有课时。</value>
+  </data>
+  <data name="Preview" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="Take quiz" xml:space="preserve">
+    <value>参加测验</value>
+  </data>
+  <data name="Manage" xml:space="preserve">
+    <value>管理</value>
+  </data>
+  <data name="Official" xml:space="preserve">
+    <value>正式</value>
+  </data>
+  <data name="Mock" xml:space="preserve">
+    <value>模拟</value>
+  </data>
+  <data name="Quizzes" xml:space="preserve">
+    <value>测验</value>
+  </data>
+  <data name="Exams" xml:space="preserve">
+    <value>考试</value>
+  </data>
+  <data name="Course content is available after you enroll." xml:space="preserve">
+    <value>报名后可查看课程内容。</value>
+  </data>
+  <data name="Ratings &amp; reviews" xml:space="preserve">
+    <value>评分与评价</value>
+  </data>
+  <data name="No reviews yet. Be the first to rate this course." xml:space="preserve">
+    <value>还没有评价。成为第一个为课程评分的人。</value>
+  </data>
+  <data name="/ 5 from {0} review(s)" xml:space="preserve">
+    <value>/ 5（共 {0} 条评价）</value>
+  </data>
+  <data name="Rate this course" xml:space="preserve">
+    <value>为课程评分</value>
+  </data>
+  <data name="Update your review" xml:space="preserve">
+    <value>更新你的评价</value>
+  </data>
+  <data name="Rating" xml:space="preserve">
+    <value>评分</value>
+  </data>
+  <data name="Comment (optional)" xml:space="preserve">
+    <value>评论（可选）</value>
+  </data>
+  <data name="What did you think of the course?" xml:space="preserve">
+    <value>你觉得这门课程怎么样？</value>
+  </data>
+  <data name="Submit review" xml:space="preserve">
+    <value>提交评价</value>
+  </data>
+  <data name="Update review" xml:space="preserve">
+    <value>更新评价</value>
+  </data>
+  <data name="Sign in and enroll to leave a review." xml:space="preserve">
+    <value>登录并报名后即可发表评价。</value>
+  </data>
+  <data name="What students are saying" xml:space="preserve">
+    <value>学员怎么说</value>
+  </data>
+  <data name="Instructor" xml:space="preserve">
+    <value>教师</value>
+  </data>
+  <data name="Report" xml:space="preserve">
+    <value>举报</value>
+  </data>
+  <data name="Why are you reporting this comment?" xml:space="preserve">
+    <value>你为什么要举报这条评论？</value>
+  </data>
+  <data name="Submit report" xml:space="preserve">
+    <value>提交举报</value>
+  </data>
+  <data name="Add a comment…" xml:space="preserve">
+    <value>追评…</value>
+  </data>
+  <data name="Comment" xml:space="preserve">
+    <value>评论</value>
+  </data>
+  <data name="Report review" xml:space="preserve">
+    <value>举报评价</value>
+  </data>
+  <data name="Why are you reporting this review?" xml:space="preserve">
+    <value>你为什么要举报这条评价？</value>
+  </data>
+  <data name="Your progress" xml:space="preserve">
+    <value>你的进度</value>
+  </data>
+  <data name="{0}% complete" xml:space="preserve">
+    <value>{0}% 已完成</value>
+  </data>
+  <data name="Continue learning" xml:space="preserve">
+    <value>继续学习</value>
+  </data>
+  <data name="Assignments" xml:space="preserve">
+    <value>作业</value>
+  </data>
+  <data name="View certificate" xml:space="preserve">
+    <value>查看证书</value>
+  </data>
+  <data name="Course chat" xml:space="preserve">
+    <value>课程聊天</value>
+  </data>
+  <data name="Live sessions" xml:space="preserve">
+    <value>直播课程</value>
+  </data>
+  <data name="Withdraw" xml:space="preserve">
+    <value>退课</value>
+  </data>
+  <data name="Withdraw from this course?" xml:space="preserve">
+    <value>退出该课程？</value>
+  </data>
+  <data name="Enroll (member)" xml:space="preserve">
+    <value>报名（会员）</value>
+  </data>
+  <data name="Enroll" xml:space="preserve">
+    <value>报名</value>
+  </data>
+  <data name="Buy for {0}" xml:space="preserve">
+    <value>购买：{0}</value>
+  </data>
+  <data name="Add to cart" xml:space="preserve">
+    <value>加入购物车</value>
+  </data>
+  <data name="Sign in to enroll" xml:space="preserve">
+    <value>登录以报名</value>
+  </data>
+  <data name="Sign in to buy" xml:space="preserve">
+    <value>登录以购买</value>
+  </data>
+  <data name="Edit course" xml:space="preserve">
+    <value>编辑课程</value>
+  </data>
+  <data name="Reviews" xml:space="preserve">
+    <value>评价</value>
+  </data>
+  <data name="Orders" xml:space="preserve">
+    <value>订单</value>
+  </data>
+  <data name="Unpublish" xml:space="preserve">
+    <value>取消发布</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>发布</value>
+  </data>
+  <data name="Unpublish this course?" xml:space="preserve">
+    <value>取消发布该课程？</value>
+  </data>
+  <data name="Publish this course?" xml:space="preserve">
+    <value>发布该课程？</value>
+  </data>
+  <data name="Delete course" xml:space="preserve">
+    <value>删除课程</value>
+  </data>
+  <data name="Delete this course and all of its content?" xml:space="preserve">
+    <value>删除该课程及其全部内容？</value>
+  </data>
+  <data name="Take exam" xml:space="preserve">
+    <value>参加考试</value>
+  </data>
+</root>

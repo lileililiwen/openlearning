@@ -1,5 +1,6 @@
 @page
 @model OpenLearning.Web.Pages.Courses.Lessons.ViewModel
+@inject IStringLocalizer<OpenLearning.Web.Pages.Courses.Lessons.ViewModel> Localizer
 @{
     ViewData["Title"] = Model.Lesson!.Title;
     var course = Model.Lesson.Module!.Course!;
@@ -11,7 +12,7 @@
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Index">@Localizer["Catalog"]</a></li>
         <li class="breadcrumb-item">
             <a asp-page="/Courses/Details" asp-route-id="@course.Id">@course.Title</a>
         </li>
@@ -29,7 +30,7 @@
                 <p class="text-muted small mb-3">@module.Title</p>
                 @if (Model.CanTrackProgress)
                 {
-                    <p class="text-muted small mb-3">Study time: @OpenLearning.Web.Pages.Courses.Lessons.ViewModel.FormatDuration(Model.LessonDurationSeconds)</p>
+                    <p class="text-muted small mb-3">@Localizer["Study time: {0}", OpenLearning.Web.Pages.Courses.Lessons.ViewModel.FormatDuration(Model.LessonDurationSeconds)]</p>
                 }
                 @if (Model.IsVideoLesson)
                 {
@@ -46,12 +47,12 @@
                                poster="@Model.Lesson.VideoPosterUrl">
                             @if (!string.IsNullOrWhiteSpace(Model.Lesson.SubtitleUrl))
                             {
-                                <track kind="subtitles" src="@Model.Lesson.SubtitleUrl" srclang="en" label="Subtitles">
+                                <track kind="subtitles" src="@Model.Lesson.SubtitleUrl" srclang="en" label="@Localizer["Subtitles"]">
                             }
                         </video>
                     </div>
                     <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
-                        <label class="small text-muted mb-0" for="speed-select">Speed</label>
+                        <label class="small text-muted mb-0" for="speed-select">@Localizer["Speed"]</label>
                         <select id="speed-select" class="form-select form-select-sm" style="width: auto">
                             <option value="0.5">0.5&times;</option>
                             <option value="0.75">0.75&times;</option>
@@ -60,13 +61,13 @@
                             <option value="1.5">1.5&times;</option>
                             <option value="2">2&times;</option>
                         </select>
-                        <label class="small text-muted mb-0 ms-2" for="resolution-select">Quality</label>
+                        <label class="small text-muted mb-0 ms-2" for="resolution-select">@Localizer["Quality"]</label>
                         <select id="resolution-select" class="form-select form-select-sm" style="width: auto"></select>
-                        <button id="cast-button" type="button" class="btn btn-sm btn-outline-secondary ms-auto" style="display: none">Cast</button>
+                        <button id="cast-button" type="button" class="btn btn-sm btn-outline-secondary ms-auto" style="display: none">@Localizer["Cast"]</button>
                     </div>
                     <div class="d-flex gap-2 mt-3">
-                        <input id="danmu-input" class="form-control" maxlength="2000" placeholder="Send a bullet comment…" />
-                        <button id="danmu-send" type="button" class="btn btn-outline-primary">Send</button>
+                        <input id="danmu-input" class="form-control" maxlength="2000" placeholder="@Localizer["Send a bullet comment…"]" />
+                        <button id="danmu-send" type="button" class="btn btn-outline-primary">@Localizer["Send"]</button>
                     </div>
                 }
                 else
@@ -75,11 +76,11 @@
                     @if (string.IsNullOrWhiteSpace(Model.Lesson.Content)
                         && string.IsNullOrWhiteSpace(Model.Lesson.ContentUrlRef))
                     {
-                        <div class="alert alert-light border text-muted">尚未添加课件内容。教师可在课时编辑页添加视频或文档。</div>
+                        <div class="alert alert-light border text-muted">@Localizer["No lesson content has been added yet. The instructor can add a video or document on the lesson edit page."]</div>
                     }
                     @if (!string.IsNullOrWhiteSpace(Model.Lesson.ContentUrlRef))
                     {
-                        <p class="text-muted small">内容引用（文本，未嵌入播放）：<code>@Model.Lesson.ContentUrlRef</code></p>
+                        <p class="text-muted small">@Localizer["Content reference (text, not embedded):"] <code>@Model.Lesson.ContentUrlRef</code></p>
                     }
                     <div class="lesson-content">
                         @Html.Raw(MarkdownRenderer.ToHtml(Model.Lesson.Content))
@@ -92,7 +93,7 @@
         {
             <div class="mt-3">
                 <a class="btn btn-primary" asp-page="/Courses/Lessons/Scorm/Launch" asp-route-id="@Model.Lesson.Id">
-                    Launch SCORM content
+                    @Localizer["Launch SCORM content"]
                 </a>
             </div>
         }
@@ -108,7 +109,7 @@
     <div class="col-lg-4">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h2 class="h6">Module lessons</h2>
+                <h2 class="h6">@Localizer["Module lessons"]</h2>
                 <ul class="list-unstyled mb-3">
                     @foreach (var lesson in Model.ModuleLessons)
                     {
@@ -125,7 +126,7 @@
                     }
                 </ul>
                 <a class="btn btn-outline-primary w-100" asp-page="/Courses/Details" asp-route-id="@course.Id">
-                    Back to course
+                    @Localizer["Back to course"]
                 </a>
             </div>
         </div>
@@ -134,7 +135,7 @@
         {
             <div class="card shadow-sm mt-3">
                 <div class="card-body">
-                    <h2 class="h6">Downloads</h2>
+                    <h2 class="h6">@Localizer["Downloads"]</h2>
                     <ul class="list-unstyled mb-0">
                         @foreach (var download in Model.Downloads)
                         {

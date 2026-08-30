@@ -3,102 +3,77 @@
 > Progress / status document. Reusable by another AI session or conversation to
 > continue this work. **Last updated: 2026-08-30.** Branch: `main`.
 >
-> Most recent change: **extensibility-integration-contracts** — COMPLETE & ARCHIVED
-> (`openspec/changes/archive/2026-08-30-extensibility-integration-contracts`).
-> Previous changes `ui-state-and-feedback-contract`, `learner-resume-continuity`,
-> `outcomes-mastery-operations` also COMPLETE & ARCHIVED.
+> Most recent change: **localization-foundation** — COMPLETE & ARCHIVED
+> (`openspec/changes/archive/2026-08-30-localization-foundation`).
+> Previous changes `extensibility-integration-contracts`, `ui-state-and-feedback-contract`,
+> `learner-resume-continuity`, `outcomes-mastery-operations` also COMPLETE & ARCHIVED.
 
-## Latest change: Extensibility & Integration Contracts (extensibility-integration-contracts)
+## Latest change: Localization Foundation (localization-foundation)
 
-> **Status: COMPLETE & ARCHIVED** (`openspec/changes/archive/2026-08-30-extensibility-integration-contracts`).
+> **Status: COMPLETE & ARCHIVED** (`openspec/changes/archive/2026-08-30-localization-foundation`).
 
 ### Goal
-Define a shared integration contract for LTI, SCORM, webhooks, and future external
-tools: lifecycle/version compatibility, idempotency, bounded retry, timeout behavior,
-dead-letter, audit records, and operator diagnostics — without duplicating protocol logic
-inside the contract module.
+Establish the ASP.NET Core localization foundation and migrate learner-facing Chinese/English
+literals into `.resx` resources (English default + Chinese), so `<html lang>` can be set
+correctly and no page mixes languages.
 
 ### What is DONE
-- **New module** `src/OpenLearning.Integrations/` (no cross-module deps; allowed deps = none).
-  - `Models/IntegrationModels.cs` — `IntegrationRegistration` (type, `ContractVersion`,
-    `CapabilitiesJson`, `TenantId`, `IsEnabled`, `EndpointReference`, `SecretReference`),
-    `IntegrationDelivery` (idempotency key, status, attempts, error category, redacted
-    `PayloadReference`), `IntegrationAuditRecord` (action, disposition, redacted payload, actor).
-  - `Configuration/IntegrationConfiguration.cs` — 3 `IEntityTypeConfiguration` classes
-    (unique `(TenantId, IdempotencyKey)`, indexes on tenant/registration/status).
-  - `Contracts/IIntegrationAdapter.cs` — protocol-neutral `IIntegrationAdapter`
-    (Validate/Execute/Health), `IntegrationDeliveryRequest`, `IntegrationResult`,
-    `IntegrationErrorCategory`.
-  - `Adapters/HttpIntegrationAdapterBase.cs` + `Webhook`/`Lti`/`Scorm` adapters — shared
-    HTTP delivery with timeout enforcement and failure classification (4xx permanent,
-    5xx/timeout retryable); protocol modules stay free of transport concerns.
-  - `Services/IntegrationOperationsService.cs` — declare, tenant-scoped enable/disable,
-    idempotent delivery (duplicate key returns prior disposition, no external call),
-    bounded retry → dead-letter, unknown contract version fails closed, disable fails
-    closed, secret redaction before any persistence/audit, replay that preserves the
-    original idempotency key and writes a replay audit.
-- **EF migration** `20260830084811_AddIntegrations` (+ updated `ApplicationDbContextModelSnapshot.cs`)
-  creating `IntegrationRegistration`, `IntegrationDelivery`, `IntegrationAuditRecord`.
-- **Wiring**: `ApplicationDbContext` config scan, `Data` + `Web` + test-project references,
-  `Program.cs` calls `AddIntegrationsModule()` (registers the service + 3 adapters),
-  architecture fixture lists `OpenLearning.Integrations` with no deps, solution lists the new project.
-- **Admin UI** `src/OpenLearning.Web/Pages/Admin/Integrations/Index` — declare integration,
-  enable/disable, list deliveries + audit, replay dead-letter; gated to `RequireAdmin`
-  (with an explicit role check so it is testable without the MVC pipeline).
-- **Tests** (20, all green):
-  - `Integrations/IntegrationOperationsServiceTests.cs` (12) — declare validation,
-    unknown-version fails closed with no external call, disabled fails closed, duplicate
-    idempotency returns prior disposition, timeout exhaustion → dead-letter, permanent
-    failure dead-letters immediately, success audit without secrets, tenant-scoped
-    enable/replay authorization.
-  - `Integrations/IntegrationOperationsServicePostgresTests.cs` (4, against dedicated
-    `openlearning_integration_integrations`) — relational persist, unique-index enforcement,
-    cross-tenant replay throws, dead-letter persistence.
-  - `Web/IntegrationsPageTests.cs` (4) — admin can view, non-admin forbidden, admin declares,
-    admin replays dead-letter.
+- **Localization module** `src/OpenLearning.Web/LocalizationModuleExtensions.cs` —
+  `AddLocalizationFoundation()` registers `AddLocalization(ResourcesPath = "Resources")` and
+  configures `RequestLocalizationOptions`: `en` default, `zh` supported, and the
+  cookie / query-string / accept-language request-culture providers.
+- **Wiring in `Program.cs`**: `builder.Services.AddLocalizationFoundation();` after
+  `AddRazorPages()`, and `app.UseRequestLocalization();` after `UseStaticFiles()` (before
+  `UseRouting()`). Added `using Microsoft.AspNetCore.Localization;` and `using OpenLearning.Web;`.
+- **Shared chrome resources**: `SharedResources` marker class (intentionally empty;
+  `[SuppressMessage("SonarAnalyzer","S2094")]`) + `Resources/SharedResources.zh.resx`.
+  `_Layout.cshtml` injects `IStringLocalizer<SharedResources>`, sets
+  `<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">`, and replaces the
+  hardcoded Chinese chrome (cart, notifications, profile, membership, become-instructor,
+  sign-out, suspended-account alert, footer license) with `@SharedLoc["…"]`.
+- **Migrated priority pages** (English key + Chinese value, named after the page **model
+  class** so `IStringLocalizer<T>` resolves them):
+  - `MyCourses.cshtml` → `Resources/Pages/MyCoursesModel.zh.resx` (incl. the mixed-language warning).
+  - `Courses/Lessons/View.cshtml` → `Resources/Pages/Courses/Lessons/ViewModel.zh.resx`
+    (empty state, captions, back-to-course, etc.).
+  - `Courses/Details.cshtml` → `Resources/Pages/Courses/DetailsModel.zh.resx`.
+  - `Courses/Edit.cshtml` → `Resources/Pages/Courses/EditModel.zh.resx` ("成果与掌握度", "版本管理", labels).
+  - `_ViewImports.cshtml` adds `@using Microsoft.Extensions.Localization`.
+  - `Dashboard/Index.cshtml` and `Dashboard/Teacher.cshtml` were audited and are already
+    English-only, so they were left unchanged (deviation from the priority list — no mixed
+    language problem existed).
+- **Tests** (`tests/OpenLearning.UnitTests/Localization/LocalizationFoundationTests.cs`, 7
+  facts, all green): en renders the English key, zh renders the Chinese value for each
+  migrated model, an untranslated key falls back to English (`ResourceNotFound = true`), and
+  `RequestLocalizationOptions` is registered with `en` default + `zh` supported + the three
+  providers (resolved reflectively from the `IConfigureOptions<>` descriptor to avoid a hard
+  shared-framework dependency in the test project).
 
 ### Verification (green)
 - `dotnet build OpenLearning.sln` → 0 warnings / 0 errors (8.0.424 SDK).
-- `dotnet test tests/OpenLearning.UnitTests --filter FullyQualifiedName~Integrations` → 20 passed.
-- `dotnet test tests/OpenLearning.ArchitectureTests` → 5 passed.
+- `dotnet test tests/OpenLearning.UnitTests` → 481 passed (incl. the 7 localization tests).
 - `dotnet format --verify-no-changes` → clean for the whole solution.
 
 ### Key decisions / gotchas
-- **Self-contained delivery runtime**: the delivery/retry/dead-letter loop lives in
-  `IntegrationOperationsService` over the base `DbContext` (no dependency on the `Jobs`/
-  `AsyncIO` modules). This keeps the module dependency-clean (allowed deps = none) and the
-  architecture test green. Production wiring can push deliveries to the existing job queue
-  behind the same adapter boundary without changing the contract.
-- **No secrets stored**: `IntegrationRegistration.SecretReference` holds only a reference
-  (never the value); `IntegrationDelivery.PayloadReference` and audit `RedactedPayload` are
-  run through `Redact()` which masks long token-like runs and secret-keyed JSON values
-  (`***REDACTED***`). The delivery row therefore never holds the raw payload.
-- **Fails closed**: unknown contract version, disabled integration, missing adapter, and
-  validation failure all short-circuit before any external call and record an audit entry.
-- **Tenant scoping**: every read/write enforces `TenantId`; cross-tenant enable/replay
-  throws `UnauthorizedIntegrationOperationException`. The admin page uses a single
-  `platform` tenant (multi-tenant is out of scope for this change but the contract supports it).
-- **Adapter extensibility**: protocol modules register their own `IIntegrationAdapter`
-  implementations; `Webhook`/`Lti`/`Scorm` ship as built-ins. Unknown adapter type →
-  permanent dead-letter (no external side effect).
-- Build is strict: `TreatWarningsAsErrors=true` + Sonar + `EnforceCodeStyleInBuild=true`.
-  Block bodies for methods, no unused private members, `_camelCase` field prefix
-  (incl. private `const`), `Regex` constructed with a `TimeSpan` timeout (S6444), and
+- **Resource naming matches the model class, not the `.cshtml` file**: `IStringLocalizer<T>`
+  builds the resource base name from `T`'s full name, so `MyCourses.cshtml` (model
+  `MyCoursesModel`) needs `MyCoursesModel.zh.resx`, not `MyCourses.zh.resx`. The SDK embeds
+  culture-specific `.resx` as a `zh` satellite assembly (`bin/…/zh/OpenLearning.Web.resources.dll`).
+- **`en` is the default / fallback**: there is no neutral `*.resx` for pages — English strings
+  are the keys, so an untranslated key renders the English text and never throws.
+- Build is strict: `TreatWarningsAsErrors=true` + Sonar + `EnforceCodeStyleInBuild=true`;
   `dotnet format --verify-no-changes` must stay clean.
 
----
 
 ## Suggested next steps (checklist)
 
-1. **Archive complete** — `extensibility-integration-contracts` archived; no further tasks remain for it.
-2. **Next spec to implement next turn: `localization-foundation`** — establish the
-   ASP.NET Core localization foundation and migrate learner-facing Chinese/English literals
-   into `.resx` resources (English default + Chinese) so `<html lang>` can be set correctly
-   and no page mixes languages. (This is the spec the user selected as the follow-up to
-   `extensibility-integration-contracts`.)
-3. Remaining active specs after that: `learner-accessibility-compliance`,
-   `learner-experience-quality`, `lesson-sequencing-navigation`, `offline-sync-resilience`,
-   `platform-quality-release-gates`, `responsive-design-system`.
+1. **Archive complete** — `localization-foundation` archived; no further tasks remain for it.
+2. **Next spec to implement next turn: `learner-accessibility-compliance`** — build on the
+   localization foundation (esp. the `<html lang>` hook) to add learner-facing accessibility
+   compliance. (This is the spec named as the follow-up to `localization-foundation`.)
+3. Remaining active specs after that: `learner-experience-quality`,
+   `lesson-sequencing-navigation`, `offline-sync-resilience`, `platform-quality-release-gates`,
+   `responsive-design-system`.
 4. Before pushing `main`, run the full test suites and `dotnet format` if required by CI,
    and apply the `AddIntegrations` migration to the target database (`dotnet ef database update`).
 
@@ -123,3 +98,10 @@ migration `AddOutcomes`, instructor outcomes UI with mastery + intervention matr
 `DbOutcomeActivitySource` adapter. 19 service/integration/web tests + 5 architecture tests,
 build/format green. Next follow-up: wire `IOutcomeActivitySource` adapters for Assignment/
 Exam results so mastery covers all assessable activity types.
+
+### Extensibility & Integration Contracts (extensibility-integration-contracts) — COMPLETE & ARCHIVED
+`OpenLearning.Integrations` module (no cross-module deps): `IIntegrationAdapter` contract +
+Webhook/Lti/Scorm adapters, `IntegrationOperationsService` (idempotent delivery, bounded
+retry → dead-letter, fails closed, secret redaction, tenant scoping), EF migration
+`AddIntegrations`, admin UI, and 20 tests (12 service + 4 Postgres + 4 web) + 5 architecture
+tests. Build/format green.

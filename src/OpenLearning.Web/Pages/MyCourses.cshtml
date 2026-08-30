@@ -1,10 +1,11 @@
 @page
 @model OpenLearning.Web.Pages.MyCoursesModel
+@inject IStringLocalizer<MyCoursesModel> Localizer
 @{
-    ViewData["Title"] = "My Courses";
+    ViewData["Title"] = Localizer["My Courses"];
 }
 
-<h1 class="h3 mb-4">My Courses</h1>
+<h1 class="h3 mb-4">@Localizer["My Courses"]</h1>
 
 @{
     var expiring = Model.Courses
@@ -15,20 +16,20 @@
 @if (expiring.Count > 0)
 {
     <div class="alert alert-warning">
-        <strong>访问即将到期：</strong>
+        <strong>@Localizer["Access expiring soon:"]</strong>
         @foreach (var item in expiring)
         {
             var course = item.Enrollment.Course!;
             if (item.IsExpired)
             {
-                <div>您的课程「@course.Title」访问权限已到期，将在 @Model.GraceDays 天后收回，请及时续费。
-                    <a asp-page="/Courses/Details" asp-route-id="@course.Id">续费</a>
+                <div>@Localizer["Your access to \"{0}\" has expired and will be revoked in {1} days. Please renew.", course.Title, Model.GraceDays]
+                    <a asp-page="/Courses/Details" asp-route-id="@course.Id">@Localizer["Renew"]</a>
                 </div>
             }
             else
             {
-                <div>您的课程「@course.Title」将在 @item.DaysRemaining 天后收回访问权限，请及时续费。
-                    <a asp-page="/Courses/Details" asp-route-id="@course.Id">续费</a>
+                <div>@Localizer["Your access to \"{0}\" will be revoked in {1} days. Please renew.", course.Title, item.DaysRemaining]
+                    <a asp-page="/Courses/Details" asp-route-id="@course.Id">@Localizer["Renew"]</a>
                 </div>
             }
         }
@@ -38,8 +39,8 @@
 @if (Model.Courses.Count == 0)
 {
     <div class="alert alert-info">
-        You are not enrolled in any courses yet.
-        <a asp-page="/Index">Browse the catalog</a> to find something to learn.
+        @Localizer["You are not enrolled in any courses yet."]
+        <a asp-page="/Index">@Localizer["Browse the catalog"]</a> @Localizer["to find something to learn."]
     </div>
 }
 else
@@ -65,19 +66,19 @@ else
 
                         @if (item.IsRevoked)
                         {
-                            <span class="badge bg-danger mb-2">Access revoked</span>
+                            <span class="badge bg-danger mb-2">@Localizer["Access revoked"]</span>
                         }
                         else if (item.IsExpired)
                         {
-                            <span class="badge bg-warning text-dark mb-2">Access expired — renew to continue</span>
+                            <span class="badge bg-warning text-dark mb-2">@Localizer["Access expired — renew to continue"]</span>
                         }
                         else if (item.Enrollment.AccessExpiresAt is not null)
                         {
-                            <span class="badge bg-info mb-2">Access until @item.Enrollment.AccessExpiresAt.Value.ToLocalTime().ToString("yyyy-MM-dd")</span>
+                            <span class="badge bg-info mb-2">@Localizer["Access until {0}", item.Enrollment.AccessExpiresAt.Value.ToLocalTime().ToString("yyyy-MM-dd")]</span>
                         }
 
                         <div class="d-flex justify-content-between small mb-1">
-                            <span>Progress</span>
+                            <span>@Localizer["Progress"]</span>
                             <span>@item.ProgressPercent%</span>
                         </div>
                         <div class="progress progress-thin mb-3">
@@ -87,23 +88,23 @@ else
                     <div class="card-footer bg-transparent d-flex gap-2">
                         @if (item.IsRevoked || item.IsExpired)
                         {
-                            <a class="btn btn-sm btn-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">Renew access</a>
+                            <a class="btn btn-sm btn-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">@Localizer["Renew access"]</a>
                         }
                         else
                         {
                             @if (item.ResumeLessonId is { } resumeId)
                             {
-                                <a class="btn btn-sm btn-primary" asp-page="/Courses/Lessons/View" asp-route-id="@resumeId">Continue</a>
+                                <a class="btn btn-sm btn-primary" asp-page="/Courses/Lessons/View" asp-route-id="@resumeId">@Localizer["Continue"]</a>
                             }
                             else
                             {
-                                <a class="btn btn-sm btn-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">Continue</a>
+                                <a class="btn btn-sm btn-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">@Localizer["Continue"]</a>
                             }
                         }
                         <form method="post" asp-page-handler="Withdraw" asp-route-id="@course.Id"
                               class="ms-auto"
-                              confirm="Withdraw from this course? Your progress will be lost.">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Withdraw</button>
+                              confirm="@Localizer["Withdraw from this course? Your progress will be lost."]">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">@Localizer["Withdraw"]</button>
                         </form>
                     </div>
                 </div>

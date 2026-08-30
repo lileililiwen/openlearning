@@ -1,17 +1,18 @@
 @page
 @model OpenLearning.Web.Pages.Courses.EditModel
+@inject IStringLocalizer<OpenLearning.Web.Pages.Courses.EditModel> Localizer
 @{
-    ViewData["Title"] = "Edit Course";
+    ViewData["Title"] = Localizer["Edit course"];
     var course = Model.Course!;
 }
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">Edit course</h1>
+        <h1 class="h3 mb-0">@Localizer["Edit course"]</h1>
         <div class="d-flex gap-2">
-            <a class="btn btn-outline-primary" asp-page="/Courses/Roster/Index" asp-route-id="@course.Id">Roster</a>
-            <a class="btn btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">View course page</a>
-            <a class="btn btn-outline-secondary" asp-page="/Courses/Revisions" asp-route-CourseId="@course.Id">版本管理</a>
-            <a class="btn btn-outline-secondary" asp-page="/Courses/Outcomes" asp-route-CourseId="@course.Id">成果与掌握度</a>
+            <a class="btn btn-outline-primary" asp-page="/Courses/Roster/Index" asp-route-id="@course.Id">@Localizer["Roster"]</a>
+            <a class="btn btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@course.Id">@Localizer["View course page"]</a>
+            <a class="btn btn-outline-secondary" asp-page="/Courses/Revisions" asp-route-CourseId="@course.Id">@Localizer["Version management"]</a>
+            <a class="btn btn-outline-secondary" asp-page="/Courses/Outcomes" asp-route-CourseId="@course.Id">@Localizer["Outcomes & mastery"]</a>
         </div>
     </div>
 
@@ -27,7 +28,7 @@
         <div class="mb-3">
             <label asp-for="Input.Category" class="form-label"></label>
             <select asp-for="Input.Category" class="form-select">
-                <option value="">Uncategorized</option>
+                <option value="">@Localizer["Uncategorized"]</option>
                 @foreach (var categoryName in Model.Categories.Select(category => category.Name))
                 {
                     <option value="@categoryName">@categoryName</option>
@@ -37,9 +38,9 @@
         </div>
         <div class="mb-3" style="max-width: 220px">
             <label asp-for="Input.Price" class="form-label"></label>
-            <input asp-for="Input.Price" class="form-control" placeholder="Free" />
+            <input asp-for="Input.Price" class="form-control" placeholder="@Localizer["Free"]" />
             <span asp-validation-for="Input.Price" class="text-danger small"></span>
-            <div class="form-text">Set a price to sell this course. Leave blank for a free course.</div>
+            <div class="form-text">@Localizer["Set a price to sell this course. Leave blank for a free course."]</div>
         </div>
         <div class="mb-3">
             <label asp-for="Input.Description" class="form-label"></label>
@@ -48,13 +49,13 @@
         </div>
 
         <hr class="my-4" />
-        <h2 class="h6 text-muted">Course details</h2>
+        <h2 class="h6 text-muted">@Localizer["Course details"]</h2>
 
         <div class="row g-3 mb-3">
             <div class="col-md-4">
                 <label asp-for="Input.Level" class="form-label"></label>
                 <select asp-for="Input.Level" class="form-select">
-                    <option value="">Any level</option>
+                    <option value="">@Localizer["Any level"]</option>
                     @foreach (var level in Enum.GetValues<CourseLevel>())
                     {
                         <option value="@((int)level)">@level</option>
@@ -63,12 +64,12 @@
             </div>
             <div class="col-md-4">
                 <label asp-for="Input.Duration" class="form-label"></label>
-                <input asp-for="Input.Duration" class="form-control" placeholder="6 hours" />
+                <input asp-for="Input.Duration" class="form-control" placeholder="@Localizer["6 hours"]" />
                 <span asp-validation-for="Input.Duration" class="text-danger small"></span>
             </div>
             <div class="col-md-4">
                 <label asp-for="Input.Language" class="form-label"></label>
-                <input asp-for="Input.Language" class="form-control" placeholder="English" />
+                <input asp-for="Input.Language" class="form-control" placeholder="@Localizer["English"]" />
                 <span asp-validation-for="Input.Language" class="text-danger small"></span>
             </div>
         </div>
@@ -88,37 +89,37 @@
             <label asp-for="Input.DefaultAccessDays" class="form-label"></label>
             <input asp-for="Input.DefaultAccessDays" type="number" min="1" class="form-control" />
             <span asp-validation-for="Input.DefaultAccessDays" class="text-danger small"></span>
-            <div class="form-text">New enrollments expire after this many days. Leave blank for unlimited access.</div>
+            <div class="form-text">@Localizer["New enrollments expire after this many days. Leave blank for unlimited access."]</div>
         </div>
 
         <div class="mb-3">
             <label asp-for="Input.Tags" class="form-label"></label>
-            <input asp-for="Input.Tags" class="form-control" placeholder="csharp, beginner, web" />
+            <input asp-for="Input.Tags" class="form-control" placeholder="@Localizer["csharp, beginner, web"]" />
             <span asp-validation-for="Input.Tags" class="text-danger small"></span>
-            <div class="form-text">Comma-separated tags. Unknown tags are created automatically.</div>
+            <div class="form-text">@Localizer["Comma-separated tags. Unknown tags are created automatically."]</div>
         </div>
 
         <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Save changes</button>
-            <a class="btn btn-outline-secondary" asp-page="/Courses/Manage">Back to my courses</a>
+            <button type="submit" class="btn btn-primary">@Localizer["Save changes"]</button>
+            <a class="btn btn-outline-secondary" asp-page="/Courses/Manage">@Localizer["Back to my courses"]</a>
         </div>
     </div>
 </form>
 
 <div class="card shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <strong>Course structure</strong>
+        <strong>@Localizer["Course structure"]</strong>
         <span class="d-inline-flex gap-2">
-            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Outline/Import" asp-route-courseId="@course.Id">Import outline</a>
-            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Outline/Export" asp-route-courseId="@course.Id">Export outline</a>
-            <a class="btn btn-sm btn-primary" asp-page="/Courses/Modules/Create" asp-route-courseId="@course.Id">Add module</a>
+            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Outline/Import" asp-route-courseId="@course.Id">@Localizer["Import outline"]</a>
+            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Outline/Export" asp-route-courseId="@course.Id">@Localizer["Export outline"]</a>
+            <a class="btn btn-sm btn-primary" asp-page="/Courses/Modules/Create" asp-route-courseId="@course.Id">@Localizer["Add module"]</a>
         </span>
     </div>
     <ul class="list-group list-group-flush">
         @if (course.Modules.Count == 0)
         {
             <li class="list-group-item text-muted">
-                No modules yet. Add a module to start organizing lessons.
+                @Localizer["No modules yet. Add a module to start organizing lessons."]
             </li>
         }
         else
@@ -129,9 +130,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <strong>@module.Title</strong>
                         <span class="d-inline-flex gap-2">
-                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Lessons/Create" asp-route-moduleId="@module.Id">Add lesson</a>
-                            <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Modules/Edit" asp-route-id="@module.Id">Edit</a>
-                            <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Modules/Delete" asp-route-id="@module.Id">Delete</a>
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Lessons/Create" asp-route-moduleId="@module.Id">@Localizer["Add lesson"]</a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Modules/Edit" asp-route-id="@module.Id">@Localizer["Edit"]</a>
+                            <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Modules/Delete" asp-route-id="@module.Id">@Localizer["Delete"]</a>
                         </span>
                     </div>
                     @if (module.Lessons.Count > 0)
@@ -142,8 +143,8 @@
                                 <li class="d-flex justify-content-between align-items-center py-1">
                                     <span>@lesson.Title</span>
                                     <span class="d-inline-flex gap-2">
-                                        <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Lessons/Edit" asp-route-id="@lesson.Id">Edit</a>
-                                        <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Lessons/Delete" asp-route-id="@lesson.Id">Delete</a>
+                                        <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Lessons/Edit" asp-route-id="@lesson.Id">@Localizer["Edit"]</a>
+                                        <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Lessons/Delete" asp-route-id="@lesson.Id">@Localizer["Delete"]</a>
                                     </span>
                                 </li>
                             }
@@ -157,19 +158,19 @@
 
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-white">
-        <strong>Course announcements</strong>
+        <strong>@Localizer["Course announcements"]</strong>
     </div>
     <div class="card-body">
 
         <form method="post" asp-page-handler="Announce" asp-route-id="@course.Id" class="mb-3">
-            <label class="form-label small text-muted mb-1" asp-for="AnnouncementBody">Post an announcement</label>
+            <label class="form-label small text-muted mb-1" asp-for="AnnouncementBody">@Localizer["Post an announcement"]</label>
             <textarea asp-for="AnnouncementBody" class="form-control" rows="2" maxlength="4000"
-                      placeholder="Message all enrolled students…"></textarea>
-            <button type="submit" class="btn btn-primary btn-sm mt-2">Post announcement</button>
+                      placeholder="@Localizer["Message all enrolled students…"]"></textarea>
+            <button type="submit" class="btn btn-primary btn-sm mt-2">@Localizer["Post announcement"]</button>
         </form>
         @if (Model.Announcements.Count == 0)
         {
-            <p class="text-muted small mb-0">No announcements yet.</p>
+            <p class="text-muted small mb-0">@Localizer["No announcements yet."]</p>
         }
         else
         {
@@ -188,14 +189,14 @@
 
 <div class="card shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <strong>Quizzes (@Model.Quizzes.Count)</strong>
-        <a class="btn btn-sm btn-primary" asp-page="/Courses/Quizzes/Create" asp-route-courseId="@course.Id">Add quiz</a>
+        <strong>@Localizer["Quizzes ({0})", Model.Quizzes.Count]</strong>
+        <a class="btn btn-sm btn-primary" asp-page="/Courses/Quizzes/Create" asp-route-courseId="@course.Id">@Localizer["Add quiz"]</a>
     </div>
     <ul class="list-group list-group-flush">
         @if (Model.Quizzes.Count == 0)
         {
             <li class="list-group-item text-muted">
-                No quizzes yet. Add a quiz to assess your students.
+                @Localizer["No quizzes yet. Add a quiz to assess your students."]
             </li>
         }
         else
@@ -208,9 +209,9 @@
                         <span class="text-muted small ms-2">@quiz.Questions.Count question(s)</span>
                     </div>
                     <span class="d-inline-flex gap-2">
-                        <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Quizzes/Results" asp-route-id="@quiz.Id">Results</a>
-                        <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Quizzes/Edit" asp-route-id="@quiz.Id">Edit</a>
-                        <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Quizzes/Delete" asp-route-id="@quiz.Id">Delete</a>
+                        <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Quizzes/Results" asp-route-id="@quiz.Id">@Localizer["Results"]</a>
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Quizzes/Edit" asp-route-id="@quiz.Id">@Localizer["Edit"]</a>
+                        <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Quizzes/Delete" asp-route-id="@quiz.Id">@Localizer["Delete"]</a>
                     </span>
                 </li>
             }

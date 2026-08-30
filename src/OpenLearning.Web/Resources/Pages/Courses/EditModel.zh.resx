@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Edit course" xml:space="preserve">
+    <value>编辑课程</value>
+  </data>
+  <data name="Roster" xml:space="preserve">
+    <value>学员名单</value>
+  </data>
+  <data name="View course page" xml:space="preserve">
+    <value>查看课程页面</value>
+  </data>
+  <data name="Version management" xml:space="preserve">
+    <value>版本管理</value>
+  </data>
+  <data name="Outcomes &amp; mastery" xml:space="preserve">
+    <value>成果与掌握度</value>
+  </data>
+  <data name="Uncategorized" xml:space="preserve">
+    <value>未分类</value>
+  </data>
+  <data name="Free" xml:space="preserve">
+    <value>免费</value>
+  </data>
+  <data name="Set a price to sell this course. Leave blank for a free course." xml:space="preserve">
+    <value>设置价格以出售本课程。留空表示免费课程。</value>
+  </data>
+  <data name="Course details" xml:space="preserve">
+    <value>课程详情</value>
+  </data>
+  <data name="Any level" xml:space="preserve">
+    <value>任意难度</value>
+  </data>
+  <data name="6 hours" xml:space="preserve">
+    <value>6 小时</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>英语</value>
+  </data>
+  <data name="New enrollments expire after this many days. Leave blank for unlimited access." xml:space="preserve">
+    <value>新报名将在这么多天后过期。留空表示永久访问。</value>
+  </data>
+  <data name="csharp, beginner, web" xml:space="preserve">
+    <value>csharp, beginner, web</value>
+  </data>
+  <data name="Comma-separated tags. Unknown tags are created automatically." xml:space="preserve">
+    <value>逗号分隔的标签。未知标签会自动创建。</value>
+  </data>
+  <data name="Save changes" xml:space="preserve">
+    <value>保存更改</value>
+  </data>
+  <data name="Back to my courses" xml:space="preserve">
+    <value>返回我的课程</value>
+  </data>
+  <data name="Course structure" xml:space="preserve">
+    <value>课程结构</value>
+  </data>
+  <data name="Import outline" xml:space="preserve">
+    <value>导入大纲</value>
+  </data>
+  <data name="Export outline" xml:space="preserve">
+    <value>导出大纲</value>
+  </data>
+  <data name="Add module" xml:space="preserve">
+    <value>添加模块</value>
+  </data>
+  <data name="No modules yet. Add a module to start organizing lessons." xml:space="preserve">
+    <value>还没有模块。添加一个模块来开始组织课时。</value>
+  </data>
+  <data name="Add lesson" xml:space="preserve">
+    <value>添加课时</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Course announcements" xml:space="preserve">
+    <value>课程公告</value>
+  </data>
+  <data name="Post an announcement" xml:space="preserve">
+    <value>发布公告</value>
+  </data>
+  <data name="Message all enrolled students…" xml:space="preserve">
+    <value>向所有已报名学员发送消息…</value>
+  </data>
+  <data name="Post announcement" xml:space="preserve">
+    <value>发布公告</value>
+  </data>
+  <data name="No announcements yet." xml:space="preserve">
+    <value>还没有公告。</value>
+  </data>
+  <data name="Quizzes ({0})" xml:space="preserve">
+    <value>测验（{0}）</value>
+  </data>
+  <data name="Add quiz" xml:space="preserve">
+    <value>添加测验</value>
+  </data>
+  <data name="No quizzes yet. Add a quiz to assess your students." xml:space="preserve">
+    <value>还没有测验。添加一个测验来评估你的学员。</value>
+  </data>
+  <data name="Results" xml:space="preserve">
+    <value>结果</value>
+  </data>
+</root>

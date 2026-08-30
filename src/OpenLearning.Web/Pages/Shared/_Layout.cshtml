@@ -12,7 +12,10 @@
 @inject OpenLearning.Notifications.Services.NotificationService NotificationService
 @inject OpenLearning.SystemConfig.Services.SystemConfigService SystemConfig
 @inject OpenLearning.Ecommerce.Services.CartService CartService
+@using System.Globalization
+@using Microsoft.Extensions.Localization
 @inject IOrganizationContext OrganizationContext
+@inject IStringLocalizer<SharedResources> SharedLoc
 @{
     var siteName = await SystemConfig.GetStringAsync("Site.Name", "OpenLearning");
     var roles = new List<string>();
@@ -42,7 +45,7 @@
         : (IReadOnlyList<BreadcrumbCrumb>)Array.Empty<BreadcrumbCrumb>();
 }
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -125,14 +128,14 @@
                             <i class="bi bi-building"></i> @(activeOrganization?.Name ?? "Global")
                         </a>
                     }
-                    <a class="topbar-icon-link position-relative" asp-page="/Cart" title="购物车">
+                    <a class="topbar-icon-link position-relative" asp-page="/Cart" title="@SharedLoc["Cart"]">
                         <i class="bi bi-cart3"></i>
                         @if (cartCount > 0)
                         {
                             <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">@cartCount</span>
                         }
                     </a>
-                    <a class="topbar-icon-link position-relative" asp-page="/Account/Notifications" title="通知">
+                    <a class="topbar-icon-link position-relative" asp-page="/Account/Notifications" title="@SharedLoc["Notifications"]">
                         <i class="bi bi-bell"></i>
                         @if (unreadCount > 0)
                         {
@@ -146,16 +149,16 @@
                             <span class="d-none d-md-inline">@(currentUser?.DisplayName ?? User.Identity?.Name)</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" asp-page="/Profile/Index"><i class="bi bi-person me-2"></i>个人设置</a></li>
-                            <li><a class="dropdown-item" asp-page="/Memberships/Index"><i class="bi bi-award me-2"></i>会员方案</a></li>
+                            <li><a class="dropdown-item" asp-page="/Profile/Index"><i class="bi bi-person me-2"></i>@SharedLoc["ProfileSettings"]</a></li>
+                            <li><a class="dropdown-item" asp-page="/Memberships/Index"><i class="bi bi-award me-2"></i>@SharedLoc["Membership"]</a></li>
                             @if (!User.IsInRole(OpenLearning.Auth.Roles.Instructor) && !User.IsInRole(OpenLearning.Auth.Roles.Admin))
                             {
-                                <li><a class="dropdown-item" asp-page="/ApplyInstructor"><i class="bi bi-person-badge me-2"></i>成为教师</a></li>
+                                <li><a class="dropdown-item" asp-page="/ApplyInstructor"><i class="bi bi-person-badge me-2"></i>@SharedLoc["BecomeInstructor"]</a></li>
                             }
                             <li><hr class="dropdown-divider" /></li>
                             <li>
                                 <form method="post" asp-page="/Auth/Logout" class="d-inline">
-                                    <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>退出登录</button>
+                                    <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>@SharedLoc["SignOut"]</button>
                                 </form>
                             </li>
                         </ul>
@@ -167,7 +170,7 @@
             {
                 <div class="container mt-3">
                     <div class="alert alert-danger mb-0" role="alert">
-                        您的账户已被<strong>停用</strong>。在管理员重新启用之前，您无法学习、教学或聊天。
+                        @SharedLoc["AccountSuspendedPrefix"]<strong>@SharedLoc["Suspended"]</strong>@SharedLoc["AccountSuspendedSuffix"]
                     </div>
                 </div>
             }
@@ -197,7 +200,7 @@
 
             <footer class="app-footer">
                 <div class="container">
-                    <small>@(siteName) — MIT licensed. For local development and demonstration.</small>
+                    <small>@(siteName) — @SharedLoc["FooterLicense"]</small>
                 </div>
             </footer>
         </div>
@@ -213,8 +216,8 @@
                 </div>
                 <div class="modal-body" id="opsPopupBody"></div>
                 <div class="modal-footer">
-                    <a id="opsPopupLink" href="#" class="btn btn-primary">了解更多</a>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">关闭</button>
+                    <a id="opsPopupLink" href="#" class="btn btn-primary">@SharedLoc["LearnMore"]</a>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">@SharedLoc["Close"]</button>
                 </div>
             </div>
         </div>

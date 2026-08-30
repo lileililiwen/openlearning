@@ -1,5 +1,6 @@
 @page
 @model OpenLearning.Web.Pages.Courses.DetailsModel
+@inject IStringLocalizer<OpenLearning.Web.Pages.Courses.DetailsModel> Localizer
 @{
     ViewData["Title"] = Model.Course!.Title;
     var course = Model.Course;
@@ -11,7 +12,7 @@
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-page="/Index">Catalog</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Index">@Localizer["Catalog"]</a></li>
         <li class="breadcrumb-item active" aria-current="page">@course.Title</li>
     </ol>
 </nav>
@@ -19,7 +20,7 @@
 @if ((Model.IsOwner || Model.IsAdmin) && !course.IsPublished && !string.IsNullOrWhiteSpace(course.ReviewNote))
 {
     <div class="alert alert-warning">
-        <strong>Review feedback:</strong> @course.ReviewNote
+        <strong>@Localizer["Review feedback:"]</strong> @course.ReviewNote
     </div>
 }
 
@@ -29,15 +30,15 @@
         <div class="mb-3">
             @if (course.IsPublished)
             {
-                <span class="badge badge-published">Published</span>
+                <span class="badge badge-published">@Localizer["Published"]</span>
             }
             else if (course.Status == CourseStatus.UnderReview)
             {
-                <span class="badge bg-warning text-dark">Under Review</span>
+                <span class="badge bg-warning text-dark">@Localizer["Under Review"]</span>
             }
             else
             {
-                <span class="badge badge-draft">Draft</span>
+                <span class="badge badge-draft">@Localizer["Draft"]</span>
             }
             @if (!string.IsNullOrEmpty(course.Category))
             {
@@ -49,21 +50,19 @@
             }
             else
             {
-                <span class="badge bg-success">Free</span>
+                <span class="badge bg-success">@Localizer["Free"]</span>
             }
         </div>
         <p class="text-muted mb-1">
             @if (course.Instructor is not null)
             {
                 <span>
-                    By <a asp-page="/Instructors/Index" asp-route-id="@course.InstructorId" class="fw-semibold text-decoration-none">@course.Instructor.DisplayName</a>
+                    @Localizer["By "]<a asp-page="/Instructors/Index" asp-route-id="@course.InstructorId" class="fw-semibold text-decoration-none">@course.Instructor.DisplayName</a>
                 </span>
             }
         </p>
         <p class="text-muted small">
-            Created @course.CreatedAt.ToString("yyyy-MM-dd")
-            · @course.Modules.Count module(s)
-            · @course.Modules.Sum(m => m.Lessons.Count) lesson(s)
+            @Localizer["Created {0} · {1} module(s) · {2} lesson(s)", course.CreatedAt.ToString("yyyy-MM-dd"), course.Modules.Count, course.Modules.Sum(m => m.Lessons.Count)]
         </p>
 
         <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
@@ -82,7 +81,7 @@
             @if (aggregate.Count > 0)
             {
                 <span class="badge bg-warning text-dark" title="Average student rating">
-                    &#9733; @aggregate.Average.ToString("0.0") (@aggregate.Count review@(aggregate.Count == 1 ? "" : "s"))
+                    &#9733; @aggregate.Average.ToString("0.0") (@aggregate.Count @Localizer["review(s)"])
                 </span>
             }
         </div>
@@ -100,12 +99,12 @@
 
         @if (!string.IsNullOrWhiteSpace(course.Prerequisites))
         {
-            <h2 class="h5 mt-4">Prerequisites</h2>
+            <h2 class="h5 mt-4">@Localizer["Prerequisites"]</h2>
             <p>@course.Prerequisites</p>
         }
         @if (!string.IsNullOrWhiteSpace(course.LearningOutcomes))
         {
-            <h2 class="h5 mt-4">What you will learn</h2>
+            <h2 class="h5 mt-4">@Localizer["What you will learn"]</h2>
             <p>@course.LearningOutcomes</p>
         }
 
@@ -117,11 +116,11 @@
         {
             @if (course.Modules.Count == 0)
             {
-                <p class="text-muted">This course has no content yet.</p>
+                <p class="text-muted">@Localizer["This course has no content yet."]</p>
             }
             else
             {
-                <h2 class="h4 mb-3">Course content</h2>
+                <h2 class="h4 mb-3">@Localizer["Course content"]</h2>
                 foreach (var module in course.Modules)
                 {
                     <div class="card mb-3 shadow-sm">
@@ -130,16 +129,16 @@
                             @if (Model.IsOwner)
                             {
                                 <span class="d-inline-flex gap-2">
-                                    <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Lessons/Create" asp-route-moduleId="@module.Id">Add lesson</a>
-                                    <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Modules/Edit" asp-route-id="@module.Id">Edit</a>
-                                    <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Modules/Delete" asp-route-id="@module.Id">Delete</a>
+                                    <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Lessons/Create" asp-route-moduleId="@module.Id">@Localizer["Add lesson"]</a>
+                                    <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Modules/Edit" asp-route-id="@module.Id">@Localizer["Edit"]</a>
+                                    <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Modules/Delete" asp-route-id="@module.Id">@Localizer["Delete"]</a>
                                 </span>
                             }
                         </div>
                         <ul class="list-group list-group-flush">
                             @if (module.Lessons.Count == 0)
                             {
-                                <li class="list-group-item text-muted">No lessons yet.</li>
+                                <li class="list-group-item text-muted">@Localizer["No lessons yet."]</li>
                             }
                             else
                             {
@@ -165,8 +164,8 @@
                                         @if (Model.IsOwner)
                                         {
                                             <span class="d-inline-flex gap-2">
-                                                <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Lessons/Edit" asp-route-id="@lesson.Id">Edit</a>
-                                                <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Lessons/Delete" asp-route-id="@lesson.Id">Delete</a>
+                                                <a class="btn btn-sm btn-outline-secondary" asp-page="/Courses/Lessons/Edit" asp-route-id="@lesson.Id">@Localizer["Edit"]</a>
+                                                <a class="btn btn-sm btn-outline-danger" asp-page="/Courses/Lessons/Delete" asp-route-id="@lesson.Id">@Localizer["Delete"]</a>
                                             </span>
                                         }
                                     </li>
@@ -187,7 +186,7 @@
                         @foreach (var lesson in module.Lessons.Where(l => l.IsPreview))
                         {
                             <li class="list-group-item">
-                                <span class="badge bg-success me-2">Preview</span>
+                                <span class="badge bg-success me-2">@Localizer["Preview"]</span>
                                 <a asp-page="/Courses/Lessons/View" asp-route-id="@lesson.Id">@lesson.Title</a>
                             </li>
                         }
@@ -195,13 +194,13 @@
                 </div>
             }
             <div class="alert alert-secondary">
-                <i>Course content is available after you enroll.</i>
+                <i>@Localizer["Course content is available after you enroll."]</i>
             </div>
         }
 
         @if (Model.Quizzes.Count > 0)
         {
-            <h2 class="h4 mt-4 mb-3">Quizzes</h2>
+            <h2 class="h4 mt-4 mb-3">@Localizer["Quizzes"]</h2>
             @foreach (var quiz in Model.Quizzes)
             {
                 <div class="card mb-2 shadow-sm">
@@ -215,11 +214,11 @@
                         </div>
                         @if (Model.IsEnrolled)
                         {
-                            <a class="btn btn-sm btn-primary" asp-page="/Courses/Quizzes/Take" asp-route-id="@quiz.Id">Take quiz</a>
+                            <a class="btn btn-sm btn-primary" asp-page="/Courses/Quizzes/Take" asp-route-id="@quiz.Id">@Localizer["Take quiz"]</a>
                         }
                         else if (Model.IsOwner)
                         {
-                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Quizzes/Edit" asp-route-id="@quiz.Id">Manage</a>
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Quizzes/Edit" asp-route-id="@quiz.Id">@Localizer["Manage"]</a>
                         }
                     </div>
                 </div>
@@ -228,7 +227,7 @@
 
         @if (Model.Exams.Count > 0)
         {
-            <h2 class="h4 mt-4 mb-3">Exams</h2>
+            <h2 class="h4 mt-4 mb-3">@Localizer["Exams"]</h2>
             @foreach (var exam in Model.Exams)
             {
                 <div class="card mb-2 shadow-sm">
@@ -237,11 +236,11 @@
                             <strong>@exam.Title</strong>
                             @if (exam.IsOfficial)
                             {
-                                <span class="badge bg-danger ms-1">Official</span>
+                                <span class="badge bg-danger ms-1">@Localizer["Official"]</span>
                             }
                             else
                             {
-                                <span class="badge bg-secondary ms-1">Mock</span>
+                                <span class="badge bg-secondary ms-1">@Localizer["Mock"]</span>
                             }
                             @if (!string.IsNullOrEmpty(exam.Description))
                             {
@@ -250,11 +249,11 @@
                         </div>
                         @if (Model.IsEnrolled)
                         {
-                            <a class="btn btn-sm btn-primary" asp-page="/Courses/Exams/Take" asp-route-id="@exam.Id">Take exam</a>
+                            <a class="btn btn-sm btn-primary" asp-page="/Courses/Exams/Take" asp-route-id="@exam.Id">@Localizer["Take exam"]</a>
                         }
                         else if (Model.IsOwner)
                         {
-                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Exams/Edit" asp-route-id="@exam.Id">Manage</a>
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Exams/Edit" asp-route-id="@exam.Id">@Localizer["Manage"]</a>
                         }
                     </div>
                 </div>
@@ -263,16 +262,16 @@
 
         <hr class="my-4" />
 
-        <h2 class="h4 mb-3">Ratings &amp; reviews</h2>
+        <h2 class="h4 mb-3">@Localizer["Ratings &amp; reviews"]</h2>
         @if (aggregate.Count == 0)
         {
-            <p class="text-muted">No reviews yet. @(Model.IsEnrolled ? "Be the first to rate this course." : "")</p>
+            <p class="text-muted">@Localizer["No reviews yet. Be the first to rate this course."]</p>
         }
         else
         {
             <div class="mb-3">
                 <span class="display-6 fw-semibold">@aggregate.Average.ToString("0.0")</span>
-                <span class="text-muted">/ 5 from @aggregate.Count review@(aggregate.Count == 1 ? "" : "s")</span>
+                <span class="text-muted">@Localizer["/ 5 from {0} review(s)", aggregate.Count]</span>
             </div>
         }
 
@@ -280,11 +279,11 @@
         {
             <div class="card shadow-sm mb-3">
                 <div class="card-body">
-                    <h3 class="h6 mb-3">@(Model.UserReview is null ? "Rate this course" : "Update your review")</h3>
+                    <h3 class="h6 mb-3">@Localizer[Model.UserReview is null ? "Rate this course" : "Update your review"]</h3>
                     <form method="post" asp-page-handler="SubmitReview" asp-route-id="@course.Id">
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
                         <div class="mb-3">
-                            <label class="form-label small text-muted mb-1">Rating</label>
+                            <label class="form-label small text-muted mb-1">@Localizer["Rating"]</label>
                             <div class="btn-group" role="group" aria-label="Rating">
                                 @for (var i = 1; i <= 5; i++)
                                 {
@@ -296,24 +295,24 @@
                             <span asp-validation-for="ReviewInput.Rating" class="text-danger small d-block"></span>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="ReviewInput.Comment" class="form-label small text-muted mb-1">Comment (optional)</label>
+                            <label asp-for="ReviewInput.Comment" class="form-label small text-muted mb-1">@Localizer["Comment (optional)"]</label>
                             <textarea asp-for="ReviewInput.Comment" class="form-control" rows="3" maxlength="2000"
-                                      placeholder="What did you think of the course?"></textarea>
+                                      placeholder="@Localizer["What did you think of the course?"]"></textarea>
                             <span asp-validation-for="ReviewInput.Comment" class="text-danger small"></span>
                         </div>
-                        <button type="submit" class="btn btn-primary">@(Model.UserReview is null ? "Submit review" : "Update review")</button>
+                        <button type="submit" class="btn btn-primary">@Localizer[Model.UserReview is null ? "Submit review" : "Update review"]</button>
                     </form>
                 </div>
             </div>
         }
         else if (!User.Identity?.IsAuthenticated == true)
         {
-            <p class="text-muted small">Sign in and enroll to leave a review.</p>
+            <p class="text-muted small">@Localizer["Sign in and enroll to leave a review."]</p>
         }
 
         @if (Model.PublicReviews.Count > 0)
         {
-            <h3 class="h6 mt-4 mb-2">What students are saying</h3>
+            <h3 class="h6 mt-4 mb-2">@Localizer["What students are saying"]</h3>
             <div class="list-group">
                 @foreach (var review in Model.PublicReviews)
                 {
@@ -342,26 +341,26 @@
                                         <strong>@(comment.Author?.DisplayName ?? comment.AuthorId)</strong>
                                         @if (comment.AuthorId == course.InstructorId)
                                         {
-                                            <span class="badge bg-primary ms-1">教师</span>
+                                            <span class="badge bg-primary ms-1">@Localizer["Instructor"]</span>
                                         }
                                         <span class="text-muted ms-1">· @comment.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
                                         @if (Model.IsAdmin)
                                         {
                                             <form method="post" asp-page-handler="DeleteComment" asp-route-id="@course.Id" asp-route-commentId="@comment.Id" class="d-inline">
-                                                <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2">删除</button>
+                                                <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2">@Localizer["Delete"]</button>
                                             </form>
                                         }
                                         <div>@comment.Body</div>
                                         @if (Model.CurrentUserId is not null && Model.CurrentUserId != comment.AuthorId && !Model.IsAdmin)
                                         {
                                             <details class="mt-1">
-                                                <summary class="btn btn-link btn-sm text-muted p-0">Report</summary>
+                                                <summary class="btn btn-link btn-sm text-muted p-0">@Localizer["Report"]</summary>
                                                 <form method="post" asp-page-handler="Report" asp-route-id="@course.Id" class="mt-1">
                                                     <input type="hidden" name="contentType" value="ReviewComment" />
                                                     <input type="hidden" name="contentId" value="@comment.Id" />
                                                     <input name="reason" class="form-control form-control-sm" maxlength="1000"
-                                                           placeholder="Why are you reporting this comment?" required />
-                                                    <button type="submit" class="btn btn-sm btn-warning mt-1">Submit report</button>
+                                                           placeholder="@Localizer["Why are you reporting this comment?"]" required />
+                                                    <button type="submit" class="btn btn-sm btn-warning mt-1">@Localizer["Submit report"]</button>
                                                 </form>
                                             </details>
                                         }
@@ -372,20 +371,20 @@
                         @if (Model.IsEnrolled || Model.IsOwner)
                         {
                             <form method="post" asp-page-handler="AddComment" asp-route-id="@course.Id" asp-route-reviewId="@review.Id" class="mt-2 d-flex gap-2">
-                                <input name="commentBody" class="form-control form-control-sm" placeholder="追评…" />
-                                <button type="submit" class="btn btn-sm btn-outline-primary">评论</button>
+                                <input name="commentBody" class="form-control form-control-sm" placeholder="@Localizer["Add a comment…"]" />
+                                <button type="submit" class="btn btn-sm btn-outline-primary">@Localizer["Comment"]</button>
                             </form>
                         }
                         @if (Model.CurrentUserId is not null && Model.CurrentUserId != review.UserId && !Model.IsAdmin)
                         {
                             <details class="mt-2">
-                                <summary class="btn btn-sm btn-outline-warning d-inline-block">Report review</summary>
+                                <summary class="btn btn-sm btn-outline-warning d-inline-block">@Localizer["Report review"]</summary>
                                 <form method="post" asp-page-handler="Report" asp-route-id="@course.Id" class="mt-2">
                                     <input type="hidden" name="contentType" value="Review" />
                                     <input type="hidden" name="contentId" value="@review.Id" />
                                     <input name="reason" class="form-control form-control-sm" maxlength="1000"
-                                           placeholder="Why are you reporting this review?" required />
-                                    <button type="submit" class="btn btn-sm btn-warning mt-1">Submit report</button>
+                                           placeholder="@Localizer["Why are you reporting this review?"]" required />
+                                    <button type="submit" class="btn btn-sm btn-warning mt-1">@Localizer["Submit report"]</button>
                                 </form>
                             </details>
                         }
@@ -400,29 +399,29 @@
             <div class="card-body">
                 @if (Model.IsEnrolled)
                 {
-                    <h2 class="h6">Your progress</h2>
+                    <h2 class="h6">@Localizer["Your progress"]</h2>
                     <div class="d-flex justify-content-between small mb-1">
-                        <span>@Model.ProgressPercent% complete</span>
+                        <span>@Localizer["{0}% complete", Model.ProgressPercent]</span>
                     </div>
                     <div class="progress progress-thin mb-3">
                         <div class="progress-bar" role="progressbar" style="width: @Model.ProgressPercent%"></div>
                     </div>
                     @if (Model.ResumeTargetLessonId is { } resumeLessonId)
                     {
-                        <a class="btn btn-primary w-100 mb-2" asp-page="/Courses/Lessons/View" asp-route-id="@resumeLessonId">Continue learning</a>
+                        <a class="btn btn-primary w-100 mb-2" asp-page="/Courses/Lessons/View" asp-route-id="@resumeLessonId">@Localizer["Continue learning"]</a>
                     }
-                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Assignments/Index" asp-route-courseId="@course.Id">Assignments</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Assignments/Index" asp-route-courseId="@course.Id">@Localizer["Assignments"]</a>
                     @if (Model.Certificate is not null)
                     {
                         <a class="btn btn-success w-100 mb-2" asp-page="/Certificates/View" asp-route-id="@Model.Certificate.Id">
-                            &#127891; View certificate
+                            &#127891; @Localizer["View certificate"]
                         </a>
                     }
-                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Chat" asp-route-id="@course.Id">Course chat</a>
-                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Live/Index" asp-route-id="@course.Id">Live sessions</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Chat" asp-route-id="@course.Id">@Localizer["Course chat"]</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Live/Index" asp-route-id="@course.Id">@Localizer["Live sessions"]</a>
                     <form method="post" asp-page-handler="Withdraw" asp-route-id="@course.Id"
-                          onsubmit="return confirm('Withdraw from this course?');">
-                        <button type="submit" class="btn btn-outline-danger w-100">Withdraw</button>
+                          onsubmit="return confirm('@Localizer["Withdraw from this course?"]');">
+                        <button type="submit" class="btn btn-outline-danger w-100">@Localizer["Withdraw"]</button>
                     </form>
                 }
                 else if (course.IsPublished && User.Identity?.IsAuthenticated == true && !Model.IsOwner)
@@ -431,54 +430,54 @@
                     {
                         <form method="post" asp-page-handler="Enroll" asp-route-id="@course.Id">
                             <button type="submit" class="btn btn-primary w-100">
-                                @(Model.IsMember ? "Enroll (member)" : "Enroll")
+                                @Localizer[Model.IsMember ? "Enroll (member)" : "Enroll"]
                             </button>
                         </form>
                     }
                     else
                     {
                         <a class="btn btn-primary w-100" asp-page="/Courses/Checkout" asp-route-courseId="@course.Id">
-                            Buy for @course.Price!.Value.ToString("C")
+                            @Localizer["Buy for {0}", course.Price!.Value.ToString("C")]
                         </a>
                         <form method="post" asp-page-handler="AddToCart" asp-route-id="@course.Id" class="mt-2">
-                            <button type="submit" class="btn btn-outline-primary w-100">Add to cart</button>
+                            <button type="submit" class="btn btn-outline-primary w-100">@Localizer["Add to cart"]</button>
                         </form>
                     }
                 }
                 else if (course.IsPublished && User.Identity?.IsAuthenticated != true)
                 {
                     <a class="btn btn-primary w-100" asp-page="/Auth/Login">
-                        @(course.IsFree ? "Sign in to enroll" : "Sign in to buy")
+                        @Localizer[course.IsFree ? "Sign in to enroll" : "Sign in to buy"]
                     </a>
                 }
 
                 @if (Model.IsOwner)
                 {
                     <hr />
-                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Edit" asp-route-id="@course.Id">Edit course</a>
-                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Assignments/Index" asp-route-courseId="@course.Id">Assignments</a>
-                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Reviews" asp-route-id="@course.Id">Reviews</a>
-                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Orders" asp-route-id="@course.Id">Orders</a>
-                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Chat" asp-route-id="@course.Id">Course chat</a>
-                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Live/Index" asp-route-id="@course.Id">Live sessions</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Edit" asp-route-id="@course.Id">@Localizer["Edit course"]</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Assignments/Index" asp-route-courseId="@course.Id">@Localizer["Assignments"]</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Reviews" asp-route-id="@course.Id">@Localizer["Reviews"]</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Orders" asp-route-id="@course.Id">@Localizer["Orders"]</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Chat" asp-route-id="@course.Id">@Localizer["Course chat"]</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Live/Index" asp-route-id="@course.Id">@Localizer["Live sessions"]</a>
                     <form method="post" asp-page-handler="Publish" asp-route-id="@course.Id"
-                          confirm="@(course.IsPublished ? "Unpublish this course?" : "Publish this course?")">
+                          confirm="@Localizer[course.IsPublished ? "Unpublish this course?" : "Publish this course?"]">
                         <button type="submit" class="btn btn-outline-success w-100 mb-2">
-                            @(course.IsPublished ? "Unpublish" : "Publish")
+                            @Localizer[course.IsPublished ? "Unpublish" : "Publish"]
                         </button>
                     </form>
                     <form method="post" asp-page-handler="Delete" asp-route-id="@course.Id"
-                          confirm="Delete this course and all of its content?">
-                        <button type="submit" class="btn btn-outline-danger w-100">Delete course</button>
+                          confirm="@Localizer["Delete this course and all of its content?"]">
+                        <button type="submit" class="btn btn-outline-danger w-100">@Localizer["Delete course"]</button>
                     </form>
                 }
                 else if (Model.IsAdmin)
                 {
                     <hr />
-                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Reviews" asp-route-id="@course.Id">Reviews</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Reviews" asp-route-id="@course.Id">@Localizer["Reviews"]</a>
                     <form method="post" asp-page-handler="Delete" asp-route-id="@course.Id"
-                          onsubmit="return confirm('Delete this course and all of its content?');">
-                        <button type="submit" class="btn btn-outline-danger w-100">Delete course</button>
+                          onsubmit="return confirm('@Localizer["Delete this course and all of its content?"]');">
+                        <button type="submit" class="btn btn-outline-danger w-100">@Localizer["Delete course"]</button>
                     </form>
                 }
             </div>

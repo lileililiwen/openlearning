@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Catalog" xml:space="preserve">
+    <value>课程目录</value>
+  </data>
+  <data name="Subtitles" xml:space="preserve">
+    <value>字幕</value>
+  </data>
+  <data name="Speed" xml:space="preserve">
+    <value>速度</value>
+  </data>
+  <data name="Quality" xml:space="preserve">
+    <value>清晰度</value>
+  </data>
+  <data name="Cast" xml:space="preserve">
+    <value>投屏</value>
+  </data>
+  <data name="Send a bullet comment…" xml:space="preserve">
+    <value>发送弹幕…</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>发送</value>
+  </data>
+  <data name="No lesson content has been added yet. The instructor can add a video or document on the lesson edit page." xml:space="preserve">
+    <value>尚未添加课件内容。教师可在课时编辑页添加视频或文档。</value>
+  </data>
+  <data name="Launch SCORM content" xml:space="preserve">
+    <value>启动 SCORM 内容</value>
+  </data>
+  <data name="Module lessons" xml:space="preserve">
+    <value>课时列表</value>
+  </data>
+  <data name="Back to course" xml:space="preserve">
+    <value>返回课程</value>
+  </data>
+  <data name="Downloads" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="Study time: {0}" xml:space="preserve">
+    <value>学习时长：{0}</value>
+  </data>
+  <data name="Content reference (text, not embedded):" xml:space="preserve">
+    <value>内容引用（文本，未嵌入播放）：</value>
+  </data>
+</root>

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using OpenLearning.AI;
 using OpenLearning.Analytics;
@@ -69,6 +70,7 @@ using OpenLearning.StudyTools;
 using OpenLearning.Surveys;
 using OpenLearning.SystemConfig;
 using OpenLearning.UserManagement;
+using OpenLearning.Web;
 using OpenLearning.Web.Progress;
 using OpenLearning.Web.Scorm;
 
@@ -78,6 +80,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddRazorPages();
+builder.Services.AddLocalizationFoundation();
 builder.Services.AddDataServices(connectionString);
 
 // Identity is wired in the composition root because it needs the concrete
@@ -268,6 +271,7 @@ if (!app.Environment.IsDevelopment())
 app.UseMiddleware<LoggingExceptionMiddleware>();
 
 app.UseStaticFiles();
+app.UseRequestLocalization();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
