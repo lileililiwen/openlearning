@@ -1,0 +1,150 @@
+@page
+@model OpenLearning.Web.Pages.Courses.Revisions.IndexModel
+@{
+    ViewData["Title"] = "课程版本管理";
+}
+
+<div class="container my-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">首页</a></li>
+            <li class="breadcrumb-item"><a href="/Dashboard/Teacher">教师工作台</a></li>
+            <li class="breadcrumb-item"><a href="/Courses/Manage">课程管理</a></li>
+            <li class="breadcrumb-item active" aria-current="page">版本管理</li>
+        </ol>
+    </nav>
+
+    @if (!string.IsNullOrEmpty(TempData["Message"]?.ToString()))
+    {
+        <div class="alert alert-@(TempData["MessageType"]?.ToString() ?? "info") alert-dismissible fade show" role="alert">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">课程版本管理：@Model.Course?.Title</h2>
+        <a class="btn btn-outline-secondary btn-sm" href="/Courses/Manage">返回课程管理</a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>生效版本（学习者可见）</span>
+                    <span class="badge bg-success">@(Model.HasActiveRevision ? "已发布" : "未发布")</span>
+                </div>
+                <div class="card-body">
+                    @if (Model.ActiveRevision is not null)
+                    {
+                        <p class="mb-1"><strong>标题：</strong>@Model.ActiveRevision.Title</p>
+                        <p class="mb-1"><strong>版本号：</strong>@Model.ActiveRevision.RevisionNumber</p>
+                        <p class="mb-1"><strong>发布者：</strong>@Model.ActiveRevision.PublishedBy</p>
+                        <p class="mb-0 text-muted">@Model.ActiveRevision.PublishedAt?.ToLocalTime().ToString("g")</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">尚无生效版本，学习者无法看到此课程。</p>
+                    }
+                    @if (Model.HasActiveRevision)
+                    {
+                        <form method="post" class="mt-3">
+                            <button type="submit" name="handler" value="Unpublish" class="btn btn-outline-warning btn-sm"
+                                    onclick="return confirm('确认下架？学习者将不再看到该课程。');">
+                                下架（撤销公开）
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>草稿（仅所有者可见）</span>
+                    <span class="badge bg-secondary">@(Model.HasDraft ? "存在" : "无")</span>
+                </div>
+                <div class="card-body">
+                    @if (Model.DraftRevision is not null)
+                    {
+                        <p class="mb-1"><strong>标题：</strong>@Model.DraftRevision.Title</p>
+                        <p class="mb-1"><strong>版本号：</strong>@Model.DraftRevision.RevisionNumber</p>
+                        <p class="mb-1"><strong>状态：</strong>@Model.DraftRevision.State</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-3">尚无草稿。点击“开始编辑”以创建可发布的草稿。</p>
+                    }
+                    <div class="btn-group" role="group">
+                        <form method="post" class="me-2">
+                            <button type="submit" name="handler" value="StartEditing" class="btn btn-primary btn-sm">开始编辑</button>
+                        </form>
+                        @if (Model.HasDraft)
+                        {
+                            <form method="post" class="me-2">
+                                <button type="submit" name="handler" value="Preview" class="btn btn-outline-info btn-sm">预览</button>
+                            </form>
+                            <form method="post" class="me-2">
+                                <button type="submit" name="handler" value="Validate" class="btn btn-outline-secondary btn-sm">校验</button>
+                            </form>
+                            <form method="post">
+                                <button type="submit" name="handler" value="Publish" class="btn btn-success btn-sm">发布为生效版本</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.ValidationErrors.Count > 0)
+            {
+                <div class="alert alert-warning mt-3" role="alert">
+                    <strong>校验未通过：</strong>
+                    <ul class="mb-0">
+                        @foreach (var error in Model.ValidationErrors)
+                        {
+                            <li>@error.Field：@error.Message</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">修订历史</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr><th>时间</th><th>操作</th><th>操作者</th><th>回滚</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var entry in Model.History)
+                            {
+                                <tr>
+                                    <td>@entry.At.ToLocalTime().ToString("g")</td>
+                                    <td>@entry.Action</td>
+                                    <td>@entry.ActorId</td>
+                                    <td>
+                                        @if (entry.Action == "Published" && entry.RevisionId is not null)
+                                        {
+                                            <form method="post">
+                                                <button type="submit" name="handler" value="Rollback" class="btn btn-outline-danger btn-sm"
+                                                        onclick="return confirm('确认从该版本创建新草稿？当前草稿将被替换。');">
+                                                    回滚到此版本
+                                                </button>
+                                                <input type="hidden" name="targetRevisionId" value="@entry.RevisionId" />
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            @if (Model.History.Count == 0)
+                            {
+                                <tr><td colspan="4" class="text-muted text-center">暂无历史记录</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
