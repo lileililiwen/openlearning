@@ -1,0 +1,14 @@
+@* Shared empty state. Optional primary action via ViewData["StateActionText"] / ["StateActionUrl"]. *@
+@{
+    var message = (string?)ViewData["StateMessage"] ?? "Nothing here yet.";
+    var actionText = (string?)ViewData["StateActionText"];
+    var actionUrl = (string?)ViewData["StateActionUrl"];
+}
+<div class="state-empty text-center text-muted py-4">
+    <i class="bi bi-inbox fs-1 d-block mb-2" aria-hidden="true"></i>
+    <p class="mb-2">@message</p>
+    @if (!string.IsNullOrEmpty(actionText) && !string.IsNullOrEmpty(actionUrl))
+    {
+        <a class="btn btn-sm btn-outline-primary" href="@actionUrl">@actionText</a>
+    }
+</div>

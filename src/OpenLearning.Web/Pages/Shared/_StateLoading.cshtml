@@ -1,0 +1,8 @@
+@* Shared loading state. Override the label via ViewData["StateMessage"]. *@
+@{
+    var message = (string?)ViewData["StateMessage"] ?? "Loading…";
+}
+<div class="state-loading d-flex align-items-center gap-2 text-muted" role="status" aria-busy="true">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    <span>@message</span>
+</div>

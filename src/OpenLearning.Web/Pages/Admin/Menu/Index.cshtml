@@ -9,13 +9,6 @@
     <a class="btn btn-outline-secondary" asp-page="/Admin/System">返回系统设置</a>
 </div>
 
-@if (TempData["Message"] is string message)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @message
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
 
 <p class="text-muted small">
     编辑侧边栏的分组与菜单项。排序值小的在前；勾选"隐藏"后该菜单项对所有角色隐藏；

@@ -102,7 +102,7 @@ else
                         }
                         <form method="post" asp-page-handler="Withdraw" asp-route-id="@course.Id"
                               class="ms-auto"
-                              onsubmit="return confirm('Withdraw from this course? Your progress will be lost.');">
+                              confirm="Withdraw from this course? Your progress will be lost.">
                             <button type="submit" class="btn btn-sm btn-outline-danger">Withdraw</button>
                         </form>
                     </div>

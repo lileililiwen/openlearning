@@ -3,13 +3,72 @@
 > Progress / status document. Reusable by another AI session or conversation to
 > continue this work. **Last updated: 2026-08-30.** Branch: `main`.
 >
-> Most recent change: **learner-resume-continuity** — COMPLETE & ARCHIVED
-> (`openspec/changes/archive/2026-08-30-learner-resume-continuity`).
-> Previous change `outcomes-mastery-operations` also COMPLETE & ARCHIVED.
+> Most recent change: **ui-state-and-feedback-contract** — COMPLETE & ARCHIVED
+> (`openspec/changes/archive/2026-08-30-ui-state-and-feedback-contract`).
+> Previous changes `learner-resume-continuity`, `outcomes-mastery-operations`
+> also COMPLETE & ARCHIVED.
 
-## Latest change: Learner Resume & Continuity (learner-resume-continuity)
+## Latest change: UI State & Feedback Contract (ui-state-and-feedback-contract)
 
-> **Status: COMPLETE & ARCHIVED** (`openspec/changes/archive/2026-08-30-learner-resume-continuity`).
+> **Status: COMPLETE & ARCHIVED** (`openspec/changes/archive/2026-08-30-ui-state-and-feedback-contract`).
+
+### Goal
+Give every learner/instructor page a shared, consistent language for loading / empty /
+error / success / confirmation / disabled states, surface `TempData["Message"]` as a
+global toast (rather than silently discarding it), require confirmation for destructive
+actions, preserve input on failed posts, and make the high-traffic in-lesson actions
+(mark-complete, save-note) work via progressive enhancement while remaining functional
+without JavaScript.
+
+### What is DONE
+- **Shared state partials** in `Pages/Shared/`: `_StateLoading.cshtml` (`role="status"`
+  `aria-busy`), `_StateEmpty.cshtml` (message + optional primary action), `_StateError.cshtml`
+  (message + optional retry), and `_Toast.cshtml` (global feedback toast reading
+  `TempData["Message"]` / `TempData["MessageType"]`). CSS hooks added to `site.css`.
+- **Global toast**: `_Layout.cshtml` renders `<partial name="_Toast" />` once. The per-page
+  `TempData["Message"]` alert blocks were removed from every learner/instructor/admin page
+  so the global toast is the single renderer (no double-render). `site-chrome.js` auto-dismisses
+  the toast after 5s and exposes a `showToast()` helper for progressive-enhancement responses.
+- **Confirmation helper**: `OpenLearning.Web/TagHelpers/ConfirmTagHelper.cs` moves a
+  `confirm="…"` attribute to `data-confirm` (anchors also become `role="button"` with their
+  original href preserved in `data-confirm-href`); `site-chrome.js` intercepts
+  `form[data-confirm]` submit and `a[data-confirm]` navigation via `window.confirm`.
+  Applied to `Details.cshtml` (Unpublish/Publish + Delete), `Notifications/Index.cshtml`
+  (Mark all read), and `MyCourses.cshtml` (Withdraw) — replacing inline `onsubmit=confirm(...)`.
+- **Input preservation**: `Courses/Lessons/View.cshtml` note textarea uses `asp-for="NoteBody"`
+  and `OnPostSaveNoteAsync` re-validates `ModelState`, returning the partial with the entered
+  text on failure; `Study/Index.cshtml` check-in note uses `asp-for="CheckInNote"`.
+- **Progressive enhancement**: `site-chrome.js` `postWithFeedback` intercepts `form[data-pe]`,
+  POSTs via `fetch` with `X-Requested-With: XMLHttpRequest`, swaps the `data-pe-target` region,
+  and shows a toast; the original `<form method="post">` is retained for the no-JS fallback.
+  `Courses/Lessons/View.cshtml.cs` returns `PartialView("_LessonActions", this)` for AJAX
+  requests (mark-complete / uncomplete / save-note) with `X-Toast-Message` / `X-Toast-Type`
+  response headers. The `_LessonActions.cshtml` partial is shared between the full page and the
+  PE swap.
+
+### Verification (green)
+- `dotnet build OpenLearning.sln` → 0 warnings / 0 errors (see SDK note below).
+- `dotnet format --verify-no-changes` → clean for the changed projects.
+- `ConfirmTagHelperTests` (3) green: form→`data-confirm`+`aria-label`, anchor href
+  preservation + `role="button"`, and empty-confirm no-op.
+
+### Key decisions / gotchas
+- **SDK**: this repo pins .NET 8 (`global.json` `8.0.4xx`) but the default `dotnet` on this
+  machine resolves to the 10.0 SDK, whose Razor generator is stricter and fails to compile
+  many pre-existing inline-code views. Build/format/`dotnet test` MUST be run with the 8.0 SDK
+  (e.g. `global.json` pinned to `8.0.424`, `rollForward: latestPatch`, as used for this change).
+  `TreatWarningsAsErrors=true` + Sonar + `EnforceCodeStyleInBuild=true` remain in force.
+- **Single toast renderer**: rather than add a global toast on top of ~70 existing per-page
+  `TempData["Message"]` alerts (which would double-render), the per-page blocks were removed so
+  `_Toast` in `_Layout` is the only renderer. All setters of `TempData["Message"]` (171 in
+  `Pages/*.cs`) now surface through it.
+- **PE scope**: `withdraw` uses the `confirm` helper + standard postback (no-JS fallback
+  preserved); full region-swap PE for the MyCourses card is a deferred incremental follow-up.
+  The handler ajax path is covered by build + the tag-helper unit test; a TestServer-level PE
+  test would require `LessonService.GetByIdAsync` to be virtual/mockable (currently it is not).
+- **Naming**: private constants follow the repo's `_camelCase` prefix rule (`.editorconfig`
+  `private_fields_should_be_camel_case`); the tag-helper attribute constant is
+  `_confirmAttributeName`.
 
 ### Goal
 Make every "Continue learning" / "Resume" entry point navigate to the learner's last-viewed

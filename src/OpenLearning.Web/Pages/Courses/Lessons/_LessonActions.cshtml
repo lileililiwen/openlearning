@@ -1,0 +1,50 @@
+@model OpenLearning.Web.Pages.Courses.Lessons.ViewModel
+@{
+    var lessonId = Model.Lesson?.Id ?? 0;
+}
+
+@if (Model.CanTrackProgress)
+{
+    <div class="mt-3">
+        @if (Model.IsCompleted)
+        {
+            <form method="post" asp-page-handler="Uncomplete" asp-route-id="@lessonId"
+                  data-pe data-pe-target="#lesson-actions">
+                <button type="submit" class="btn btn-outline-warning">
+                    &#10003; Mark as not completed
+                </button>
+            </form>
+        }
+        else
+        {
+            <form method="post" asp-page-handler="Complete" asp-route-id="@lessonId"
+                  data-pe data-pe-target="#lesson-actions">
+                <button type="submit" class="btn btn-success">Mark as completed</button>
+            </form>
+        }
+    </div>
+}
+
+@if (Model.CanTrackProgress)
+{
+    <div class="card shadow-sm mt-3">
+        <div class="card-body">
+            <h2 class="h5 mb-3">My notes</h2>
+            <form method="post" asp-page-handler="SaveNote" asp-route-id="@lessonId"
+                  data-pe data-pe-target="#lesson-actions">
+                <textarea asp-for="NoteBody" class="form-control mb-2" rows="6" placeholder="Write your study notes here…"></textarea>
+                <div class="d-flex gap-2 align-items-center">
+                    <button type="submit" class="btn btn-primary btn-sm">Save note</button>
+                    @if (Model.Note is not null)
+                    {
+                        <a class="btn btn-outline-secondary btn-sm" asp-page-handler="ExportNote" asp-route-id="@lessonId">Export .md</a>
+                    }
+                </div>
+            </form>
+            @if (Model.Note is not null)
+            {
+                <p class="text-muted small mb-0 mt-2">Updated @Model.Note.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</p>
+            }
+        </div>
+    </div>
+}

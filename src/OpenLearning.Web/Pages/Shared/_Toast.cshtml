@@ -1,0 +1,16 @@
+@* Global feedback toast. Renders a transient message set by any handler via
+   TempData["Message"] / TempData["MessageType"]. Rendered once from _Layout so that
+   every page (including ones that never had a per-page alert) surfaces feedback. *@
+@{
+    var message = TempData["Message"] as string;
+    var type = (TempData["MessageType"] as string) ?? "success";
+}
+@if (!string.IsNullOrEmpty(message))
+{
+    <div id="global-toast"
+         class="alert alert-@type alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow"
+         role="status" aria-live="polite" style="z-index: 1080; min-width: 280px; max-width: 90vw;">
+        @message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}

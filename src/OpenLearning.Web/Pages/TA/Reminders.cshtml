@@ -10,13 +10,7 @@
     <a class="btn btn-outline-secondary btn-sm" asp-page="/TA/Index">返回助教工作台</a>
 </div>
 
-@if (TempData["Message"] is string message)
-{
-    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
-        @message
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+
 
 <div class="card shadow-sm" style="max-width: 640px">
     <div class="card-body">

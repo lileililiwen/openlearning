@@ -6,13 +6,7 @@
 
 <h1 class="h3 mb-4">Share Links</h1>
 
-@if (TempData["Message"] is string message)
-{
-    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
-        @message
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+
 
 <form method="post" asp-page-handler="Create" class="card shadow-sm mb-4">
     <div class="card-header bg-white"><strong>Create a share link</strong></div>

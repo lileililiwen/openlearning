@@ -2,7 +2,6 @@
 @model OpenLearning.Web.Pages.Admin.LtiModel
 @{ ViewData["Title"] = "Admin · LTI 1.3"; }
 <div class="d-flex justify-content-between mb-4"><div><h1 class="h3">LTI 1.3 integrations</h1><p class="text-muted">Registrations, deployments, context mappings, capabilities, signing keys, diagnostics, and audit.</p></div><form method="post" asp-page-handler="RotateKey"><button class="btn btn-outline-primary">Rotate OpenLearning key</button></form></div>
-@if (TempData["Message"] is string message) { <div class="alert alert-@(TempData["MessageType"])">@message</div> }
 <div class="card mb-4"><div class="card-body"><h2 class="h5">New registration</h2><form method="post" asp-page-handler="Create" class="row g-2">
 <div class="col-md-4"><input class="form-control" name="name" placeholder="Name" required maxlength="200" /></div><div class="col-md-4"><input class="form-control" name="issuer" placeholder="HTTPS issuer" required /></div><div class="col-md-4"><input class="form-control" name="clientId" placeholder="Client ID" required /></div>
 <div class="col-md-4"><input class="form-control" name="authorizationEndpoint" placeholder="HTTPS authorization endpoint" required /></div><div class="col-md-4"><input class="form-control" name="jwksUrl" placeholder="HTTPS JWKS URL" required /></div><div class="col-md-4"><input class="form-control" name="tokenEndpoint" placeholder="Optional HTTPS token endpoint" /></div>

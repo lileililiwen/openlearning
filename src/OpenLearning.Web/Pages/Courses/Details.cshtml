@@ -7,13 +7,7 @@
     var aggregate = Model.Aggregate;
 }
 
-@if (TempData["Message"] is string message)
-{
-    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
-        @message
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -467,13 +461,14 @@
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Orders" asp-route-id="@course.Id">Orders</a>
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Chat" asp-route-id="@course.Id">Course chat</a>
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Live/Index" asp-route-id="@course.Id">Live sessions</a>
-                    <form method="post" asp-page-handler="Publish" asp-route-id="@course.Id">
+                    <form method="post" asp-page-handler="Publish" asp-route-id="@course.Id"
+                          confirm="@(course.IsPublished ? "Unpublish this course?" : "Publish this course?")">
                         <button type="submit" class="btn btn-outline-success w-100 mb-2">
                             @(course.IsPublished ? "Unpublish" : "Publish")
                         </button>
                     </form>
                     <form method="post" asp-page-handler="Delete" asp-route-id="@course.Id"
-                          onsubmit="return confirm('Delete this course and all of its content?');">
+                          confirm="Delete this course and all of its content?">
                         <button type="submit" class="btn btn-outline-danger w-100">Delete course</button>
                     </form>
                 }

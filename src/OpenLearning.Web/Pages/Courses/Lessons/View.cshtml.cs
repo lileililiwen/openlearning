@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
 using OpenLearning.Chat.Services;
@@ -96,10 +97,62 @@ public class ViewModel : PageModel
         return $"{(totalMinutes / 60)} h {totalMinutes % 60} min";
     }
 
+    private bool IsAjaxRequest =>
+        string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+
     private async Task<bool> IsSuspendedAsync()
     {
         var user = await _userManager.GetUserAsync(User);
         return user?.IsSuspended == true;
+    }
+
+    /// <summary>
+    /// Reloads the enrolled-learner state (progress + notes) used by both the full page and the
+    /// progressive-enhancement partial. Call after a mutation so the returned region reflects it.
+    /// </summary>
+    private async Task LoadEnrolledStateAsync(string userId, Lesson lesson)
+    {
+        CanTrackProgress = true;
+        var completed = await _progress.GetCompletedLessonIdsAsync(userId, lesson.Module!.CourseId);
+        IsCompleted = completed.Contains(lesson.Id);
+        await _resume.RecordViewAsync(userId, lesson.Module.CourseId, lesson.Id);
+        LessonDurationSeconds = await _progress.GetLessonDurationAsync(userId, lesson.Id);
+        Note = await _studyTools.GetNoteAsync(userId, lesson.Id);
+        NoteBody = Note?.Body ?? string.Empty;
+        Downloads = await _studyTools.GetDownloadsAsync(lesson.Id);
+        if (!string.IsNullOrWhiteSpace(lesson.VideoUrl))
+        {
+            IsProtected = true;
+            Danmu = await _chat.GetLessonDanmuAsync(lesson.Id, 200);
+        }
+    }
+
+    /// <summary>Returns the lesson-actions region for an AJAX request, or the full page otherwise.</summary>
+    private async Task<IActionResult> LessonActionResultAsync(string userId, Lesson lesson, string? toastMessage, string? toastType)
+    {
+        if (!IsAjaxRequest)
+        {
+            if (toastMessage is not null)
+            {
+                TempData["Message"] = toastMessage;
+                TempData["MessageType"] = toastType ?? "success";
+            }
+
+            return RedirectToPage(new { id = lesson.Id });
+        }
+
+        if (toastMessage is not null)
+        {
+            Response.Headers["X-Toast-Message"] = toastMessage;
+            Response.Headers["X-Toast-Type"] = toastType ?? "success";
+        }
+
+        await LoadEnrolledStateAsync(userId, lesson);
+        return new PartialViewResult
+        {
+            ViewName = "_LessonActions",
+            ViewData = new ViewDataDictionary(ViewData) { Model = this }
+        };
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -137,19 +190,7 @@ public class ViewModel : PageModel
         ScormPackage = await _scorm.GetForLessonAsync(id);
         if (userId is not null && isEnrolled)
         {
-            CanTrackProgress = true;
-            var completed = await _progress.GetCompletedLessonIdsAsync(userId, course.Id);
-            IsCompleted = completed.Contains(id);
-            await _resume.RecordViewAsync(userId, course.Id, id);
-            LessonDurationSeconds = await _progress.GetLessonDurationAsync(userId, id);
-            Note = await _studyTools.GetNoteAsync(userId, id);
-            NoteBody = Note?.Body ?? string.Empty;
-            Downloads = await _studyTools.GetDownloadsAsync(id);
-            if (!string.IsNullOrWhiteSpace(lesson.VideoUrl))
-            {
-                IsProtected = true;
-                Danmu = await _chat.GetLessonDanmuAsync(id, 200);
-            }
+            await LoadEnrolledStateAsync(userId, lesson);
         }
 
         return Page();
@@ -176,24 +217,21 @@ public class ViewModel : PageModel
 
         if (await _enrollments.IsAccessExpiredAsync(userId, lesson.Module.CourseId))
         {
-            TempData["Message"] = "Your access to this course has expired. Please renew to continue learning.";
-            TempData["MessageType"] = "danger";
-            return RedirectToPage(new { id });
+            return await LessonActionResultAsync(userId, lesson, "Your access to this course has expired. Please renew to continue learning.", "danger");
         }
 
         var result = await _progress.MarkCompleteAsync(userId, lesson.Module.CourseId, id);
         if (!result.Ok)
         {
-            TempData["Message"] = result.Error;
-            TempData["MessageType"] = "danger";
-            return RedirectToPage(new { id });
+            return await LessonActionResultAsync(userId, lesson, result.Error, "danger");
         }
 
         if (await _progress.GetProgressPercentAsync(userId, lesson.Module.CourseId) == 100)
         {
             await _credits.ProcessCourseCompletionAsync(userId, lesson.Module.CourseId);
         }
-        return RedirectToPage(new { id });
+
+        return await LessonActionResultAsync(userId, lesson, "Lesson marked as completed.", "success");
     }
 
     public async Task<IActionResult> OnPostUncompleteAsync(int id)
@@ -217,13 +255,11 @@ public class ViewModel : PageModel
 
         if (await _enrollments.IsAccessExpiredAsync(userId, lesson.Module.CourseId))
         {
-            TempData["Message"] = "Your access to this course has expired. Please renew to continue learning.";
-            TempData["MessageType"] = "danger";
-            return RedirectToPage(new { id });
+            return await LessonActionResultAsync(userId, lesson, "Your access to this course has expired. Please renew to continue learning.", "danger");
         }
 
         await _progress.UnmarkAsync(userId, lesson.Module.CourseId, id);
-        return RedirectToPage(new { id });
+        return await LessonActionResultAsync(userId, lesson, "Lesson marked as not completed.", "success");
     }
 
     public async Task<IActionResult> OnPostSaveNoteAsync(int id)
@@ -250,10 +286,14 @@ public class ViewModel : PageModel
             return Forbid();
         }
 
+        // Preserve the entered text on validation failure so the learner can correct and resubmit.
+        if (!ModelState.IsValid)
+        {
+            return await LessonActionResultAsync(userId, lesson, "Please correct the note and try again.", "danger");
+        }
+
         var (ok, error) = await _studyTools.UpsertNoteAsync(userId, id, NoteBody);
-        TempData["Message"] = ok ? "Note saved." : error;
-        TempData["MessageType"] = ok ? "success" : "danger";
-        return RedirectToPage(new { id });
+        return await LessonActionResultAsync(userId, lesson, ok ? "Note saved." : error, ok ? "success" : "danger");
     }
 
     public async Task<IActionResult> OnGetExportNoteAsync(int id)

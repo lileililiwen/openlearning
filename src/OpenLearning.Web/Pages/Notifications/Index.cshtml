@@ -11,7 +11,8 @@
     </div>
     @if (Model.Items.Any(n => !n.IsRead))
     {
-        <form method="post" asp-page-handler="MarkAllRead">
+        <form method="post" asp-page-handler="MarkAllRead"
+              confirm="Mark all notifications as read?">
             <button type="submit" class="btn btn-outline-secondary btn-sm">Mark all as read</button>
         </form>
     }

@@ -8,10 +8,6 @@
     <h2>课程成果与掌握度</h2>
     <p class="text-muted">将课程成果映射到可评测活动，系统会按确定规则计算学员掌握度，并给出可解释的关注信号。</p>
 
-    @if (!string.IsNullOrEmpty((string?)TempData["Message"]))
-    {
-        <div class="alert alert-@(TempData["MessageType"] ?? "info")">@TempData["Message"]</div>
-    }
 
     <div class="mb-2">
         <a class="btn btn-outline-secondary" asp-page="/Courses/Edit" asp-route-id="@Model.CourseId">返回课程编辑</a>

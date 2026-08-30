@@ -15,13 +15,6 @@
 
 <h1 class="h3 mb-4">Booking Configuration — @session.Title</h1>
 
-@if (TempData["Message"] is string message)
-{
-    <div class="alert alert-@TempData["MessageType"] alert-dismissible fade show" role="alert">
-        @message
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
 
 <form method="post" class="card shadow-sm">
     <div class="card-body">

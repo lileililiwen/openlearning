@@ -6,13 +6,7 @@
     var order = Model.Order!;
 }
 
-@if (TempData["Message"] is string message)
-{
-    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
-        @message
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <a class="btn btn-outline-secondary" asp-page="/Orders/Detail" asp-route-id="@order.Id">Back to order</a>

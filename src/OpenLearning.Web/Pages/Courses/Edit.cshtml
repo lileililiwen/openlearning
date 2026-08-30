@@ -160,13 +160,7 @@
         <strong>Course announcements</strong>
     </div>
     <div class="card-body">
-        @if (TempData["Message"] is string message)
-        {
-            <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
-                @message
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
+
         <form method="post" asp-page-handler="Announce" asp-route-id="@course.Id" class="mb-3">
             <label class="form-label small text-muted mb-1" asp-for="AnnouncementBody">Post an announcement</label>
             <textarea asp-for="AnnouncementBody" class="form-control" rows="2" maxlength="4000"

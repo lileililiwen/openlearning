@@ -1,0 +1,12 @@
+@* Shared error state. Optional retry link via ViewData["StateRetryUrl"]. *@
+@{
+    var message = (string?)ViewData["StateMessage"] ?? "Something went wrong.";
+    var retryUrl = (string?)ViewData["StateRetryUrl"];
+}
+<div class="state-error alert alert-danger d-flex align-items-center justify-content-between" role="alert">
+    <span>@message</span>
+    @if (!string.IsNullOrEmpty(retryUrl))
+    {
+        <a class="btn btn-sm btn-outline-danger" href="@retryUrl">Retry</a>
+    }
+</div>

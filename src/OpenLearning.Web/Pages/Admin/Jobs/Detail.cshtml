@@ -8,13 +8,7 @@
 
 <h1 class="h3 mb-4">Job — @job.Key</h1>
 
-@if (TempData["Message"] is string message)
-{
-    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
-        @message
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">

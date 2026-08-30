@@ -76,3 +76,25 @@ body {
     from { transform: translateX(100vw); }
     to { transform: translateX(-100%); }
 }
+
+/* Shared UI state & feedback primitives */
+.state-loading,
+.state-empty,
+.state-error {
+    margin: 0;
+}
+
+.state-empty .bi {
+    opacity: 0.5;
+}
+
+#global-toast {
+    pointer-events: auto;
+}
+
+/* Disabled state helper for progressive-enhancement actions. */
+[data-pe].is-busy {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}

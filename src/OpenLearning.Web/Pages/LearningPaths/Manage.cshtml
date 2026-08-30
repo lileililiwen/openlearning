@@ -2,7 +2,6 @@
 @model OpenLearning.Web.Pages.LearningPaths.ManageModel
 @{ ViewData["Title"] = "Learning path management"; }
 <h1>Learning paths</h1>
-@if (TempData["Message"] is string message) { <div class="alert alert-@(TempData["MessageType"] ?? "info")">@message</div> }
 <form method="post" asp-page-handler="Create" class="card card-body mb-4">
   <h2 class="h5">New path</h2><input name="title" maxlength="200" required class="form-control mb-2" placeholder="Title" />
   <textarea name="description" maxlength="4000" class="form-control mb-2" placeholder="Description"></textarea>

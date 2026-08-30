@@ -19,13 +19,7 @@
     </ol>
 </nav>
 
-@if (TempData["Message"] is string message)
-{
-    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
-        @message
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+
 
 <div class="row g-4">
     <div class="col-lg-8">
@@ -105,44 +99,8 @@
 
         @if (Model.CanTrackProgress)
         {
-            <div class="mt-3">
-                @if (Model.IsCompleted)
-                {
-                    <form method="post" asp-page-handler="Uncomplete" asp-route-id="@Model.Lesson.Id">
-                        <button type="submit" class="btn btn-outline-warning">
-                            &#10003; Mark as not completed
-                        </button>
-                    </form>
-                }
-                else
-                {
-                    <form method="post" asp-page-handler="Complete" asp-route-id="@Model.Lesson.Id">
-                        <button type="submit" class="btn btn-success">Mark as completed</button>
-                    </form>
-                }
-            </div>
-        }
-
-        @if (Model.CanTrackProgress)
-        {
-            <div class="card shadow-sm mt-3">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">My notes</h2>
-                    <form method="post" asp-page-handler="SaveNote" asp-route-id="@Model.Lesson.Id">
-                        <textarea name="NoteBody" class="form-control mb-2" rows="6" placeholder="Write your study notes here…">@Model.Note?.Body</textarea>
-                        <div class="d-flex gap-2 align-items-center">
-                            <button type="submit" class="btn btn-primary btn-sm">Save note</button>
-                            @if (Model.Note is not null)
-                            {
-                                <a class="btn btn-outline-secondary btn-sm" asp-page-handler="ExportNote" asp-route-id="@Model.Lesson.Id">Export .md</a>
-                            }
-                        </div>
-                    </form>
-                    @if (Model.Note is not null)
-                    {
-                        <p class="text-muted small mb-0 mt-2">Updated @Model.Note.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</p>
-                    }
-                </div>
+            <div id="lesson-actions">
+                <partial name="_LessonActions" model="Model" />
             </div>
         }
     </div>

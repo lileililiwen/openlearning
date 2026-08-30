@@ -9,7 +9,6 @@
         <strong>@Model.ProviderHealth.Provider</strong>: @Model.ProviderHealth.Message
     </div>
 }
-@if (TempData["Message"] is string message) { <div class="alert alert-@(TempData["MessageType"] ?? "info")">@message</div> }
 <h2 class="h5 mt-4">Reconciliation exceptions</h2>
 @if (Model.Issues.Count == 0) { <p>No open exceptions.</p> }
 @foreach (var issue in Model.Issues) { <div class="alert alert-warning">@issue.Reason @(issue.Retryable ? "(retryable)" : "")</div> }

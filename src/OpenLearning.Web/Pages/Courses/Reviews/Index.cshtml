@@ -13,13 +13,7 @@
     <a class="btn btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@Model.CourseId">Back to course</a>
 </div>
 
-@if (TempData["Message"] is string message)
-{
-    <div class="alert alert-@(TempData["MessageType"] ?? "success") alert-dismissible fade show" role="alert">
-        @message
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">
