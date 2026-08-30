@@ -6,6 +6,7 @@ using OpenLearning.Assessments.Models;
 using OpenLearning.Assignments.Models;
 using OpenLearning.AsyncIO.Models;
 using OpenLearning.Auth.Models;
+using OpenLearning.Authoring.Models;
 using OpenLearning.Certificates.Models;
 using OpenLearning.Chat.Models;
 using OpenLearning.Classes.Models;
@@ -361,5 +362,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(PeerReviewConfig).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(CompetencyFramework).Assembly);
         builder.ApplyConfigurationsFromAssembly(typeof(Survey).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(CourseRevision).Assembly);
     }
 }

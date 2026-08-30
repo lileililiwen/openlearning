@@ -63,6 +63,7 @@
     <ProjectReference Include="..\..\src\OpenLearning.Organizations\OpenLearning.Organizations.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Analytics\OpenLearning.Analytics.csproj" />
     <ProjectReference Include="..\..\src\OpenLearning.Mobile\OpenLearning.Mobile.csproj" />
+    <ProjectReference Include="..\..\src\OpenLearning.Authoring\OpenLearning.Authoring.csproj" />
   </ItemGroup>
 
 </Project>
