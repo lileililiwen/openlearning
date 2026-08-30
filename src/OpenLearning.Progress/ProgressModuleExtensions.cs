@@ -8,6 +8,7 @@ public static class ProgressModuleExtensions
     public static IServiceCollection AddProgressModule(this IServiceCollection services)
     {
         services.AddScoped<ProgressService>();
+        services.AddScoped<IResumeService, ResumeService>();
         return services;
     }
 }

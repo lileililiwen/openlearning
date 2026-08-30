@@ -29,6 +29,7 @@ public class DetailsModel : PageModel
     private readonly CourseService _courses;
     private readonly EnrollmentService _enrollments;
     private readonly ProgressService _progress;
+    private readonly IResumeService _resume;
     private readonly QuizService _quizzes;
     private readonly ExamService _exams;
     private readonly OrderService _orders;
@@ -43,6 +44,7 @@ public class DetailsModel : PageModel
         CourseService courses,
         EnrollmentService enrollments,
         ProgressService progress,
+        IResumeService resume,
         QuizService quizzes,
         ExamService exams,
         OrderService orders,
@@ -56,6 +58,7 @@ public class DetailsModel : PageModel
         _courses = courses;
         _enrollments = enrollments;
         _progress = progress;
+        _resume = resume;
         _quizzes = quizzes;
         _exams = exams;
         _orders = orders;
@@ -97,6 +100,9 @@ public class DetailsModel : PageModel
     public HashSet<int> CompletedLessonIds { get; set; } = new();
 
     public int ProgressPercent { get; set; }
+
+    /// <summary>Lesson the learner should resume at, or null when the course has no lessons.</summary>
+    public int? ResumeTargetLessonId { get; set; }
 
     public RatingAggregate Aggregate { get; set; } = new(0d, 0);
 
@@ -145,6 +151,7 @@ public class DetailsModel : PageModel
             {
                 CompletedLessonIds = await _progress.GetCompletedLessonIdsAsync(userId, id);
                 ProgressPercent = await _progress.GetProgressPercentAsync(userId, id);
+                ResumeTargetLessonId = await _resume.GetResumeTargetAsync(userId, id);
 
                 // Issue a certificate at 100% and notify the student once.
                 var hadCertificate = (await _certificates.GetEarnedCourseIdsAsync(userId)).Contains(id);

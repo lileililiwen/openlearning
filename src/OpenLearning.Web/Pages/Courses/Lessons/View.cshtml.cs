@@ -25,6 +25,7 @@ public class ViewModel : PageModel
     private readonly ModuleService _modules;
     private readonly EnrollmentService _enrollments;
     private readonly ProgressService _progress;
+    private readonly IResumeService _resume;
     private readonly ScormService _scorm;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly StudyToolService _studyTools;
@@ -36,6 +37,7 @@ public class ViewModel : PageModel
         ModuleService modules,
         EnrollmentService enrollments,
         ProgressService progress,
+        IResumeService resume,
         ScormService scorm,
         UserManager<ApplicationUser> userManager,
         StudyToolService studyTools,
@@ -46,6 +48,7 @@ public class ViewModel : PageModel
         _modules = modules;
         _enrollments = enrollments;
         _progress = progress;
+        _resume = resume;
         _scorm = scorm;
         _userManager = userManager;
         _studyTools = studyTools;
@@ -137,7 +140,7 @@ public class ViewModel : PageModel
             CanTrackProgress = true;
             var completed = await _progress.GetCompletedLessonIdsAsync(userId, course.Id);
             IsCompleted = completed.Contains(id);
-            await _progress.RecordAccessAsync(userId, course.Id, id);
+            await _resume.RecordViewAsync(userId, course.Id, id);
             LessonDurationSeconds = await _progress.GetLessonDurationAsync(userId, id);
             Note = await _studyTools.GetNoteAsync(userId, id);
             NoteBody = Note?.Body ?? string.Empty;

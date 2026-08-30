@@ -33,7 +33,8 @@ public sealed record EnrolledCourseItem(
     int TotalLessons,
     int TotalQuizzes,
     int AttemptedQuizzes,
-    string InstructorName);
+    string InstructorName,
+    int? ResumeLessonId);
 
 [Authorize(Policy = Policies.RequireStudent)]
 [OpenLearning.Navigation.Models.Breadcrumb("首页:/", "学习中心")]
@@ -41,6 +42,7 @@ public class IndexModel : PageModel
 {
     private readonly EnrollmentService _enrollments;
     private readonly ProgressService _progress;
+    private readonly IResumeService _resume;
     private readonly AttemptService _attempts;
     private readonly CourseService _courses;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -53,6 +55,7 @@ public class IndexModel : PageModel
     public IndexModel(
         EnrollmentService enrollments,
         ProgressService progress,
+        IResumeService resume,
         AttemptService attempts,
         CourseService courses,
         UserManager<ApplicationUser> userManager,
@@ -64,6 +67,7 @@ public class IndexModel : PageModel
     {
         _enrollments = enrollments;
         _progress = progress;
+        _resume = resume;
         _attempts = attempts;
         _courses = courses;
         _userManager = userManager;
@@ -117,7 +121,8 @@ public class IndexModel : PageModel
                 totalLessons,
                 totalQuizzes,
                 attemptedQuizzes,
-                course.Instructor?.DisplayName ?? string.Empty));
+                course.Instructor?.DisplayName ?? string.Empty,
+                await _resume.GetResumeTargetAsync(userId, course.Id)));
 
             // Issuance is idempotent; completed courses get a certificate now.
             var hadCertificate = earnedCourseIds.Contains(course.Id);

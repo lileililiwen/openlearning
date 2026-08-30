@@ -1,9 +1,49 @@
-# HANDOFF.md — Outcomes and Mastery Operations
+# HANDOFF.md — Change Status & Handoff
 
 > Progress / status document. Reusable by another AI session or conversation to
 > continue this work. **Last updated: 2026-08-30.** Branch: `main`.
-> Source change: `openspec/changes/outcomes-mastery-operations` (spec `outcomes-mastery-operations`)
-> **Status: COMPLETE & ARCHIVED** (`openspec/changes/archive/2026-08-30-outcomes-mastery-operations`).
+>
+> Most recent change: **learner-resume-continuity** — COMPLETE & ARCHIVED
+> (`openspec/changes/archive/2026-08-30-learner-resume-continuity`).
+> Previous change `outcomes-mastery-operations` also COMPLETE & ARCHIVED.
+
+## Latest change: Learner Resume & Continuity (learner-resume-continuity)
+
+> **Status: COMPLETE & ARCHIVED** (`openspec/changes/archive/2026-08-30-learner-resume-continuity`).
+
+### Goal
+Make every "Continue learning" / "Resume" entry point navigate to the learner's last-viewed
+lesson (falling back to the first lesson) instead of reloading the course details page.
+
+### What is DONE
+- `OpenLearning.Progress`: `IResumeService` + `ResumeService` (`GetResumeTargetAsync`,
+  `RecordViewAsync`) reusing the existing `LessonAccess` store. **No schema migration** — the
+  original design's `Enrollment.ResumeLessonId` column + `AddEnrollmentResume` migration was
+  deliberately skipped to avoid duplicating `LessonAccess` (rationale in `tasks.md`).
+- Registration in `AddProgressModule()`; unit tests (6) in `tests/OpenLearning.UnitTests/ResumeServiceTests.cs`.
+- Wiring: `Pages/Courses/Lessons/View.cshtml(.cs)` records the view; `Details.cshtml`
+  "Continue learning", `Dashboard/Index.cshtml` "My courses" card, and `MyCourses.cshtml`
+  "Continue" all link to the resume target (hidden / falling back to details when none).
+
+### Verification (green)
+- `dotnet test tests/OpenLearning.UnitTests --filter FullyQualifiedName~ResumeServiceTests` → 6 passed.
+- `dotnet test tests/OpenLearning.ArchitectureTests` → 5 passed.
+- `dotnet build OpenLearning.sln` → 0 warnings / 0 errors.
+- `dotnet format --verify-no-changes` → clean.
+
+### Key decisions / gotchas
+- Reuse `LessonAccess` (one row per enrollment+lesson, written by
+  `ProgressService.RecordAccessAsync`) rather than a new `ResumeLessonId` column. `RecordViewAsync`
+  is a no-op for non-enrolled/foreign lessons, so owner previews and anonymous views never become
+  resume points.
+- `GetResumeTargetAsync` returns the most-recently-accessed lesson that still exists and belongs to
+  the course; deleted/unpublished targets fall back to the first lesson (by `Module.OrderIndex`,
+  `Lesson.OrderIndex`). Returns `null` only when the learner is not enrolled or the course has no
+  lessons (the CTA is hidden in that case).
+- Strict build (`TreatWarningsAsErrors=true` + Sonar + `EnforceCodeStyleInBuild=true`): block bodies
+  for methods, alias `using` placed last, `dotnet format --verify-no-changes` must stay clean.
+
+---
 
 ## Goal of this change
 Connect declared course outcomes to graded activities, calculate auditable mastery

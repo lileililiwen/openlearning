@@ -167,7 +167,14 @@ else
                         </div>
                     </div>
                     <div class="card-footer bg-transparent">
-                        <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@item.CourseId">Continue</a>
+                        @if (item.ResumeLessonId is { } resumeId)
+                        {
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Lessons/View" asp-route-id="@resumeId">Continue</a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Courses/Details" asp-route-id="@item.CourseId">Continue</a>
+                        }
                     </div>
                 </div>
             </div>

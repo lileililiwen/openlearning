@@ -413,7 +413,10 @@
                     <div class="progress progress-thin mb-3">
                         <div class="progress-bar" role="progressbar" style="width: @Model.ProgressPercent%"></div>
                     </div>
-                    <a class="btn btn-primary w-100 mb-2" asp-page="/Courses/Details" asp-route-id="@course.Id">Continue learning</a>
+                    @if (Model.ResumeTargetLessonId is { } resumeLessonId)
+                    {
+                        <a class="btn btn-primary w-100 mb-2" asp-page="/Courses/Lessons/View" asp-route-id="@resumeLessonId">Continue learning</a>
+                    }
                     <a class="btn btn-outline-primary w-100 mb-2" asp-page="/Courses/Assignments/Index" asp-route-courseId="@course.Id">Assignments</a>
                     @if (Model.Certificate is not null)
                     {

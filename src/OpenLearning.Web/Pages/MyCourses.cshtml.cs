@@ -16,12 +16,14 @@ public class MyCoursesModel : PageModel
 {
     private readonly EnrollmentService _enrollments;
     private readonly ProgressService _progress;
+    private readonly IResumeService _resume;
     private readonly SystemConfigService _config;
 
-    public MyCoursesModel(EnrollmentService enrollments, ProgressService progress, SystemConfigService config)
+    public MyCoursesModel(EnrollmentService enrollments, ProgressService progress, IResumeService resume, SystemConfigService config)
     {
         _enrollments = enrollments;
         _progress = progress;
+        _resume = resume;
         _config = config;
     }
 
@@ -30,7 +32,8 @@ public class MyCoursesModel : PageModel
         int ProgressPercent,
         bool IsExpired,
         bool IsRevoked,
-        int DaysRemaining);
+        int DaysRemaining,
+        int? ResumeLessonId);
 
     public List<EnrolledCourse> Courses { get; set; } = new();
 
@@ -56,7 +59,8 @@ public class MyCoursesModel : PageModel
                 percent,
                 expired,
                 enrollment.RevokedAt is not null,
-                daysRemaining));
+                daysRemaining,
+                await _resume.GetResumeTargetAsync(userId, enrollment.CourseId)));
         }
 
         Courses = courses;
