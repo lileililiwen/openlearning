@@ -32,21 +32,36 @@ public class IndexModel : PageModel
 
     public int Month { get; set; }
 
+    public int Year { get; set; }
+
     [BindProperty]
     public string? CheckInNote { get; set; }
 
-    public async Task OnGetAsync()
+    public async Task OnGetAsync(int? month, int? year)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         Report = await _studyTools.GetReportAsync(userId);
 
         Today = DateOnly.FromDateTime(DateTime.UtcNow);
-        Month = Today.Month;
-        var monthStart = new DateOnly(Today.Year, Today.Month, 1);
-        var daysInMonth = DateTime.DaysInMonth(Today.Year, Today.Month);
+        Month = month ?? Today.Month;
+        Year = year ?? Today.Year;
+        if (Month < 1)
+        {
+            Month = 1;
+        }
+
+        if (Month > 12)
+        {
+            Month = 12;
+        }
+
+        var monthStart = new DateOnly(Year, Month, 1);
+        var daysInMonth = DateTime.DaysInMonth(Year, Month);
         var monthEnd = monthStart.AddDays(daysInMonth - 1);
 
-        TodayCheckIn = await _studyTools.GetCheckInAsync(userId, Today);
+        TodayCheckIn = Month == Today.Month && Year == Today.Year
+            ? await _studyTools.GetCheckInAsync(userId, Today)
+            : null;
         var checkIns = await _studyTools.GetCheckInsAsync(userId, monthStart, monthEnd);
         var durations = await _studyTools.GetDailyDurationsAsync(userId, monthStart, monthEnd);
 
@@ -54,9 +69,9 @@ public class IndexModel : PageModel
         LeadingBlanks = (int)monthStart.DayOfWeek; // Sunday-first grid
         Calendar = Enumerable.Range(1, daysInMonth)
             .Select(day => new CalendarDay(
-                new DateOnly(Today.Year, Today.Month, day),
-                checkedInDays.Contains(new DateOnly(Today.Year, Today.Month, day)),
-                durations.GetValueOrDefault(new DateOnly(Today.Year, Today.Month, day))))
+                new DateOnly(Year, Month, day),
+                checkedInDays.Contains(new DateOnly(Year, Month, day)),
+                durations.GetValueOrDefault(new DateOnly(Year, Month, day))))
             .ToList();
     }
 

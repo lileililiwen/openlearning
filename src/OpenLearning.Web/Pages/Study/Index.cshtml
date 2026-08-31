@@ -17,7 +17,21 @@
     <div class="col-lg-8">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h2 class="h5 mb-3">@OpenLearning.Web.Pages.Study.IndexModel.MonthName(Model.Month) calendar</h2>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <a class="btn btn-sm btn-outline-secondary"
+                       asp-page="/Study/Index"
+                       asp-route-month="@(Model.Month == 1 ? 12 : Model.Month - 1)"
+                       asp-route-year="@(Model.Month == 1 ? Model.Year - 1 : Model.Year)">
+                        &laquo; Prev
+                    </a>
+                    <h2 class="h5 mb-0">@OpenLearning.Web.Pages.Study.IndexModel.MonthName(Model.Month) @Model.Year</h2>
+                    <a class="btn btn-sm btn-outline-secondary"
+                       asp-page="/Study/Index"
+                       asp-route-month="@(Model.Month == 12 ? 1 : Model.Month + 1)"
+                       asp-route-year="@(Model.Month == 12 ? Model.Year + 1 : Model.Year)">
+                        Next &raquo;
+                    </a>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-bordered text-center calendar-grid mb-0">
                         <thead>

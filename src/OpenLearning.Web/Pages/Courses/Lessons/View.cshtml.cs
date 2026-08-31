@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using OpenLearning.Assessments.Services;
+using OpenLearning.Assignments.Services;
 using OpenLearning.Auth;
 using OpenLearning.Auth.Models;
 using OpenLearning.Chat.Services;
@@ -32,6 +34,9 @@ public class ViewModel : PageModel
     private readonly StudyToolService _studyTools;
     private readonly ChatService _chat;
     private readonly CreditService _credits;
+    private readonly LessonNavigatorService _navigator;
+    private readonly QuizService _quizzes;
+    private readonly AssignmentService _assignments;
 
     public ViewModel(
         LessonService lessons,
@@ -43,7 +48,10 @@ public class ViewModel : PageModel
         UserManager<ApplicationUser> userManager,
         StudyToolService studyTools,
         ChatService chat,
-        CreditService credits)
+        CreditService credits,
+        LessonNavigatorService navigator,
+        QuizService quizzes,
+        AssignmentService assignments)
     {
         _lessons = lessons;
         _modules = modules;
@@ -55,11 +63,24 @@ public class ViewModel : PageModel
         _studyTools = studyTools;
         _chat = chat;
         _credits = credits;
+        _navigator = navigator;
+        _quizzes = quizzes;
+        _assignments = assignments;
     }
 
     public Lesson? Lesson { get; set; }
 
     public List<Lesson> ModuleLessons { get; set; } = new();
+
+    public IReadOnlyList<ModuleOutline> Curriculum { get; set; } = Array.Empty<ModuleOutline>();
+
+    public int? PrevLessonId { get; set; }
+
+    public int? NextLessonId { get; set; }
+
+    public string? AssessmentLinkLabel { get; set; }
+
+    public string? AssessmentLinkUrl { get; set; }
 
     public ScormPackage? ScormPackage { get; set; }
 
@@ -188,6 +209,33 @@ public class ViewModel : PageModel
         Lesson = lesson;
         ModuleLessons = await _modules.GetLessonsAsync(lesson.ModuleId);
         ScormPackage = await _scorm.GetForLessonAsync(id);
+
+        var completedIds = userId is not null && isEnrolled
+            ? await _progress.GetCompletedLessonIdsAsync(userId, course.Id)
+            : new HashSet<int>();
+        Curriculum = await _navigator.GetOrderedLessonsAsync(course.Id, completedIds);
+        var nav = await _navigator.GetNavigatorAsync(course.Id, id);
+        PrevLessonId = nav.PrevLessonId;
+        NextLessonId = nav.NextLessonId;
+
+        var quizzes = await _quizzes.GetForCourseAsync(course.Id);
+        var firstQuiz = quizzes.FirstOrDefault();
+        if (firstQuiz is not null)
+        {
+            AssessmentLinkLabel = $"Quiz: {firstQuiz.Title}";
+            AssessmentLinkUrl = $"/Practice/Quiz?id={firstQuiz.Id}";
+        }
+        else
+        {
+            var courseAssignments = await _assignments.GetForCourseAsync(course.Id);
+            var firstAssignment = courseAssignments.FirstOrDefault();
+            if (firstAssignment is not null)
+            {
+                AssessmentLinkLabel = $"Assignment: {firstAssignment.Title}";
+                AssessmentLinkUrl = $"/Courses/Assignments/Detail?id={firstAssignment.Id}";
+            }
+        }
+
         if (userId is not null && isEnrolled)
         {
             await LoadEnrolledStateAsync(userId, lesson);
@@ -260,6 +308,55 @@ public class ViewModel : PageModel
 
         await _progress.UnmarkAsync(userId, lesson.Module.CourseId, id);
         return await LessonActionResultAsync(userId, lesson, "Lesson marked as not completed.", "success");
+    }
+
+    public async Task<IActionResult> OnPostCompleteAndNextAsync(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return Challenge();
+        }
+
+        if (await IsSuspendedAsync())
+        {
+            return Forbid();
+        }
+
+        var lesson = await _lessons.GetByIdAsync(id);
+        if (lesson?.Module?.Course is null)
+        {
+            return NotFound();
+        }
+
+        var courseId = lesson.Module.CourseId;
+        if (await _enrollments.IsAccessExpiredAsync(userId, courseId))
+        {
+            TempData["Message"] = "Your access to this course has expired. Please renew to continue learning.";
+            TempData["MessageType"] = "danger";
+            return RedirectToPage(new { id });
+        }
+
+        var result = await _progress.MarkCompleteAsync(userId, courseId, id);
+        if (!result.Ok)
+        {
+            TempData["Message"] = result.Error;
+            TempData["MessageType"] = "danger";
+            return RedirectToPage(new { id });
+        }
+
+        if (await _progress.GetProgressPercentAsync(userId, courseId) == 100)
+        {
+            await _credits.ProcessCourseCompletionAsync(userId, courseId);
+        }
+
+        var nav = await _navigator.GetNavigatorAsync(courseId, id);
+        if (nav.NextLessonId is { } nextId)
+        {
+            return RedirectToPage(new { id = nextId });
+        }
+
+        return RedirectToPage("/Courses/Details", new { id = courseId });
     }
 
     public async Task<IActionResult> OnPostSaveNoteAsync(int id)

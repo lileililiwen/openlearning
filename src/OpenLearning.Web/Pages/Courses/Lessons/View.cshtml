@@ -104,32 +104,52 @@
                 <partial name="_LessonActions" model="Model" />
             </div>
         }
+
+        @if (Model.CanTrackProgress)
+        {
+            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mt-3">
+                <div class="d-flex gap-2">
+                    @if (Model.PrevLessonId is { } prevId)
+                    {
+                        <a class="btn btn-outline-secondary" asp-page="/Courses/Lessons/View" asp-route-id="@prevId">
+                            &laquo; @Localizer["Previous"]
+                        </a>
+                    }
+                    @if (Model.NextLessonId is { } nextId)
+                    {
+                        <a class="btn btn-outline-primary" asp-page="/Courses/Lessons/View" asp-route-id="@nextId">
+                            @Localizer["Next"] &raquo;
+                        </a>
+                    }
+                </div>
+                <form method="post" asp-page-handler="CompleteAndNext" asp-route-id="@Model.Lesson.Id" class="d-inline">
+                    <button type="submit" class="btn btn-success">
+                        @Localizer["Complete & Next"]
+                    </button>
+                </form>
+            </div>
+        }
     </div>
 
     <div class="col-lg-4">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h2 class="h6">@Localizer["Module lessons"]</h2>
-                <ul class="list-unstyled mb-3">
-                    @foreach (var lesson in Model.ModuleLessons)
-                    {
-                        <li class="mb-1">
-                            @if (lesson.Id == Model.Lesson.Id)
-                            {
-                                <span class="fw-semibold">&#9656; @lesson.Title</span>
-                            }
-                            else
-                            {
-                                <a asp-page="/Courses/Lessons/View" asp-route-id="@lesson.Id">@lesson.Title</a>
-                            }
-                        </li>
-                    }
-                </ul>
-                <a class="btn btn-outline-primary w-100" asp-page="/Courses/Details" asp-route-id="@course.Id">
+                <partial name="_CurriculumSidebar" model="(Model.Curriculum, Model.Lesson.Id)" />
+                <a class="btn btn-outline-primary w-100 mt-3" asp-page="/Courses/Details" asp-route-id="@course.Id">
                     @Localizer["Back to course"]
                 </a>
             </div>
         </div>
+
+        @if (Model.AssessmentLinkUrl is not null)
+        {
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <h2 class="h6">@Localizer["Assessment"]</h2>
+                    <a class="btn btn-outline-primary w-100" href="@Model.AssessmentLinkUrl">@Model.AssessmentLinkLabel</a>
+                </div>
+            </div>
+        }
 
         @if (Model.Downloads.Count > 0)
         {

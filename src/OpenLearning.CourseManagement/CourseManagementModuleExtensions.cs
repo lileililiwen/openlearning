@@ -12,6 +12,7 @@ public static class CourseManagementModuleExtensions
         services.AddScoped<LessonService>();
         services.AddScoped<TagService>();
         services.AddScoped<CategoryService>();
+        services.AddScoped<LessonNavigatorService>();
         return services;
     }
 }

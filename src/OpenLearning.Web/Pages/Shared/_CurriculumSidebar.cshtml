@@ -1,0 +1,32 @@
+@using OpenLearning.CourseManagement.Services
+@model (IReadOnlyList<ModuleOutline> Curriculum, int CurrentLessonId)
+@inject IStringLocalizer<OpenLearning.Web.Pages.Courses.Lessons.ViewModel> Localizer
+
+<h2 class="h6">@Localizer["Course curriculum"]</h2>
+@foreach (var module in Model.Curriculum)
+{
+    <div class="mb-3">
+        <div class="small fw-semibold text-muted mb-1">@module.ModuleTitle</div>
+        <ul class="list-unstyled mb-0 ps-2">
+            @foreach (var lesson in module.Lessons)
+            {
+                <li class="mb-1">
+                    @if (lesson.Id == Model.CurrentLessonId)
+                    {
+                        <span class="fw-semibold">&#9656; @lesson.Title</span>
+                    }
+                    else
+                    {
+                        <a asp-page="/Courses/Lessons/View" asp-route-id="@lesson.Id">
+                            @if (lesson.IsCompleted)
+                            {
+                                <span class="text-success" title="@Localizer["Completed"]">&#10003;</span>
+                            }
+                            @lesson.Title
+                        </a>
+                    }
+                </li>
+            }
+        </ul>
+    </div>
+}

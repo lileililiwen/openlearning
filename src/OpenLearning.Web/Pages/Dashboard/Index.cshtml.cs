@@ -93,6 +93,9 @@ public class IndexModel : PageModel
     /// <summary>Assignments for enrolled courses that are due but not yet graded/submitted.</summary>
     public int AssignmentsDue { get; set; }
 
+    /// <summary>Course ID of the first due assignment, for deep-linking.</summary>
+    public int? FirstDueAssignmentCourseId { get; set; }
+
     public async Task OnGetAsync()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -181,6 +184,7 @@ public class IndexModel : PageModel
         }
 
         AssignmentsDue = due.Count;
+        FirstDueAssignmentCourseId = due.FirstOrDefault()?.CourseId;
     }
 
     /// <summary>
