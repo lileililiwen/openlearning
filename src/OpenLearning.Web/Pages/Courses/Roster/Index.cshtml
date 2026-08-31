@@ -56,8 +56,8 @@ else
                         <td>@row.StudentEmail</td>
                         <td>@row.EnrolledAt.ToString("yyyy-MM-dd")</td>
                         <td class="text-center" style="min-width: 160px">
-                            <div class="progress progress-thin mb-1">
-                                <div class="progress-bar" role="progressbar" style="width: @row.ProgressPercent%"></div>
+                            <div class="progress progress-thin mb-1" role="progressbar" aria-valuenow="@row.ProgressPercent" aria-valuemin="0" aria-valuemax="100" aria-label="Student progress: @row.ProgressPercent%">
+                                <div class="progress-bar" style="width: @row.ProgressPercent%"></div>
                             </div>
                             <span class="text-muted small">@row.ProgressPercent% (@row.CompletedLessons/@row.TotalLessons)</span>
                         </td>

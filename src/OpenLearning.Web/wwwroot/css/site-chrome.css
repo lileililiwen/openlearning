@@ -1,6 +1,21 @@
 /* Sidebar + topbar + breadcrumb chrome. */
 body { background: #f5f6fa; }
 
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    z-index: 999;
+    padding: 0.5rem 1rem;
+    background: #1f2937;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+.skip-link:focus {
+    left: 1rem;
+    top: 1rem;
+}
+
 .app-shell { display: flex; min-height: 100vh; }
 
 /* ----- Sidebar ----- */

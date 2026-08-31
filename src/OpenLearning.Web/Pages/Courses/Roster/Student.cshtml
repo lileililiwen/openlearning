@@ -18,8 +18,8 @@
             <div class="card-body">
                 <div class="text-muted small">Progress</div>
                 <div class="h2 mb-0">@Model.ProgressPercent%</div>
-                <div class="progress progress-thin mt-2">
-                    <div class="progress-bar" role="progressbar" style="width: @Model.ProgressPercent%"></div>
+                <div class="progress progress-thin mt-2" role="progressbar" aria-valuenow="@Model.ProgressPercent" aria-valuemin="0" aria-valuemax="100" aria-label="Student progress: @Model.ProgressPercent%">
+                    <div class="progress-bar" style="width: @Model.ProgressPercent%"></div>
                 </div>
             </div>
         </div>

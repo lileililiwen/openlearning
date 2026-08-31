@@ -1,0 +1,7 @@
+@model int
+@{
+    var label = ViewData["ProgressLabel"] as string ?? "Progress";
+}
+<div class="progress progress-thin mb-3" role="progressbar" aria-valuenow="@Model" aria-valuemin="0" aria-valuemax="100" aria-label="@label">
+    <div class="progress-bar" style="width: @Model%"></div>
+</div>

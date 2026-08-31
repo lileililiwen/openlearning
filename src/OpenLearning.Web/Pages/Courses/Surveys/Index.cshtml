@@ -50,14 +50,14 @@
                     </div>
                     <div class="col-md-5">
                         <input type="text" name="Questions[@i].Prompt" value="@row.Prompt" class="form-control form-control-sm"
-                               placeholder="Question @(i + 1)" maxlength="500" />
+                               placeholder="Question @(i + 1)" maxlength="500" aria-label="Question @(i + 1)" />
                     </div>
                     <div class="col-md-4">
                         <input type="text" name="Questions[@i].Options" value="@row.Options" class="form-control form-control-sm"
-                               placeholder="Choice options, comma separated" />
+                               placeholder="Choice options, comma separated" aria-label="Choice options for question @(i + 1)" />
                     </div>
                     <div class="col-md-1 form-check ms-2">
-                        <input type="checkbox" name="Questions[@i].IsRequired" value="true" class="form-check-input" title="Required" checked />
+                        <input type="checkbox" name="Questions[@i].IsRequired" value="true" class="form-check-input" title="Required" checked aria-label="Required" />
                     </div>
                 </div>
             }

@@ -56,10 +56,11 @@
     <link rel="stylesheet" href="~/css/site-chrome.css" asp-append-version="true" />
 </head>
 <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <div class="app-shell">
         @if (isSignedIn)
         {
-            <aside class="app-sidebar" id="appSidebar">
+            <aside class="app-sidebar" id="appSidebar" aria-label="Sidebar">
                 <div class="sidebar-brand">
                     <a class="sidebar-brand-link" asp-page="/Index" title="@siteName">
                         <i class="bi bi-mortarboard-fill"></i>
@@ -69,7 +70,7 @@
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
-                <nav class="sidebar-nav">
+                <nav class="sidebar-nav" aria-label="Primary">
                     @foreach (var group in menu.Groups)
                     {
                         if (group.Items.Count == 0)
@@ -115,7 +116,7 @@
         <div class="app-main">
             <header class="app-topbar">
                 <div class="d-flex align-items-center gap-3">
-                    <button type="button" class="btn btn-link topbar-toggle d-lg-none" data-sidebar-open aria-label="Open menu">
+                    <button type="button" class="btn btn-link topbar-toggle d-lg-none" data-sidebar-open aria-label="Open menu" aria-controls="appSidebar" aria-expanded="false">
                         <i class="bi bi-list fs-4"></i>
                     </button>
                     <a class="topbar-brand d-lg-none" asp-page="/Index">@siteName</a>
@@ -194,7 +195,7 @@
                 </nav>
             }
 
-            <main class="app-content pb-5">
+            <main id="main" class="app-content pb-5">
                 @RenderBody()
             </main>
 

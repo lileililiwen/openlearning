@@ -47,9 +47,8 @@
                 Manual questions are excluded from the score until graded. Grading a manual question adds it to the total.
             </p>
         }
-        <div class="progress progress-thin">
-            <div class="progress-bar" role="progressbar"
-                 style="width: @(attempt.MaxScore > 0 ? (int)Math.Round(attempt.Score * 100.0 / attempt.MaxScore) : 0)%"></div>
+        <div class="progress progress-thin" role="progressbar" aria-valuenow="@(attempt.MaxScore > 0 ? (int)Math.Round(attempt.Score * 100.0 / attempt.MaxScore) : 0)" aria-valuemin="0" aria-valuemax="100" aria-label="Quiz score">
+            <div class="progress-bar" style="width: @(attempt.MaxScore > 0 ? (int)Math.Round(attempt.Score * 100.0 / attempt.MaxScore) : 0)%"></div>
         </div>
     </div>
 </div>

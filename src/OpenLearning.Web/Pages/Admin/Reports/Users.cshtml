@@ -84,8 +84,8 @@
                             <td class="text-muted small" style="width: 130px">@item.Day.ToString("yyyy-MM-dd")</td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="progress flex-grow-1" style="height: 14px">
-                                        <div class="progress-bar" role="progressbar" style="width: @width%"></div>
+                                    <div class="progress flex-grow-1" style="height: 14px" role="progressbar" aria-valuenow="@width" aria-valuemin="0" aria-valuemax="100" aria-label="Daily count">
+                                        <div class="progress-bar" style="width: @width%"></div>
                                     </div>
                                     <span class="small text-muted" style="width: 40px">@item.Count</span>
                                 </div>

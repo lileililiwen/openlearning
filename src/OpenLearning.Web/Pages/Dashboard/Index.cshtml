@@ -151,8 +151,8 @@ else
                             <span>Progress</span>
                             <span>@item.ProgressPercent% (@item.CompletedLessons/@item.TotalLessons lessons)</span>
                         </div>
-                        <div class="progress progress-thin mb-3">
-                            <div class="progress-bar" role="progressbar" style="width: @item.ProgressPercent%"></div>
+                        <div class="progress progress-thin mb-3" role="progressbar" aria-valuenow="@item.ProgressPercent" aria-valuemin="0" aria-valuemax="100" aria-label="Course progress: @item.ProgressPercent%">
+                            <div class="progress-bar" style="width: @item.ProgressPercent%"></div>
                         </div>
 
                         <div class="small text-muted">

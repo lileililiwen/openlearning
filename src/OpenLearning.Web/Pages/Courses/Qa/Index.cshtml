@@ -54,10 +54,10 @@ else
                             <details>
                                 <summary class="btn btn-sm btn-outline-warning">举报</summary>
                                 <form method="post" asp-page-handler="Report" asp-route-courseId="@course.Id" class="mt-2">
-                                    <input type="hidden" name="contentType" value="Question" />
-                                    <input type="hidden" name="contentId" value="@q.Id" />
-                                    <input name="reason" class="form-control form-control-sm" maxlength="1000"
-                                           placeholder="举报原因…" required />
+                                     <input type="hidden" name="contentType" value="Question" />
+                                     <input type="hidden" name="contentId" value="@q.Id" />
+                                     <input name="reason" class="form-control form-control-sm" maxlength="1000"
+                                            placeholder="举报原因…" required aria-label="举报原因" />
                                     <button type="submit" class="btn btn-sm btn-warning mt-1">提交举报</button>
                                 </form>
                             </details>
@@ -88,10 +88,10 @@ else
                             <details class="d-inline-block ms-2">
                                 <summary class="btn btn-link btn-sm text-muted p-0">举报</summary>
                                 <form method="post" asp-page-handler="Report" asp-route-courseId="@course.Id" class="mt-1">
-                                    <input type="hidden" name="contentType" value="QuestionReply" />
-                                    <input type="hidden" name="contentId" value="@reply.Id" />
-                                    <input name="reason" class="form-control form-control-sm" maxlength="1000"
-                                           placeholder="举报原因…" required />
+                                     <input type="hidden" name="contentType" value="QuestionReply" />
+                                     <input type="hidden" name="contentId" value="@reply.Id" />
+                                     <input name="reason" class="form-control form-control-sm" maxlength="1000"
+                                            placeholder="举报原因…" required aria-label="举报原因" />
                                     <button type="submit" class="btn btn-sm btn-warning mt-1">提交举报</button>
                                 </form>
                             </details>
@@ -101,7 +101,7 @@ else
                 }
 
                 <form method="post" asp-page-handler="Reply" asp-route-questionId="@q.Id" class="mt-2 d-flex gap-2">
-                    <input name="replyBody" class="form-control form-control-sm" placeholder="回复该问题…" />
+                    <input name="replyBody" class="form-control form-control-sm" placeholder="回复该问题…" aria-label="回复该问题" />
                     <button type="submit" class="btn btn-sm btn-outline-primary">回复</button>
                 </form>
             </div>

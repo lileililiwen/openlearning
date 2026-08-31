@@ -104,16 +104,16 @@ else
                         else if (question.QuestionType == OpenLearning.Assessments.Models.QuestionType.FillBlank)
                         {
                             <input class="form-control" type="text" name="TextAnswers[@question.Id]"
-                                   placeholder="Type your answer" />
+                                   placeholder="Type your answer" aria-label="Fill in the blank answer" />
                         }
                         else if (question.QuestionType == OpenLearning.Assessments.Models.QuestionType.ShortAnswer)
                         {
                             <textarea class="form-control" name="TextAnswers[@question.Id]" rows="4"
-                                      placeholder="Write your answer"></textarea>
+                                      placeholder="Write your answer" aria-label="Short answer"></textarea>
                         }
                         else if (question.QuestionType == OpenLearning.Assessments.Models.QuestionType.FileUpload)
                         {
-                            <input class="form-control" type="file" name="Files[@question.Id]" />
+                            <input class="form-control" type="file" name="Files[@question.Id]" aria-label="Upload answer file" />
                         }
                     </div>
                 </div>

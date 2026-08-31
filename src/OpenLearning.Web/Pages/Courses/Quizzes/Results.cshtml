@@ -43,8 +43,8 @@ else
                         <td>@attempt.Score / @attempt.MaxScore</td>
                         <td style="min-width: 180px">
                             <div class="d-flex align-items-center gap-2">
-                                <div class="progress progress-thin flex-grow-1">
-                                    <div class="progress-bar" role="progressbar" style="width: @percent%"></div>
+                                <div class="progress progress-thin flex-grow-1" role="progressbar" aria-valuenow="@percent" aria-valuemin="0" aria-valuemax="100" aria-label="Quiz score">
+                                    <div class="progress-bar" style="width: @percent%"></div>
                                 </div>
                                 <span class="small text-muted">@percent%</span>
                             </div>

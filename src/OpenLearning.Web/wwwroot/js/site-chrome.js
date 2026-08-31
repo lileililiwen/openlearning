@@ -5,15 +5,45 @@
     // --- Sidebar chrome -------------------------------------------------
     var sidebar = document.getElementById('appSidebar');
     if (sidebar) {
+        var openBtn = document.querySelector('[data-sidebar-open]');
+        var focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
         function openSidebar() {
             sidebar.classList.add('open');
             document.body.classList.add('sidebar-open');
+            if (openBtn) openBtn.setAttribute('aria-expanded', 'true');
+            var first = sidebar.querySelector(focusableSelector);
+            if (first) first.focus();
         }
 
         function closeSidebar() {
             sidebar.classList.remove('open');
             document.body.classList.remove('sidebar-open');
+            if (openBtn) {
+                openBtn.setAttribute('aria-expanded', 'false');
+                openBtn.focus();
+            }
         }
+
+        sidebar.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+                closeSidebar();
+                return;
+            }
+            if (e.key === 'Tab' && sidebar.classList.contains('open')) {
+                var focusable = sidebar.querySelectorAll(focusableSelector);
+                if (focusable.length === 0) return;
+                var first = focusable[0];
+                var last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        });
 
         document.querySelectorAll('[data-sidebar-open]').forEach(function (el) {
             el.addEventListener('click', openSidebar);

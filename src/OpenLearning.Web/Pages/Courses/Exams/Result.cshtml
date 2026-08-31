@@ -55,9 +55,8 @@
                 <span class="badge bg-warning text-dark fs-6 ms-1">@pendingCount awaiting grading</span>
             }
         </div>
-        <div class="progress progress-thin mb-3">
-            <div class="progress-bar @(attempt.Passed ? "bg-success" : "bg-danger")" role="progressbar"
-                 style="width: @attempt.Percent%"></div>
+        <div class="progress progress-thin mb-3" role="progressbar" aria-valuenow="@attempt.Percent" aria-valuemin="0" aria-valuemax="100" aria-label="Exam score">
+            <div class="progress-bar @(attempt.Passed ? "bg-success" : "bg-danger")" style="width: @attempt.Percent%"></div>
         </div>
         <p class="text-muted small mb-0">
             Pass threshold: @exam.PassPercent%
