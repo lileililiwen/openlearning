@@ -105,10 +105,17 @@ jobs:
 
       - name: Emit quality metrics
         if: always()
+        env:
+          # Required for real Sonar metrics. Without these the Sonar steps above
+          # are skipped and we deliberately OMIT sonar.json so the dashboard
+          # shows n/a instead of fabricated zeros (see CONTRIBUTING.md).
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonarcloud.io' }}
         run: |
           mkdir -p metrics
           python3 - <<'EOF'
-          import json, glob
+          import json, glob, os, urllib.parse, urllib.request, urllib.error
           import xml.etree.ElementTree as ET
 
           build = {
@@ -132,10 +139,34 @@ jobs:
           audit_ok = "${{ steps.audit.outcome }}" == "success"
           json.dump({"high": 0 if audit_ok else 1, "critical": 0}, open("metrics/audit.json", "w"))
 
-          # Sonar values come from the SonarCloud project dashboard; store defaults
-          # here and let a configured Sonar run fill real numbers in the future.
-          json.dump({"bugs": 0, "vulnerabilities": 0, "codeSmells": 0, "duplication": 0.0},
-                    open("metrics/sonar.json", "w"))
+          # Sonar metrics are only meaningful when a real SonarCloud scan ran.
+          # We require SONAR_TOKEN and SONAR_PROJECT_KEY to be set, then pull the
+          # live values from the SonarCloud API. If Sonar did not run we OMIT
+          # sonar.json so the dashboard reports "n/a" instead of fake zeros.
+          token = os.environ.get("SONAR_TOKEN", "")
+          project_key = os.environ.get("SONAR_PROJECT_KEY", "")
+          if token and project_key:
+              host = os.environ.get("SONAR_HOST_URL", "https://sonarcloud.io").rstrip("/")
+              metric_keys = "bugs,vulnerabilities,code_smells,duplicated_lines_density"
+              url = (host + "/api/measures/component"
+                     "?component=" + urllib.parse.quote(project_key, safe="")
+                     + "&metricKeys=" + metric_keys)
+              req = urllib.request.Request(url, headers={"Authorization": "Bearer " + token})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as resp:
+                      data = json.loads(resp.read().decode())
+                  comp = data.get("component", {})
+                  m = {c["metric"]: c.get("value") for c in comp.get("measures", [])}
+                  json.dump({
+                      "bugs": int(m.get("bugs", 0) or 0),
+                      "vulnerabilities": int(m.get("vulnerabilities", 0) or 0),
+                      "codeSmells": int(m.get("code_smells", 0) or 0),
+                      "duplication": float(m.get("duplicated_lines_density", 0) or 0.0),
+                  }, open("metrics/sonar.json", "w"))
+              except (urllib.error.URLError, ValueError) as ex:
+                  print("::warning::Could not fetch Sonar metrics, omitting sonar.json:", ex)
+          else:
+              print("::notice::SonarCloud scan did not run (SONAR_TOKEN/SONAR_PROJECT_KEY not configured); omitting sonar.json so the dashboard shows n/a instead of fabricated zeros.")
           EOF
 
       - name: Render quality dashboard

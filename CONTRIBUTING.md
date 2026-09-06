@@ -58,6 +58,10 @@ The CI workflow already contains the Sonar steps; they activate automatically on
 
 The `Sonar End` step runs with `sonar.qualitygate.wait=true`, so CI fails when the new-code gate is red. Coverage XML is produced by `dotnet test` via `Coverlet.runsettings` (OpenCover format). If the secrets are absent the pipeline runs the format/build/test gates only.
 
+### Quality metrics are never fabricated
+
+All bugs / vulnerabilities / code-smells / duplication numbers shown in the quality dashboard are pulled live from the SonarCloud API **only when `SONAR_TOKEN` and `SONAR_PROJECT_KEY` are both set** (see the `Emit quality metrics` step in `ci.yml`). When those secrets are absent, the Sonar scan does not run and the dashboard deliberately omits those columns as `n/a` — **never zeros**. The earlier behavior that hardcoded `0` for every Sonar metric has been removed because it misled reviewers into thinking scans had passed. To get real Sonar numbers, configure the secrets above; nothing else is required.
+
 ## AI involvement markers
 
 Every pull request records the AI involvement of its code in the PR description (and, for large changes, as a commit footer):
