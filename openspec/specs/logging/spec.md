@@ -1,7 +1,8 @@
 # logging Specification
 
 ## Purpose
-TBD - created by archiving change logging. Update Purpose after archive.
+
+The logging specification covers operations are logged and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Operations are logged
 

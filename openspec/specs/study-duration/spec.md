@@ -1,7 +1,8 @@
 # study-duration Specification
 
 ## Purpose
-TBD - created by archiving change study-duration. Update Purpose after archive.
+
+The study-duration specification covers study duration is tracked and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Study duration is tracked
 

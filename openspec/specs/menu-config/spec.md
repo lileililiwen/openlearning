@@ -1,7 +1,8 @@
 # menu-config Specification
 
 ## Purpose
-TBD - created by archiving change navigation-chrome. Update Purpose after archive.
+
+The menu-config specification covers admin can manage menu groups and items and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Admin can manage menu groups and items
 

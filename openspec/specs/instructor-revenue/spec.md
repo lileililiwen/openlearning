@@ -1,7 +1,8 @@
 # instructor-revenue Specification
 
 ## Purpose
-TBD - created by archiving change instructor-revenue. Update Purpose after archive.
+
+The instructor-revenue specification covers instructor views revenue and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Instructor views revenue
 

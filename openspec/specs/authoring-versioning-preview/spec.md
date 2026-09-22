@@ -1,7 +1,8 @@
 # authoring-versioning-preview Specification
 
 ## Purpose
-TBD - created by archiving change authoring-versioning-preview. Update Purpose after archive.
+
+The authoring-versioning-preview specification covers draft and published revisions are isolated and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Draft and published revisions are isolated
 

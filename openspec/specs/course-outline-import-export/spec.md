@@ -1,7 +1,8 @@
 # course-outline-import-export Specification
 
 ## Purpose
-TBD - created by archiving change course-outline-import-export. Update Purpose after archive.
+
+The course-outline-import-export specification covers excel template for course outline and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Excel template for course outline
 

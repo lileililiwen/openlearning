@@ -1,7 +1,8 @@
 # architecture-enforcement Specification
 
 ## Purpose
-TBD - created by archiving change architecture-enforcement. Update Purpose after archive.
+
+The architecture-enforcement specification covers module boundaries are enforced by tests and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Module boundaries are enforced by tests
 

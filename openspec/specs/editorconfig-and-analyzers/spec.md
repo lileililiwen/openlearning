@@ -1,7 +1,8 @@
 # editorconfig-and-analyzers Specification
 
 ## Purpose
-TBD - created by archiving change editorconfig-and-analyzers. Update Purpose after archive.
+
+The editorconfig-and-analyzers specification covers code style is enforced by configuration and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Code style is enforced by configuration
 

@@ -1,7 +1,8 @@
 # practical-training Specification
 
 ## Purpose
-TBD - created by archiving change practical-training. Update Purpose after archive.
+
+The practical-training specification covers coordinators manage auditable placement lifecycles and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Coordinators manage auditable placement lifecycles
 

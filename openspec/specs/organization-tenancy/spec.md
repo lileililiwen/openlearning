@@ -1,7 +1,8 @@
 # organization-tenancy Specification
 
 ## Purpose
-TBD - created by archiving change organization-tenancy. Update Purpose after archive.
+
+The organization-tenancy specification covers platform administrators manage organization lifecycles and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Platform administrators manage organization lifecycles
 

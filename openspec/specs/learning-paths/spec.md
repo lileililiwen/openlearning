@@ -1,7 +1,8 @@
 # learning-paths Specification
 
 ## Purpose
-TBD - created by archiving change learning-paths. Update Purpose after archive.
+
+The learning-paths specification covers managers create versioned cross-course learning paths and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Managers create versioned cross-course learning paths
 

@@ -1,7 +1,8 @@
 # teacher-roster Specification
 
 ## Purpose
-TBD - created by archiving change teacher-roster. Update Purpose after archive.
+
+The teacher-roster specification covers teacher can view enrolled students and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Teacher can view enrolled students
 

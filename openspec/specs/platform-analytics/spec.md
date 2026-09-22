@@ -1,7 +1,8 @@
 # platform-analytics Specification
 
 ## Purpose
-TBD - created by archiving change platform-analytics. Update Purpose after archive.
+
+The platform-analytics specification covers admin can view revenue reports and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Admin can view revenue reports
 

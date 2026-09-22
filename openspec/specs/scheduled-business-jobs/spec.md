@@ -1,7 +1,8 @@
 # scheduled-business-jobs Specification
 
 ## Purpose
-TBD - created by archiving change scheduled-business-jobs. Update Purpose after archive.
+
+The scheduled-business-jobs specification covers unpaid orders are auto-closed and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Unpaid orders are auto-closed
 

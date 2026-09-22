@@ -1,7 +1,8 @@
 # course-tags Specification
 
 ## Purpose
-TBD - created by archiving change course-tags. Update Purpose after archive.
+
+The course-tags specification covers courses can be tagged and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Courses can be tagged
 

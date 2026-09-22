@@ -1,7 +1,8 @@
 # certificates Specification
 
 ## Purpose
-TBD - created by archiving change certificates. Update Purpose after archive.
+
+The certificates specification covers certificate is issued on completion and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Certificate is issued on completion
 

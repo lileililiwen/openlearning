@@ -1,7 +1,8 @@
 # memberships Specification
 
 ## Purpose
-TBD - created by archiving change memberships. Update Purpose after archive.
+
+The memberships specification covers admin can define membership plans and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Admin can define membership plans
 

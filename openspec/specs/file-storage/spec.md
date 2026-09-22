@@ -1,7 +1,8 @@
 # file-storage Specification
 
 ## Purpose
-TBD - created by archiving change file-storage. Update Purpose after archive.
+
+The file-storage specification covers files are stored with metadata and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Files are stored with metadata
 

@@ -1,7 +1,8 @@
 # scorm-content Specification
 
 ## Purpose
-TBD - created by archiving change scorm-content. Update Purpose after archive.
+
+The scorm-content specification covers instructor can attach a SCORM 1.2 package to a lesson and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Instructor can attach a SCORM 1.2 package to a lesson
 

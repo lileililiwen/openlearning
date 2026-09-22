@@ -1,7 +1,8 @@
 # credit-and-graduation Specification
 
 ## Purpose
-TBD - created by archiving change credit-and-graduation. Update Purpose after archive.
+
+The credit-and-graduation specification covers credits are awarded through an auditable ledger and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Credits are awarded through an auditable ledger
 

@@ -1,7 +1,8 @@
 # teacher-dashboard Specification
 
 ## Purpose
-TBD - created by archiving change dashboards. Update Purpose after archive.
+
+The teacher-dashboard specification covers teacher has a teaching dashboard and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Teacher has a teaching dashboard
 

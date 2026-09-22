@@ -1,7 +1,8 @@
 # messaging-channels Specification
 
 ## Purpose
-TBD - created by archiving change messaging-channels. Update Purpose after archive.
+
+The messaging-channels specification covers notifications can be sent over multiple channels and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Notifications can be sent over multiple channels
 

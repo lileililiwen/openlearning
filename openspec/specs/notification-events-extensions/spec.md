@@ -1,7 +1,8 @@
 # notification-events-extensions Specification
 
 ## Purpose
-TBD - created by archiving change notification-events-extensions. Update Purpose after archive.
+
+The notification-events-extensions specification covers import completion notification and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Import completion notification
 

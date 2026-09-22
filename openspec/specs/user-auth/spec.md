@@ -1,7 +1,8 @@
 # user-auth Specification
 
 ## Purpose
-TBD - created by archiving change initial-lms-mvp. Update Purpose after archive.
+
+The user-auth specification covers user can register and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: User can register
 

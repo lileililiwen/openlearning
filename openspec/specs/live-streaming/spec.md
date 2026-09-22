@@ -1,7 +1,8 @@
 # live-streaming Specification
 
 ## Purpose
-TBD - created by archiving change live-streaming. Update Purpose after archive.
+
+The live-streaming specification covers instructor schedules live sessions and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Instructor schedules live sessions
 

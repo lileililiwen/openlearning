@@ -1,7 +1,8 @@
 # user-profiles Specification
 
 ## Purpose
-TBD - created by archiving change user-profiles. Update Purpose after archive.
+
+The user-profiles specification covers user can manage their profile and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: User can manage their profile
 

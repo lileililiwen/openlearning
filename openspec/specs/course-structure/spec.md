@@ -1,7 +1,8 @@
 # course-structure Specification
 
 ## Purpose
-TBD - created by archiving change initial-lms-mvp. Update Purpose after archive.
+
+The course-structure specification covers course contains ordered modules and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Course contains ordered modules
 

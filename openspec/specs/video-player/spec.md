@@ -1,7 +1,8 @@
 # video-player Specification
 
 ## Purpose
-TBD - created by archiving change video-player. Update Purpose after archive.
+
+The video-player specification covers instructor can attach a video to a lesson and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Instructor can attach a video to a lesson
 

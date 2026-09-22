@@ -1,7 +1,8 @@
 # ci-pipeline Specification
 
 ## Purpose
-TBD - created by archiving change ci-pipeline. Update Purpose after archive.
+
+The ci-pipeline specification covers every push and PR is verified by CI and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Every push and PR is verified by CI
 

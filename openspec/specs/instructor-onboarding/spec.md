@@ -1,7 +1,8 @@
 # instructor-onboarding Specification
 
 ## Purpose
-TBD - created by archiving change user-management. Update Purpose after archive.
+
+The instructor-onboarding specification covers user can apply to become an instructor and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: User can apply to become an instructor
 

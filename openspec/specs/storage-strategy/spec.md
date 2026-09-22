@@ -1,7 +1,8 @@
 # storage-strategy Specification
 
 ## Purpose
-TBD - created by archiving change storage-strategy. Update Purpose after archive.
+
+The storage-strategy specification covers configurable storage strategy and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Configurable storage strategy
 

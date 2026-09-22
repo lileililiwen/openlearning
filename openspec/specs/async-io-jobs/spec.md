@@ -1,7 +1,8 @@
 # async-io-jobs Specification
 
 ## Purpose
-TBD - created by archiving change async-io-jobs. Update Purpose after archive.
+
+The async-io-jobs specification covers async IO jobs are persisted and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Async IO jobs are persisted
 

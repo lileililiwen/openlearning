@@ -1,7 +1,8 @@
 # study-tools Specification
 
 ## Purpose
-TBD - created by archiving change study-tools. Update Purpose after archive.
+
+The study-tools specification covers student can take and export lesson notes and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Student can take and export lesson notes
 

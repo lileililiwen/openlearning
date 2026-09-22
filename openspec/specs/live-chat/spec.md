@@ -1,7 +1,8 @@
 # live-chat Specification
 
 ## Purpose
-TBD - created by archiving change live-chat. Update Purpose after archive.
+
+The live-chat specification covers course has a chat room and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Course has a chat room
 

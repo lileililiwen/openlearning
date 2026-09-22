@@ -1,7 +1,8 @@
 # learner-notes Specification
 
 ## Purpose
-TBD - created by archiving change learner-notes. Update Purpose after archive.
+
+The learner-notes specification covers learners create contextual private notes and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Learners create contextual private notes
 

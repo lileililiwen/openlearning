@@ -1,7 +1,8 @@
 # payment-gateways Specification
 
 ## Purpose
-TBD - created by archiving change payment-gateways. Update Purpose after archive.
+
+The payment-gateways specification covers checkout creates a provider-neutral payment intent and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Checkout creates a provider-neutral payment intent
 

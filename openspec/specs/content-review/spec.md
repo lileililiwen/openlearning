@@ -1,7 +1,8 @@
 # content-review Specification
 
 ## Purpose
-TBD - created by archiving change content-review. Update Purpose after archive.
+
+The content-review specification covers courses pass through admin review and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Courses pass through admin review
 

@@ -1,7 +1,8 @@
 # qa-community Specification
 
 ## Purpose
-TBD - created by archiving change qa-community. Update Purpose after archive.
+
+The qa-community specification covers enrolled students can use course Q&A and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Enrolled students can use course Q&A
 

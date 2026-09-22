@@ -1,7 +1,8 @@
 # quality-dashboard Specification
 
 ## Purpose
-TBD - created by archiving change quality-dashboard. Update Purpose after archive.
+
+The quality-dashboard specification covers quality state is aggregated in one place and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Quality state is aggregated in one place
 

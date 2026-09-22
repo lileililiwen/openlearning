@@ -1,7 +1,8 @@
 # live-booking-calendar Specification
 
 ## Purpose
-TBD - created by archiving change live-booking-calendar. Update Purpose after archive.
+
+The live-booking-calendar specification covers instructors configure optional session booking and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Instructors configure optional session booking
 

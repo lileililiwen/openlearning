@@ -1,7 +1,8 @@
 # lti-13-integration Specification
 
 ## Purpose
-TBD - created by archiving change lti-13-integration. Update Purpose after archive.
+
+The lti-13-integration specification covers administrators control LTI registrations and deployments and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Administrators control LTI registrations and deployments
 

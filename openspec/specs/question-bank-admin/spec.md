@@ -1,7 +1,8 @@
 # question-bank-admin Specification
 
 ## Purpose
-TBD - created by archiving change question-bank-admin. Update Purpose after archive.
+
+The question-bank-admin specification covers admin maintains a central question bank and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Admin maintains a central question bank
 

@@ -1,7 +1,8 @@
 # nuget-audit Specification
 
 ## Purpose
-TBD - created by archiving change nuget-audit. Update Purpose after archive.
+
+The nuget-audit specification covers dependency vulnerabilities are scanned and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Dependency vulnerabilities are scanned
 

@@ -1,7 +1,8 @@
 # operations-config Specification
 
 ## Purpose
-TBD - created by archiving change operations-config. Update Purpose after archive.
+
+The operations-config specification covers admin configures homepage banners and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Admin configures homepage banners
 

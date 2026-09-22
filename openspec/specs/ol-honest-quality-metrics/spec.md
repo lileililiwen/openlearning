@@ -1,7 +1,8 @@
 # ol-honest-quality-metrics Specification
 
 ## Purpose
-TBD - created by archiving change ol-honest-quality-metrics. Update Purpose after archive.
+
+The ol-honest-quality-metrics specification covers honest metrics and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Honest metrics
 Published quality metrics SHALL reflect real scans or be explicitly marked not collected.

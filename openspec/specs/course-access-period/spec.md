@@ -1,7 +1,8 @@
 # course-access-period Specification
 
 ## Purpose
-TBD - created by archiving change course-access-period. Update Purpose after archive.
+
+The course-access-period specification covers enrollment carries an access expiry and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Enrollment carries an access expiry
 

@@ -1,7 +1,8 @@
 # lesson-preview Specification
 
 ## Purpose
-TBD - created by archiving change lesson-preview. Update Purpose after archive.
+
+The lesson-preview specification covers instructor can mark lessons as preview and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Instructor can mark lessons as preview
 

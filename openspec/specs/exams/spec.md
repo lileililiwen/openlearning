@@ -1,7 +1,8 @@
 # exams Specification
 
 ## Purpose
-TBD - created by archiving change exams. Update Purpose after archive.
+
+The exams specification covers instructor can create exams and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Instructor can create exams
 

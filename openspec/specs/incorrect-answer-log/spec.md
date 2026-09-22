@@ -1,7 +1,8 @@
 # incorrect-answer-log Specification
 
 ## Purpose
-TBD - created by archiving change incorrect-answer-log. Update Purpose after archive.
+
+The incorrect-answer-log specification covers wrong answers are collected per student and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Wrong answers are collected per student
 

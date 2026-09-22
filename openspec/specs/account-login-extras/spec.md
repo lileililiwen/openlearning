@@ -1,7 +1,8 @@
 # account-login-extras Specification
 
 ## Purpose
-TBD - created by archiving change account-login-extras. Update Purpose after archive.
+
+The account-login-extras specification covers user can sign in with phone and verification code and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: User can sign in with phone and verification code
 

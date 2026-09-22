@@ -1,7 +1,8 @@
 # coverage-gates Specification
 
 ## Purpose
-TBD - created by archiving change coverage-gates. Update Purpose after archive.
+
+The coverage-gates specification covers unit tests cover core logic and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Unit tests cover core logic
 

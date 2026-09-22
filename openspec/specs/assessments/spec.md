@@ -1,7 +1,8 @@
 # assessments Specification
 
 ## Purpose
-TBD - created by archiving change assessments. Update Purpose after archive.
+
+The assessments specification covers instructor can create and manage quizzes and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Instructor can create and manage quizzes
 

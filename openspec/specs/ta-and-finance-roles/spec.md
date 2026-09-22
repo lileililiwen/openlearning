@@ -1,7 +1,8 @@
 # ta-and-finance-roles Specification
 
 ## Purpose
-TBD - created by archiving change ta-and-finance-roles. Update Purpose after archive.
+
+The ta-and-finance-roles specification covers two additional roles exist and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Two additional roles exist
 

@@ -1,7 +1,8 @@
 # ai-code-conventions Specification
 
 ## Purpose
-TBD - created by archiving change ai-code-conventions. Update Purpose after archive.
+
+The ai-code-conventions specification covers aI involvement is recorded and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: AI involvement is recorded
 

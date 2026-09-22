@@ -1,7 +1,8 @@
 # affiliate-distribution Specification
 
 ## Purpose
-TBD - created by archiving change affiliate-distribution. Update Purpose after archive.
+
+The affiliate-distribution specification covers distributor role exists and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Distributor role exists
 

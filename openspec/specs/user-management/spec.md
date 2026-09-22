@@ -1,7 +1,8 @@
 # user-management Specification
 
 ## Purpose
-TBD - created by archiving change user-management. Update Purpose after archive.
+
+The user-management specification covers admin can search and view users and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Admin can search and view users
 

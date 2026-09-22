@@ -1,7 +1,8 @@
 # grade-export Specification
 
 ## Purpose
-TBD - created by archiving change grade-export. Update Purpose after archive.
+
+The grade-export specification covers assignment submissions export and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Assignment submissions export
 

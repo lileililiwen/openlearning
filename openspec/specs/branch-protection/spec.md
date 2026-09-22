@@ -1,7 +1,8 @@
 # branch-protection Specification
 
 ## Purpose
-TBD - created by archiving change branch-protection. Update Purpose after archive.
+
+The branch-protection specification covers the main branch is protected and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: The main branch is protected
 

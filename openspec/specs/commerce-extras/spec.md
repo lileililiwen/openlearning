@@ -1,7 +1,8 @@
 # commerce-extras Specification
 
 ## Purpose
-TBD - created by archiving change commerce-extras. Update Purpose after archive.
+
+The commerce-extras specification covers student can use a shopping cart and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Student can use a shopping cart
 

@@ -1,7 +1,8 @@
 # student-dashboard Specification
 
 ## Purpose
-TBD - created by archiving change dashboards. Update Purpose after archive.
+
+The student-dashboard specification covers student has a personalized dashboard and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Student has a personalized dashboard
 

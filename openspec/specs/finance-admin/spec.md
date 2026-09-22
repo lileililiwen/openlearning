@@ -1,7 +1,8 @@
 # finance-admin Specification
 
 ## Purpose
-TBD - created by archiving change finance-admin. Update Purpose after archive.
+
+The finance-admin specification covers admin views and filters all orders and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Admin views and filters all orders
 

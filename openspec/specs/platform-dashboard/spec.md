@@ -1,7 +1,8 @@
 # platform-dashboard Specification
 
 ## Purpose
-TBD - created by archiving change dashboards. Update Purpose after archive.
+
+The platform-dashboard specification covers admin has a platform dashboard and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Admin has a platform dashboard
 

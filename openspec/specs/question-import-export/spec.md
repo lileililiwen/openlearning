@@ -1,7 +1,8 @@
 # question-import-export Specification
 
 ## Purpose
-TBD - created by archiving change question-import-export. Update Purpose after archive.
+
+The question-import-export specification covers excel template for questions and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Excel template for questions
 

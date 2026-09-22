@@ -1,7 +1,8 @@
 # navigation-chrome Specification
 
 ## Purpose
-TBD - created by archiving change navigation-chrome. Update Purpose after archive.
+
+The navigation-chrome specification covers sidebar renders grouped menu items per role and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Sidebar renders grouped menu items per role
 

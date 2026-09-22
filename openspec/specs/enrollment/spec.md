@@ -1,7 +1,8 @@
 # enrollment Specification
 
 ## Purpose
-TBD - created by archiving change initial-lms-mvp. Update Purpose after archive.
+
+The enrollment specification covers student can enroll in a published course and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Student can enroll in a published course
 

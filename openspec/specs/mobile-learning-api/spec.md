@@ -1,7 +1,8 @@
 # mobile-learning-api Specification
 
 ## Purpose
-TBD - created by archiving change mobile-learning-api. Update Purpose after archive.
+
+The mobile-learning-api specification covers mobile clients use a versioned authorized API and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Mobile clients use a versioned authorized API
 

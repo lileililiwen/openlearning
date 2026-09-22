@@ -1,7 +1,8 @@
 # exam-integrity Specification
 
 ## Purpose
-TBD - created by archiving change exam-integrity. Update Purpose after archive.
+
+The exam-integrity specification covers exam integrity sessions are server-authoritative and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Exam integrity sessions are server-authoritative
 

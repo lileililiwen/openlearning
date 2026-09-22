@@ -1,7 +1,8 @@
 # account-settings Specification
 
 ## Purpose
-TBD - created by archiving change account-settings. Update Purpose after archive.
+
+The account-settings specification covers user can verify their real name and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: User can verify their real name
 

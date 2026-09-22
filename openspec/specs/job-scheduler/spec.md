@@ -1,7 +1,8 @@
 # job-scheduler Specification
 
 ## Purpose
-TBD - created by archiving change job-scheduler. Update Purpose after archive.
+
+The job-scheduler specification covers system persists a registry of jobs and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: System persists a registry of jobs
 

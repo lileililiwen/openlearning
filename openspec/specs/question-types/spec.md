@@ -1,7 +1,8 @@
 # question-types Specification
 
 ## Purpose
-TBD - created by archiving change question-types. Update Purpose after archive.
+
+The question-types specification covers quizzes support multiple question types and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Quizzes support multiple question types
 

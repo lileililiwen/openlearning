@@ -1,7 +1,8 @@
 # student-bulk-import Specification
 
 ## Purpose
-TBD - created by archiving change student-bulk-import. Update Purpose after archive.
+
+The student-bulk-import specification covers excel template for student import and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Excel template for student import
 

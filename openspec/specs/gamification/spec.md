@@ -1,7 +1,8 @@
 # gamification Specification
 
 ## Purpose
-TBD - created by archiving change gamification. Update Purpose after archive.
+
+The gamification specification covers points come only from trusted idempotent rules and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Points come only from trusted idempotent rules
 

@@ -1,7 +1,8 @@
 # notifications Specification
 
 ## Purpose
-TBD - created by archiving change notifications. Update Purpose after archive.
+
+The notifications specification covers user has a notification inbox and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: User has a notification inbox
 

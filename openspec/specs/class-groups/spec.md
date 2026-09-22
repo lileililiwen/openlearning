@@ -1,7 +1,8 @@
 # class-groups Specification
 
 ## Purpose
-TBD - created by archiving change class-groups. Update Purpose after archive.
+
+The class-groups specification covers course owner can create class groups and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Course owner can create class groups
 

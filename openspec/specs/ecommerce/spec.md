@@ -1,7 +1,8 @@
 # ecommerce Specification
 
 ## Purpose
-TBD - created by archiving change ecommerce. Update Purpose after archive.
+
+The ecommerce specification covers instructor can set a course price and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Instructor can set a course price
 

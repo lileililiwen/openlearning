@@ -1,7 +1,8 @@
 # lms-core Specification
 
 ## Purpose
-TBD - created by archiving change initial-lms-mvp. Update Purpose after archive.
+
+The lms-core specification covers application provides shared navigation and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Application provides shared navigation
 

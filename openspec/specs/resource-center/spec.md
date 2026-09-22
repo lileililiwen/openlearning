@@ -1,7 +1,8 @@
 # resource-center Specification
 
 ## Purpose
-TBD - created by archiving change resource-center. Update Purpose after archive.
+
+The resource-center specification covers resource library listing and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Resource library listing
 

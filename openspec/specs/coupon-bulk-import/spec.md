@@ -1,7 +1,8 @@
 # coupon-bulk-import Specification
 
 ## Purpose
-TBD - created by archiving change coupon-bulk-import. Update Purpose after archive.
+
+The coupon-bulk-import specification covers excel template for coupons and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Excel template for coupons
 

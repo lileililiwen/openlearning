@@ -1,7 +1,8 @@
 # invoice-management Specification
 
 ## Purpose
-TBD - created by archiving change invoice-management. Update Purpose after archive.
+
+The invoice-management specification covers invoice entity and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Invoice entity
 

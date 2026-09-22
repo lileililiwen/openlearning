@@ -1,7 +1,8 @@
 # course-discovery Specification
 
 ## Purpose
-TBD - created by archiving change course-discovery. Update Purpose after archive.
+
+The course-discovery specification covers student can search the catalog and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Student can search the catalog
 

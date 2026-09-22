@@ -1,7 +1,8 @@
 # system-config Specification
 
 ## Purpose
-TBD - created by archiving change system-config. Update Purpose after archive.
+
+The system-config specification covers admin edits system parameters and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Admin edits system parameters
 

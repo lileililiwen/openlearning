@@ -1,7 +1,8 @@
 # review-followups Specification
 
 ## Purpose
-TBD - created by archiving change review-followups. Update Purpose after archive.
+
+The review-followups specification covers users can comment on reviews and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Users can comment on reviews
 

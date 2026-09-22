@@ -1,7 +1,8 @@
 # lesson-sequencing-navigation Specification
 
 ## Purpose
-TBD - created by archiving change lesson-sequencing-navigation. Update Purpose after archive.
+
+The lesson-sequencing-navigation specification covers lessons are sequenced across the whole course and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Lessons are sequenced across the whole course
 

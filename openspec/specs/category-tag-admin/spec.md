@@ -1,7 +1,8 @@
 # category-tag-admin Specification
 
 ## Purpose
-TBD - created by archiving change category-tag-admin. Update Purpose after archive.
+
+The category-tag-admin specification covers admin manages course categories and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Admin manages course categories
 

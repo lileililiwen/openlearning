@@ -1,7 +1,8 @@
 # ratings-reviews Specification
 
 ## Purpose
-TBD - created by archiving change ratings-reviews. Update Purpose after archive.
+
+The ratings-reviews specification covers enrolled student can rate and review a course and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Enrolled student can rate and review a course
 

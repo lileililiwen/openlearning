@@ -1,7 +1,8 @@
 # assignments Specification
 
 ## Purpose
-TBD - created by archiving change assignments. Update Purpose after archive.
+
+The assignments specification covers instructor can create assignments and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Instructor can create assignments
 

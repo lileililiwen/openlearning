@@ -1,7 +1,8 @@
 # sonar-quality-gates Specification
 
 ## Purpose
-TBD - created by archiving change sonar-quality-gates. Update Purpose after archive.
+
+The sonar-quality-gates specification covers sonar analyzes every change and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Sonar analyzes every change
 

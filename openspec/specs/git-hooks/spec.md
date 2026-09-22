@@ -1,7 +1,8 @@
 # git-hooks Specification
 
 ## Purpose
-TBD - created by archiving change git-hooks. Update Purpose after archive.
+
+The git-hooks specification covers local Git hooks run on commit and push and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Local Git hooks run on commit and push
 

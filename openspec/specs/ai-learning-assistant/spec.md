@@ -1,7 +1,8 @@
 # ai-learning-assistant Specification
 
 ## Purpose
-TBD - created by archiving change ai-learning-assistant. Update Purpose after archive.
+
+The ai-learning-assistant specification covers aI features are explicitly governed and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: AI features are explicitly governed
 

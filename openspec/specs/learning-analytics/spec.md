@@ -1,7 +1,8 @@
 # learning-analytics Specification
 
 ## Purpose
-TBD - created by archiving change analytics-expansion. Update Purpose after archive.
+
+The learning-analytics specification covers learning events are governed and deduplicated and the related scenarios that govern this capability across the platform.
 ## Requirements
 ### Requirement: Learning events are governed and deduplicated
 
