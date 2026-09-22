@@ -32,4 +32,13 @@ public class Lesson
     public bool IsPreview { get; set; }
 
     public int OrderIndex { get; set; }
+
+    /// <summary>
+    /// Bumped whenever the lesson content changes (edit) or its parent course is
+    /// (re)published. Cached clients carry the revision they cached with each
+    /// sync event so the server can detect a stale-revision event and surface
+    /// it as a conflict rather than silently accepting progress against
+    /// out-of-date content.
+    /// </summary>
+    public int ContentRevision { get; set; } = 1;
 }

@@ -88,6 +88,7 @@ public class LessonService
         lesson.VideoPosterUrl = NullIfBlank(videoPosterUrl);
         lesson.SubtitleUrl = NullIfBlank(subtitleUrl);
         lesson.IsPreview = isPreview;
+        lesson.ContentRevision += 1;
         await _db.SaveChangesAsync();
         return true;
     }

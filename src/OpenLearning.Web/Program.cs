@@ -589,6 +589,17 @@ app.MapPost("/api/mobile/v1/sync/notes", async (NoteSyncRequest request, HttpCon
     return Results.Ok(await sync.SyncNoteAsync(userId, request));
 });
 
+app.MapPost("/api/mobile/v1/sync/batch", async (BatchSyncRequest request, HttpContext http, MobileSyncService sync) =>
+{
+    var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    return Results.Ok(await sync.SyncBatchAsync(userId, request));
+});
+
 app.MapPost("/api/mobile/v1/push/register", async (MobilePushRegisterRequest request, HttpContext http, MobilePushService push) =>
 {
     var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);

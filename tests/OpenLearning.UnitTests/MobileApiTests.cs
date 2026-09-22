@@ -400,6 +400,218 @@ public sealed class MobileApiTests
         Assert.Single(await db.Set<SyncOperation>().ToListAsync());
     }
 
+    // ===== Content revision staleness =====
+
+    [Fact]
+    public async Task Stale_revision_event_is_retained_as_conflict()
+    {
+        var (db, sync) = CreateSync();
+        var courseId = await SeedCourseWithDownloadAsync(db);
+        db.Set<EnrollmentEntity>().Add(new EnrollmentEntity { StudentId = "learner-1", CourseId = courseId });
+        await db.SaveChangesAsync();
+        var lessonId = await db.Set<Lesson>().Select(l => l.Id).SingleAsync();
+        var lesson = await db.Set<Lesson>().SingleAsync();
+        lesson.ContentRevision = 5;
+        await db.SaveChangesAsync();
+
+        var result = await sync.SyncProgressAsync("learner-1",
+            new ProgressSyncRequest("op-stale", courseId, lessonId, ContentRevision: 2));
+
+        Assert.Equal("conflict", result.Outcome);
+        using var doc = JsonDocument.Parse(result.CanonicalState!);
+        Assert.Equal(5, doc.RootElement.GetProperty("currentRevision").GetInt32());
+        Assert.Equal(2, doc.RootElement.GetProperty("eventRevision").GetInt32());
+        Assert.Empty(await db.Set<LessonCompletion>().ToListAsync());
+    }
+
+    [Fact]
+    public async Task Current_revision_event_is_accepted()
+    {
+        var (db, sync) = CreateSync();
+        var courseId = await SeedCourseWithDownloadAsync(db);
+        db.Set<EnrollmentEntity>().Add(new EnrollmentEntity { StudentId = "learner-1", CourseId = courseId });
+        await db.SaveChangesAsync();
+        var lessonId = await db.Set<Lesson>().Select(l => l.Id).SingleAsync();
+        var lesson = await db.Set<Lesson>().SingleAsync();
+        lesson.ContentRevision = 3;
+        await db.SaveChangesAsync();
+
+        var result = await sync.SyncProgressAsync("learner-1",
+            new ProgressSyncRequest("op-current", courseId, lessonId, ContentRevision: 3));
+
+        Assert.Equal("applied", result.Outcome);
+        Assert.Single(await db.Set<LessonCompletion>().ToListAsync());
+    }
+
+    [Fact]
+    public async Task Null_revision_event_is_accepted_like_before()
+    {
+        var (db, sync) = CreateSync();
+        var courseId = await SeedCourseWithDownloadAsync(db);
+        db.Set<EnrollmentEntity>().Add(new EnrollmentEntity { StudentId = "learner-1", CourseId = courseId });
+        await db.SaveChangesAsync();
+        var lessonId = await db.Set<Lesson>().Select(l => l.Id).SingleAsync();
+
+        var result = await sync.SyncProgressAsync("learner-1",
+            new ProgressSyncRequest("op-no-rev", courseId, lessonId));
+
+        Assert.Equal("applied", result.Outcome);
+    }
+
+    // ===== Batch sync =====
+
+    [Fact]
+    public async Task Batch_processes_items_independently_in_input_order()
+    {
+        var (db, sync) = CreateSync();
+        var courseId = await SeedCourseWithDownloadAsync(db);
+        db.Set<EnrollmentEntity>().Add(new EnrollmentEntity { StudentId = "learner-1", CourseId = courseId });
+        await db.SaveChangesAsync();
+        var lessonId = await db.Set<Lesson>().Select(l => l.Id).SingleAsync();
+
+        var request = new BatchSyncRequest(new[]
+        {
+            new BatchSyncItem(
+                Type: BatchSyncItemTypes.ProgressComplete,
+                OperationId: "batch-1",
+                CourseId: courseId,
+                LessonId: lessonId),
+            new BatchSyncItem(
+                Type: BatchSyncItemTypes.NoteUpsert,
+                OperationId: "batch-2",
+                NoteId: 0,
+                BaseVersion: null,
+                Body: "from batch",
+                ContextType: "Course",
+                ContextId: courseId,
+                MediaOffsetSeconds: null,
+                Tags: null),
+            new BatchSyncItem(
+                Type: "unknown.type",
+                OperationId: "batch-3",
+                CourseId: 0, LessonId: 0),
+        });
+
+        var response = await sync.SyncBatchAsync("learner-1", request);
+
+        Assert.Equal(3, response.Results.Count);
+        Assert.Equal("batch-1", response.Results[0].OperationId);
+        Assert.Equal("applied", response.Results[0].Outcome);
+        Assert.Equal("batch-2", response.Results[1].OperationId);
+        Assert.Equal("applied", response.Results[1].Outcome);
+        Assert.Equal("batch-3", response.Results[2].OperationId);
+        Assert.Equal("rejected", response.Results[2].Outcome);
+
+        Assert.Single(await db.Set<LessonCompletion>().ToListAsync());
+        Assert.Single(await db.Set<LearnerNote>().ToListAsync());
+    }
+
+    [Fact]
+    public async Task Batch_partial_failure_keeps_valid_items()
+    {
+        var (db, sync) = CreateSync();
+        var courseId = await SeedCourseWithDownloadAsync(db);
+        db.Set<EnrollmentEntity>().Add(new EnrollmentEntity { StudentId = "learner-1", CourseId = courseId });
+        await db.SaveChangesAsync();
+        var lessonId = await db.Set<Lesson>().Select(l => l.Id).SingleAsync();
+        // Add a second course + lesson that the learner is NOT enrolled in.
+        var otherCourse = new Course { Title = "Other", InstructorId = "i1" };
+        db.Set<Course>().Add(otherCourse);
+        await db.SaveChangesAsync();
+        var otherModule = new Module { CourseId = otherCourse.Id, Title = "M" };
+        db.Set<Module>().Add(otherModule);
+        await db.SaveChangesAsync();
+        var otherLesson = new Lesson { ModuleId = otherModule.Id, Title = "OL", ContentRevision = 1 };
+        db.Set<Lesson>().Add(otherLesson);
+        await db.SaveChangesAsync();
+
+        var lesson = await db.Set<Lesson>().SingleAsync(l => l.Id == lessonId);
+        lesson.ContentRevision = 2;
+        await db.SaveChangesAsync();
+
+        var request = new BatchSyncRequest(new[]
+        {
+            new BatchSyncItem(
+                Type: BatchSyncItemTypes.ProgressComplete,
+                OperationId: "ok-1",
+                CourseId: courseId,
+                LessonId: lessonId),
+            new BatchSyncItem(
+                Type: BatchSyncItemTypes.ProgressComplete,
+                OperationId: "wrong-course",
+                CourseId: otherCourse.Id,
+                LessonId: otherLesson.Id),
+            new BatchSyncItem(
+                Type: BatchSyncItemTypes.ProgressComplete,
+                OperationId: "stale-rev",
+                CourseId: courseId,
+                LessonId: lessonId,
+                ContentRevision: 0),
+        });
+
+        var response = await sync.SyncBatchAsync("learner-1", request);
+
+        Assert.Equal(3, response.Results.Count);
+        Assert.Equal("applied", response.Results[0].Outcome);
+        Assert.Equal("rejected", response.Results[1].Outcome);
+        Assert.Equal("conflict", response.Results[2].Outcome);
+        Assert.Single(await db.Set<LessonCompletion>().ToListAsync());
+    }
+
+    [Fact]
+    public async Task Batch_unknown_type_records_against_caller_userId_not_operationId()
+    {
+        // Regression: an earlier implementation recorded the operation id as
+        // the user id, which would make the same operation id collide across
+        // users on retry and on prior-outcome lookup.
+        var (db, sync) = CreateSync();
+
+        var request = new BatchSyncRequest(new[]
+        {
+            new BatchSyncItem(
+                Type: "mystery.type",
+                OperationId: "op-x",
+                CourseId: 0, LessonId: 0),
+        });
+
+        var response = await sync.SyncBatchAsync("learner-42", request);
+
+        Assert.Equal("rejected", response.Results[0].Outcome);
+        var op = await db.Set<SyncOperation>().SingleAsync();
+        Assert.Equal("learner-42", op.UserId);
+        Assert.Equal("op-x", op.OperationId);
+    }
+
+    [Fact]
+    public async Task Batch_note_item_records_as_NoteUpsert_type()
+    {
+        // Regression: an earlier implementation hardcoded the recorded
+        // SyncOperationType to ProgressComplete for every batch outcome,
+        // mislabeling note operations in the audit trail.
+        var (db, sync) = CreateSync();
+        var courseId = await SeedCourseWithDownloadAsync(db);
+
+        var request = new BatchSyncRequest(new[]
+        {
+            new BatchSyncItem(
+                Type: BatchSyncItemTypes.NoteUpsert,
+                OperationId: "note-1",
+                NoteId: 0,
+                BaseVersion: null,
+                Body: "from batch",
+                ContextType: "Course",
+                ContextId: courseId,
+                MediaOffsetSeconds: null,
+                Tags: null),
+        });
+
+        var response = await sync.SyncBatchAsync("learner-1", request);
+
+        Assert.Equal("applied", response.Results[0].Outcome);
+        var op = await db.Set<SyncOperation>().SingleAsync();
+        Assert.Equal(SyncOperationType.NoteUpsert, op.Type);
+    }
+
     // ===== Push device lifecycle =====
 
     [Fact]

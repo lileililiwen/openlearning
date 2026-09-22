@@ -258,8 +258,20 @@ public class CourseService
         course.Status = CourseStatus.Published;
         course.ReviewNote = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
         course.UpdatedAt = DateTime.UtcNow;
+        await BumpLessonRevisionsAsync(courseId);
         await _db.SaveChangesAsync();
         return true;
+    }
+
+    private async Task BumpLessonRevisionsAsync(int courseId)
+    {
+        var lessons = await _db.Set<Lesson>()
+            .Where(l => l.Module!.CourseId == courseId)
+            .ToListAsync();
+        foreach (var lesson in lessons)
+        {
+            lesson.ContentRevision += 1;
+        }
     }
 
     /// <summary>Admin rejects a course under review, sending it back to draft with a note.</summary>
