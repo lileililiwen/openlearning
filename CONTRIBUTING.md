@@ -37,9 +37,17 @@ If you cannot edit repository settings yourself, ask a maintainer and point at t
 The `CI` workflow runs on every push to `main` and every pull request:
 
 1. `dotnet restore`
-2. `dotnet format OpenLearning.sln --verify-no-changes` — fails on any formatting drift from `.editorconfig`
-3. `dotnet build OpenLearning.sln -c Release /warnaserror` — fails on any compiler or analyzer warning
-4. `dotnet test OpenLearning.sln -c Release --no-build` — fails on any failing test
+2. `dotnet list package --vulnerable --include-transitive` — fails on high/critical advisories
+3. `dotnet format OpenLearning.sln --verify-no-changes` — fails on any formatting drift from `.editorconfig`
+4. `dotnet build OpenLearning.sln -c Release /warnaserror` — fails on any compiler or analyzer warning
+5. `dotnet test OpenLearning.sln -c Release --no-build` — fails on any failing test
+6. `python3 scripts/check_incremental_coverage.py` — PR-only, fails when changed executable lines fall below 80% coverage
+
+On pull requests, three additional jobs run:
+
+- **`evidence-manifest`** — validates `quality-manifest.toml` (the capability evidence manifest) and runs the manifest unit tests. The manifest declares the change's changed paths, incremental coverage threshold, test classes, and migration impact. A PR that touches `src/` or `tests/` must populate this file; the gate fails when it is missing, malformed, or diverges from the actual diff.
+- **`migration-drift`** — spins up Postgres 16, applies migrations to an empty database, and generates an idempotent script. Fails when the model has pending changes not captured by any migration. Skipped when the manifest declares `migration_impact = "none"`.
+- **`accessibility-gate`** — runs `AccessibilityStructureTests` and `ResponsiveCssTests` against the changed pages.
 
 The workflow **must pass before merge** (required status check).
 
@@ -61,6 +69,8 @@ The `Sonar End` step runs with `sonar.qualitygate.wait=true`, so CI fails when t
 ### Quality metrics are never fabricated
 
 All bugs / vulnerabilities / code-smells / duplication numbers shown in the quality dashboard are pulled live from the SonarCloud API **only when `SONAR_TOKEN` and `SONAR_PROJECT_KEY` are both set** (see the `Emit quality metrics` step in `ci.yml`). When those secrets are absent, the Sonar scan does not run and the dashboard deliberately omits those columns as `n/a` — **never zeros**. The earlier behavior that hardcoded `0` for every Sonar metric has been removed because it misled reviewers into thinking scans had passed. To get real Sonar numbers, configure the secrets above; nothing else is required.
+
+The dashboard also renders a `## Release gates` table (one row per gate: `build`, `format`, `incremental-coverage`, `evidence-manifest`, `nuget-audit`, `accessibility`, `migration-drift`, `sonar`) and a `## Provenance` table (commit, run id, workflow, event, ref, actor, runner, dotnet version). Gates that did not run show as `unavailable`, never as a synthetic pass.
 
 ## AI involvement markers
 
