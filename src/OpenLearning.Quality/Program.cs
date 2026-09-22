@@ -16,7 +16,12 @@ public sealed record QualityRun(
     int? Vulnerabilities,
     int? CodeSmells,
     double? Duplication,
-    int HighAdvisories);
+    int HighAdvisories,
+    IReadOnlyList<GateStatus> Gates,
+    IReadOnlyDictionary<string, string> Provenance);
+
+/// <summary>One gate's outcome for the run (pass / fail / unavailable).</summary>
+public sealed record GateStatus(string Name, string Status, string? Detail);
 
 /// <summary>
 /// Merges the CI-emitted metrics JSON files (build/coverage/sonar/audit) with
@@ -99,6 +104,8 @@ public static class Program
         var coverage = ReadJson(Path.Combine(metricsDir, "coverage.json"));
         var sonar = ReadJson(Path.Combine(metricsDir, "sonar.json"));
         var audit = ReadJson(Path.Combine(metricsDir, "audit.json"));
+        var gatesJson = ReadJson(Path.Combine(metricsDir, "gates.json"));
+        var provenanceJson = ReadJson(Path.Combine(metricsDir, "provenance.json"));
 
         return new QualityRun(
             Date: DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
@@ -111,7 +118,52 @@ public static class Program
             Vulnerabilities: GetInt(sonar, "vulnerabilities"),
             CodeSmells: GetInt(sonar, "codeSmells"),
             Duplication: GetDouble(sonar, "duplication"),
-            HighAdvisories: GetInt(audit, "high") ?? 0);
+            HighAdvisories: GetInt(audit, "high") ?? 0,
+            Gates: LoadGates(gatesJson),
+            Provenance: LoadProvenance(provenanceJson));
+    }
+
+    private static IReadOnlyList<GateStatus> LoadGates(JsonElement? root)
+    {
+        if (root is null || !root.Value.TryGetProperty("gates", out var gates) || gates.ValueKind != JsonValueKind.Array)
+        {
+            // Fall back to the legacy four-gate view so older CI runs still
+            // render a sensible dashboard. Missing = unavailable, not pass.
+            return new[]
+            {
+                new GateStatus("build", root is null ? "unavailable" : "pass", null),
+                new GateStatus("incremental-coverage", "unavailable", null),
+                new GateStatus("evidence-manifest", "unavailable", null),
+                new GateStatus("nuget-audit", "unavailable", null),
+                new GateStatus("accessibility", "unavailable", null),
+                new GateStatus("migration-drift", "unavailable", null),
+            };
+        }
+
+        var list = new List<GateStatus>();
+        foreach (var gate in gates.EnumerateArray())
+        {
+            var name = gate.TryGetProperty("name", out var n) ? n.GetString() ?? "?" : "?";
+            var status = gate.TryGetProperty("status", out var s) ? s.GetString() ?? "unknown" : "unknown";
+            var detail = gate.TryGetProperty("detail", out var d) ? d.GetString() : null;
+            list.Add(new GateStatus(name, status, detail));
+        }
+        return list;
+    }
+
+    private static Dictionary<string, string> LoadProvenance(JsonElement? root)
+    {
+        if (root is null)
+        {
+            return new Dictionary<string, string>();
+        }
+
+        var map = new Dictionary<string, string>();
+        foreach (var prop in root.Value.EnumerateObject())
+        {
+            map[prop.Name] = prop.Value.ToString();
+        }
+        return map;
     }
 
     private static JsonElement? ReadJson(string path)
@@ -190,7 +242,7 @@ public static class Program
         var sb = new StringBuilder();
         sb.AppendLine("# OpenLearning Quality Dashboard");
         sb.AppendLine();
-        sb.AppendLine("Generated from CI metrics by `OpenLearning.Quality`. Missing metric sources show as `n/a`.");
+        sb.AppendLine("Generated from CI metrics by `OpenLearning.Quality`. Missing metric sources show as `n/a`; missing gates show as `unavailable`.");
         sb.AppendLine();
         sb.AppendLine("## Latest run — " + latest.Date);
         sb.AppendLine();
@@ -207,6 +259,31 @@ public static class Program
         sb.AppendLine(CultureInfo.InvariantCulture, $"| Duplicated lines | {FormatPercent(latest.Duplication)} |");
         sb.AppendLine(CultureInfo.InvariantCulture, $"| High/critical advisories | {latest.HighAdvisories} |");
         sb.AppendLine();
+
+        sb.AppendLine("## Release gates");
+        sb.AppendLine();
+        sb.AppendLine("| Gate | Status | Detail |");
+        sb.AppendLine("|---|---|---|");
+        foreach (var gate in latest.Gates)
+        {
+            sb.AppendLine(CultureInfo.InvariantCulture,
+                $"| `{gate.Name}` | {gate.Status} | {Format(gate.Detail)} |");
+        }
+        sb.AppendLine();
+
+        if (latest.Provenance.Count > 0)
+        {
+            sb.AppendLine("## Provenance");
+            sb.AppendLine();
+            sb.AppendLine("| Field | Value |");
+            sb.AppendLine("|---|---|");
+            foreach (var (key, value) in latest.Provenance.OrderBy(p => p.Key))
+            {
+                sb.AppendLine(CultureInfo.InvariantCulture, $"| {key} | {value} |");
+            }
+            sb.AppendLine();
+        }
+
         sb.AppendLine("## Trend (last " + maxTrend.ToString(CultureInfo.InvariantCulture) + " runs)");
         sb.AppendLine();
         sb.AppendLine("| Date | Build | Coverage % | Bugs | Vulns | High advisories |");
@@ -244,6 +321,11 @@ public static class Program
             issues.Add($"{run.Vulnerabilities} vulnerability(ies)");
         }
 
+        foreach (var gate in run.Gates.Where(g => g.Status == "fail"))
+        {
+            issues.Add($"gate {gate.Name} failed");
+        }
+
         return issues.Count == 0
             ? "[quality] no regressions detected."
             : "[quality] regressions: " + string.Join(", ", issues) + ".";
@@ -252,6 +334,11 @@ public static class Program
     private static string Format(int? value)
     {
         return value?.ToString(CultureInfo.InvariantCulture) ?? "n/a";
+    }
+
+    private static string Format(string? value)
+    {
+        return string.IsNullOrEmpty(value) ? "n/a" : value;
     }
 
     private static string FormatPercent(double? value)

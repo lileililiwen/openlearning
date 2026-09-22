@@ -47,6 +47,7 @@ jobs:
           fi
 
       - name: Format verify
+        id: format-verify
         # Fails on any drift from the .editorconfig (deterministic formatting).
         run: dotnet format OpenLearning.sln --verify-no-changes --no-restore
 
@@ -73,6 +74,7 @@ jobs:
         run: dotnet test OpenLearning.sln -c Release --no-build --collect:"XPlat Code Coverage" --settings Coverlet.runsettings --results-directory TestResults
 
       - name: Incremental coverage gate
+        id: incremental
         # Fails when the executable lines added by this PR fall below 80%
         # coverage (test projects, EF migrations, and generated code excluded).
         # Only evaluated on pull requests, where the base ref exists.
@@ -88,6 +90,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Sonar End
+        id: sonar-end
         if: env.SONAR_TOKEN != ''
         # sonar.qualitygate.wait=true makes this fail the pipeline when the
         # new-code quality gate is red (bugs/vulnerabilities/smells/duplication/coverage).
@@ -139,6 +142,48 @@ jobs:
           audit_ok = "${{ steps.audit.outcome }}" == "success"
           json.dump({"high": 0 if audit_ok else 1, "critical": 0}, open("metrics/audit.json", "w"))
 
+          # Per-gate status for the dashboard. A gate is "unavailable" when
+          # the corresponding CI step did not run (for example the
+          # evidence-manifest and accessibility-gate jobs only run on PRs);
+          # we never synthesize a "pass" for an absent job. Evaluate the
+          # availability condition in the shell before calling Python so
+          # the strings don't all turn truthy.
+          is_pr = "${{ github.event_name }}" == "pull_request"
+          has_sonar = bool("${{ env.SONAR_TOKEN }}")
+
+          def gate(name, outcome, unavailable):
+              if unavailable:
+                  return {"name": name, "status": "unavailable"}
+              return {"name": name, "status": "pass" if outcome == "success" else "fail"}
+
+          gates = [
+              gate("build",                  "${{ steps.build.outcome }}", False),
+              gate("format",                 "${{ steps.format-verify.outcome }}", False),
+              gate("nuget-audit",            "${{ steps.audit.outcome }}", False),
+              gate("incremental-coverage",   "${{ steps.incremental.outcome }}", not is_pr),
+              gate("evidence-manifest",      "${{ needs.evidence-manifest.result }}", not is_pr),
+              gate("accessibility",          "${{ needs.accessibility-gate.result }}", not is_pr),
+              gate("migration-drift",        "${{ needs.migration-drift.result }}", not is_pr),
+              gate("sonar",                  "${{ steps.sonar-end.outcome }}", not has_sonar),
+          ]
+          json.dump({"gates": gates}, open("metrics/gates.json", "w"))
+
+          # Provenance: who produced these numbers, with what tools, against
+          # which commit. Missing tools are still recorded so a dashboard
+          # consumer can distinguish "this run was on Linux" from "we don't
+          # know what platform this came from".
+          provenance = {
+              "commit":  os.environ.get("GITHUB_SHA", ""),
+              "run_id":  os.environ.get("GITHUB_RUN_ID", ""),
+              "workflow": os.environ.get("GITHUB_WORKFLOW", ""),
+              "event":   os.environ.get("GITHUB_EVENT_NAME", ""),
+              "ref":     os.environ.get("GITHUB_REF", ""),
+              "actor":   os.environ.get("GITHUB_ACTOR", ""),
+              "runner":  os.environ.get("RUNNER_OS", ""),
+              "dotnet":  os.environ.get("DOTNET_VERSION", ""),
+          }
+          json.dump(provenance, open("metrics/provenance.json", "w"), indent=2)
+
           # Sonar metrics are only meaningful when a real SonarCloud scan ran.
           # We require SONAR_TOKEN and SONAR_PROJECT_KEY to be set, then pull the
           # live values from the SonarCloud API. If Sonar did not run we OMIT
@@ -179,4 +224,175 @@ jobs:
         with:
           name: quality-dashboard
           path: docs/quality/
+          if-no-files-found: ignore
+
+  evidence-manifest:
+    name: capability evidence manifest
+    runs-on: ubuntu-latest
+    # The evidence gate is PR-only: on main pushes there is no diff to
+    # declare against, so the manifest intentionally carries the
+    # "no active change" shape (empty paths/test_classes) and the
+    # validator skips.
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate quality manifest
+        run: python3 scripts/check_evidence_manifest.py --base ${{ github.base_ref }}
+
+      - name: Run manifest unit tests
+        run: python3 -m unittest discover -s tests/quality-gates -t .
+
+  migration-drift:
+    name: migration drift (empty + upgrade)
+    runs-on: ubuntu-latest
+    # Skipped when the manifest declares migration_impact = "none".
+    # The manifest gate has already enforced that a present manifest
+    # identifies this field, so the read here is reliable.
+    env:
+      MANIFEST: quality-manifest.toml
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read manifest migration_impact
+        id: impact
+        run: |
+          impact=$(python3 -c "import tomllib,sys; print(tomllib.loads(open('$MANIFEST','rb').read())['change']['migration_impact'])" 2>/dev/null || echo "present")
+          echo "impact=$impact" >> "$GITHUB_OUTPUT"
+          echo "manifest declares migration_impact=$impact"
+
+      - name: Skip when manifest declares no migration
+        if: steps.impact.outputs.impact == 'none'
+        run: |
+          echo "::notice::manifest declares migration_impact=none; skipping migration drift check"
+
+      - name: Setup .NET
+        if: steps.impact.outputs.impact != 'none'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install dotnet-ef
+        if: steps.impact.outputs.impact != 'none'
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Setup Python
+        if: steps.impact.outputs.impact != 'none'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Start Postgres
+        if: steps.impact.outputs.impact != 'none'
+        uses: actions/services/postgresql/postgresql@v1
+        with:
+          postgres-version: '16'
+          env: |
+            POSTGRES_DB: openlearning_migrations
+            POSTGRES_USER: openlearning
+            POSTGRES_PASSWORD: openlearning_dev
+
+      - name: Wait for Postgres
+        if: steps.impact.outputs.impact != 'none'
+        run: |
+          for i in $(seq 1 30); do
+            if pg_isready -h localhost -U openlearning; then
+              echo "postgres ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "postgres not ready"
+          exit 1
+
+      - name: Apply migrations to empty database
+        if: steps.impact.outputs.impact != 'none'
+        env:
+          ConnectionStrings__OpenLearning: Host=localhost;Database=openlearning_migrations;Username=openlearning;Password=openlearning_dev
+        run: dotnet ef database update --project src/OpenLearning.Data --startup-project src/OpenLearning.Web
+
+      - name: Generate empty-DB migration script for review
+        if: steps.impact.outputs.impact != 'none'
+        env:
+          ConnectionStrings__OpenLearning: Host=localhost;Database=openlearning_migrations;Username=openlearning;Password=openlearning_dev
+        run: |
+          mkdir -p metrics
+          dotnet ef migrations script --project src/OpenLearning.Data --startup-project src/OpenLearning.Web \
+            --output metrics/empty_db_migrations.sql
+          echo "empty-DB migration script: $(wc -l < metrics/empty_db_migrations.sql) lines"
+
+      - name: Detect pending model changes
+        if: steps.impact.outputs.impact != 'none'
+        env:
+          ConnectionStrings__OpenLearning: Host=localhost;Database=openlearning_migrations;Username=openlearning;Password=openlearning_dev
+        run: |
+          # A model change that wasn't followed by `dotnet ef migrations add`
+          # produces a non-empty idempotent script from the last migration
+          # forward. We use the idempotent form to surface the diff without
+          # re-applying.
+          dotnet ef migrations script --idempotent \
+            --project src/OpenLearning.Data --startup-project src/OpenLearning.Web \
+            --output metrics/idempotent.sql
+          pending_lines=$(grep -v '^--' metrics/idempotent.sql | grep -v '^$' | wc -l)
+          if [ "$pending_lines" -gt 0 ]; then
+            echo "::error::model has $pending_lines pending line(s) not captured by any migration. Run 'dotnet ef migrations add' and commit the result."
+            head -40 metrics/idempotent.sql
+            exit 1
+          fi
+          echo "model is in sync with migrations"
+
+      - name: Upload migration artifacts
+        if: always() && steps.impact.outputs.impact != 'none'
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-drift
+          path: metrics/empty_db_migrations.sql
+          if-no-files-found: ignore
+
+  accessibility-gate:
+    name: learner accessibility gate
+    runs-on: ubuntu-latest
+    # The accessibility tests live alongside the unit tests but are kept
+    # in a separate CI job so the run is visible in the PR checks list
+    # and the suite can be promoted to required later.
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Run accessibility suite
+        run: |
+          dotnet test tests/OpenLearning.UnitTests/OpenLearning.UnitTests.csproj \
+            --no-restore \
+            --filter "FullyQualifiedName~Accessibility|FullyQualifiedName~ResponsiveCss" \
+            --logger "trx;LogFileName=accessibility.trx"
+
+      - name: Upload accessibility results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-results
+          path: '**/TestResults/**/accessibility.trx'
           if-no-files-found: ignore

@@ -43,3 +43,11 @@ src/OpenLearning.Web/wwwroot/scorm/
 
 ## Local blob storage root (runtime data; configurable via Storage:Root)
 src/OpenLearning.Web/storage/
+
+## Python bytecode caches (test runners and ad-hoc scripts)
+__pycache__/
+*.pyc
+
+## Local agent / tooling artifacts (per-developer, not part of the project)
+.sisyphusfy.toml
+none

@@ -1,0 +1,53 @@
+# Capability Evidence Manifest
+#
+# Declares the evidence the quality gates will evaluate for the current
+# change. The presence and shape of this file are checked by
+# scripts/check_evidence_manifest.py on every CI run. When a PR changes
+# any path under src/, this manifest is required and must be valid.
+#
+# Convention: a single committed manifest at the repo root, updated as
+# part of the change it describes. Reviewers can see exactly which gates
+# the change claims to satisfy and which ones it opts out of.
+#
+# This file ships with a default "no active change" manifest so the
+# main branch stays green. A PR that touches src/ or tests/ must edit
+# this file: replace the placeholder paths, set the right test_classes
+# for the change, and pick a migration_impact. The CI evidence gate
+# fails the PR otherwise.
+
+[change]
+# Glob patterns (relative to repo root) of every path this change adds
+# or modifies. The "scope" used by the evidence gate is the union of
+# the declared paths and the actual git diff. Mismatch is a hard
+# failure in --strict mode (default in CI).
+paths = []
+
+# Incremental coverage floor for executable lines added by this change.
+# Must be a number in [0.0, 1.0]. The change cannot lower the existing
+# declared threshold; if you need a different number, justify it in the
+# PR description.
+incremental_coverage_threshold = 0.80
+
+# Test classes that exercise this change. The CI gate verifies at least
+# one declared class has a passing run in the current pipeline.
+#
+# Allowed values:
+#   unit                  - xUnit in-memory tests
+#   postgres              - tests that need a real Postgres connection
+#   authorization_negative - restricted operation tested for denial
+#   accessibility         - WCAG / a11y tests on learner pages
+#   migration             - migration verification against a database
+#   ui_smoke              - representative learner journey smoke test
+test_classes = []
+
+# Migration impact of this change. The migration gate will only run a
+# real schema check when this is "schema"; for "model_only" the gate
+# reviews model/snapshot drift but skips a database roundtrip; for
+# "none" the gate is a no-op and the manifest must explain why.
+#
+# Allowed values: none, model_only, schema.
+migration_impact = "none"
+
+# Optional: free-form notes surfaced in the dashboard for reviewers.
+# Keep short; the dashboard truncates to 240 characters.
+notes = ""
