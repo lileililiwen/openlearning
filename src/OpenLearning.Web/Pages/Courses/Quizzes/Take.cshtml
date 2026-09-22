@@ -37,7 +37,8 @@
 
 @if (quiz.Questions.Count == 0)
 {
-    <div class="alert alert-info">This quiz has no questions yet. Please check back later.</div>
+    ViewData["StateMessage"] = "This quiz has no questions yet. Please check back later.";
+    <partial name="_StateEmpty" />
 }
 else
 {

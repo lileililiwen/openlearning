@@ -38,10 +38,10 @@
 
 @if (Model.Courses.Count == 0)
 {
-    <div class="alert alert-info">
-        @Localizer["You are not enrolled in any courses yet."]
-        <a asp-page="/Index">@Localizer["Browse the catalog"]</a> @Localizer["to find something to learn."]
-    </div>
+    ViewData["StateMessage"] = Localizer["You are not enrolled in any courses yet."].Value;
+    ViewData["StateActionText"] = Localizer["Browse the catalog"].Value;
+    ViewData["StateActionUrl"] = Url.Page("/Index");
+    <partial name="_StateEmpty" />
 }
 else
 {

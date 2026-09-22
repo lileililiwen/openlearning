@@ -1,7 +1,8 @@
 @page
 @model OpenLearning.Web.Pages.Notifications.IndexModel
+@inject IStringLocalizer<OpenLearning.Web.SharedResources> Loc
 @{
-    ViewData["Title"] = "Notifications";
+    ViewData["Title"] = Loc["Notifications"].Value;
 }
 
 <div class="d-flex justify-content-between align-items-end mb-4">
@@ -20,7 +21,8 @@
 
 @if (Model.Items.Count == 0)
 {
-    <div class="alert alert-info">You have no notifications yet.</div>
+    ViewData["StateMessage"] = Loc["You have no notifications yet."].Value;
+    <partial name="_StateEmpty" />
 }
 else
 {

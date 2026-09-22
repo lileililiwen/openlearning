@@ -1,12 +1,14 @@
 @* Shared error state. Optional retry link via ViewData["StateRetryUrl"]. *@
+@inject IStringLocalizer<OpenLearning.Web.SharedResources> Loc
 @{
-    var message = (string?)ViewData["StateMessage"] ?? "Something went wrong.";
+    var message = (string?)ViewData["StateMessage"] ?? Loc["Something went wrong."].Value;
     var retryUrl = (string?)ViewData["StateRetryUrl"];
+    var retryText = (string?)ViewData["StateRetryText"] ?? Loc["Retry"].Value;
 }
 <div class="state-error alert alert-danger d-flex align-items-center justify-content-between" role="alert">
     <span>@message</span>
     @if (!string.IsNullOrEmpty(retryUrl))
     {
-        <a class="btn btn-sm btn-outline-danger" href="@retryUrl">Retry</a>
+        <a class="btn btn-sm btn-outline-danger" href="@retryUrl">@retryText</a>
     }
 </div>

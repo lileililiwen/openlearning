@@ -38,6 +38,8 @@ public class IndexModel : PageModel
 
     public CourseSearchResult? Results { get; set; }
 
+    public bool CatalogLoadFailed { get; set; }
+
     public List<string> Categories { get; set; } = new();
 
     public List<Tag> Tags { get; set; } = new();
@@ -102,7 +104,15 @@ public class IndexModel : PageModel
         CurrentPage = Math.Max(1, page ?? 1);
         PageSize = Math.Clamp(await _config.GetIntAsync("Catalog.PageSize", 9), 1, 50);
 
-        Results = await _courses.SearchAsync(Search, Category, Tag, sortKey, CurrentPage, PageSize);
+        try
+        {
+            Results = await _courses.SearchAsync(Search, Category, Tag, sortKey, CurrentPage, PageSize);
+        }
+        catch
+        {
+            CatalogLoadFailed = true;
+            Results = new CourseSearchResult(new List<Course>(), 0);
+        }
         Categories = await _courses.GetCategoriesAsync();
         Tags = await _tags.GetActiveAsync();
 

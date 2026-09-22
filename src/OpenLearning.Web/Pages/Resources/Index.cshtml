@@ -72,7 +72,8 @@
     <div class="card-body">
         @if (Model.Items.Count == 0)
         {
-            <div class="alert alert-info mb-0">暂无资源。</div>
+            ViewData["StateMessage"] = "暂无资源。";
+            <partial name="_StateEmpty" />
         }
         else
         {

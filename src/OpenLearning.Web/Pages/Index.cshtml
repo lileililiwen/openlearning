@@ -1,7 +1,8 @@
 @page
 @model OpenLearning.Web.Pages.IndexModel
+@inject IStringLocalizer<OpenLearning.Web.SharedResources> Loc
 @{
-    ViewData["Title"] = "Course Catalog";
+    ViewData["Title"] = Loc["Course Catalog"].Value;
     var search = Model.Search ?? string.Empty;
     var category = Model.Category ?? string.Empty;
     var tag = Model.Tag ?? string.Empty;
@@ -81,10 +82,22 @@
 
 <div class="d-flex justify-content-between align-items-end mb-3">
     <div>
-        <h1 class="display-6 fw-bold mb-1">Course Catalog</h1>
-        <p class="text-muted mb-0">@(Model.Results!.TotalCount) published course@(Model.Results!.TotalCount == 1 ? "" : "s")</p>
+        <h1 class="display-6 fw-bold mb-1">@Loc["Course Catalog"]</h1>
+        @if (Model.Results is { } r && !Model.CatalogLoadFailed)
+        {
+            <p class="text-muted mb-0">@r.TotalCount published course@(r.TotalCount == 1 ? "" : "s")</p>
+        }
     </div>
 </div>
+
+@if (Model.CatalogLoadFailed)
+{
+    ViewData["StateMessage"] = Loc["We couldn't load the course list right now. Please try again."].Value;
+    ViewData["StateRetryUrl"] = Url.Page("/Index");
+    <partial name="_StateError" />
+}
+else
+{
 
 <form method="get" class="card shadow-sm mb-4">
     <div class="card-body">
@@ -138,9 +151,8 @@
 
 @if (Model.Results!.Courses.Count == 0)
 {
-    <div class="alert alert-info">
-        No published courses match your search.
-    </div>
+    ViewData["StateMessage"] = Loc["No published courses match your search."].Value;
+    <partial name="_StateEmpty" />
 }
 else
 {
@@ -230,4 +242,5 @@ else
             </ul>
         </nav>
     }
+}
 }

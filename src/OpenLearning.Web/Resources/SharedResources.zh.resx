@@ -48,4 +48,37 @@
   <data name="FooterLicense" xml:space="preserve">
     <value>MIT 开源许可。仅供本地开发与演示使用。</value>
   </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>学习中心</value>
+  </data>
+  <data name="Course Catalog" xml:space="preserve">
+    <value>课程目录</value>
+  </data>
+  <data name="Browse the catalog" xml:space="preserve">
+    <value>浏览课程目录</value>
+  </data>
+  <data name="You are not enrolled in any courses yet." xml:space="preserve">
+    <value>您尚未报名任何课程。</value>
+  </data>
+  <data name="You have no notifications yet." xml:space="preserve">
+    <value>您还没有通知。</value>
+  </data>
+  <data name="No published courses match your search." xml:space="preserve">
+    <value>没有符合搜索条件的已发布课程。</value>
+  </data>
+  <data name="We couldn't load the course list right now. Please try again." xml:space="preserve">
+    <value>暂时无法加载课程列表，请稍后重试。</value>
+  </data>
+  <data name="Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Action" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="Something went wrong." xml:space="preserve">
+    <value>出现错误。</value>
+  </data>
+  <data name="Nothing here yet." xml:space="preserve">
+    <value>暂无内容。</value>
+  </data>
 </root>
